@@ -12,7 +12,12 @@ namespace MiniAiCup.Paperio
 
 			while (true)
 			{
-				var gameState = GameState.Load(Console.ReadLine());
+				string input = Console.ReadLine();
+				if (input == null)
+				{
+					break;
+				}
+				var gameState = GameState.Load(input);
 				PushCommand(logic.GetNextCommand(gameState));
 			}
 		}
