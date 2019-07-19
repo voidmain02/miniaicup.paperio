@@ -88,10 +88,7 @@ namespace MiniAiCup.Paperio
 
 		private static Point ParsePoint(JArray jPointArray)
 		{
-			return new Point {
-				X = (int)jPointArray[0],
-				Y = (int)jPointArray[1]
-			};
+			return new Point((int)jPointArray[0], (int)jPointArray[1]);
 		}
 	}
 }
