@@ -8,18 +8,13 @@ namespace MiniAiCup.Paperio
 		{
 			var gameParams = GameParams.Load(Console.ReadLine());
 
+			var logic = new RandomGameLogic(gameParams);
+
 			while (true)
 			{
 				var gameState = GameState.Load(Console.ReadLine());
-				PushCommand(GetRandomCommand());
+				PushCommand(logic.GetNextCommand(gameState));
 			}
-		}
-
-		private static Command GetRandomCommand()
-		{
-			var random = new Random();
-			int index = random.Next(0, 4);
-			return (Command)index;
 		}
 
 		private static void PushCommand(Command command)

@@ -49,10 +49,12 @@
     <Compile Include="Command.cs" />
     <Compile Include="GameParams.cs" />
     <Compile Include="GameState.cs" />
+    <Compile Include="IGameLogic.cs" />
     <Compile Include="PlayerInfo.cs" />
     <Compile Include="Point.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RandomGameLogic.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
