@@ -9,14 +9,9 @@ namespace MiniAiCup.Paperio
 	public class GameParams
 	{
 		/// <summary>
-		/// Количество элементарных ячеек по оси x
+		/// Размер карты в ячейках
 		/// </summary>
-		public int Width { get; set; }
-
-		/// <summary>
-		/// Количество элементарных ячеек по оси y
-		/// </summary>
-		public int Height { get; set; }
+		public Size MapSize { get; set; }
 
 		/// <summary>
 		/// Скорость игрока
@@ -43,8 +38,7 @@ namespace MiniAiCup.Paperio
 
 			var jParams = jMessage["params"];
 			return new GameParams {
-				Width = (int)jParams["x_cells_count"],
-				Height = (int)jParams["y_cells_count"],
+				MapSize = new Size((int)jParams["x_cells_count"], (int)jParams["y_cells_count"]),
 				Speed = (int)jParams["speed"],
 				CellSize = (int)jParams["width"]
 			};

@@ -64,8 +64,8 @@ namespace MiniAiCup.Paperio
 		private bool IsPointOutsideOfMap(Point point)
 		{
 			int delta = _gameParams.CellSize/2;
-			return point.X < delta || point.X > _gameParams.Width*_gameParams.CellSize + delta ||
-				point.Y < delta || point.Y > _gameParams.Height*_gameParams.CellSize + delta;
+			return point.X < delta || point.X > _gameParams.MapSize.Width*_gameParams.CellSize + delta ||
+				point.Y < delta || point.Y > _gameParams.MapSize.Height*_gameParams.CellSize + delta;
 		}
 
 		private Point GetNextPosition(Command command)
