@@ -58,7 +58,7 @@ namespace MiniAiCup.Paperio
 		private bool IsCommandSafe(Command command)
 		{
 			var nextPos = GetNextPosition(command);
-			return !IsPointOutsideOfMap(nextPos) && !Me.Lines.Contains(nextPos);
+			return !IsPointOutsideOfMap(nextPos) && !Me.Lines.Contains(nextPos) && GetMinPathLength(nextPos, Me.Territory, Me.Lines).HasValue;
 		}
 
 		private bool IsPointOutsideOfMap(Point point)
@@ -79,6 +79,59 @@ namespace MiniAiCup.Paperio
 				default:
 					throw new ArgumentOutOfRangeException(nameof(command), command, null);
 			}
+		}
+
+		private static Point ConvertPointToLogical(Point realPoint, int cellSize)
+		{
+			return new Point(realPoint.X/cellSize, realPoint.Y/cellSize);
+		}
+
+		private int? GetMinPathLength(Point startPoint, Point[] destination, Point[] obstacles)
+		{
+			var logicalStartPoint = ConvertPointToLogical(startPoint, _gameParams.CellSize);
+
+			var destinationHashSet = new HashSet<Point>(destination.Select(p => ConvertPointToLogical(p, _gameParams.CellSize)));
+			var obstaclesHashSet = new HashSet<Point>(obstacles.Select(p => ConvertPointToLogical(p, _gameParams.CellSize)));
+			var moves = new int[_gameParams.MapSize.Width, _gameParams.MapSize.Height];
+			var isVisited = new bool[_gameParams.MapSize.Width, _gameParams.MapSize.Height];
+			var queue = new Queue<Point>();
+			queue.Enqueue(logicalStartPoint);
+			isVisited[logicalStartPoint.X, logicalStartPoint.Y] = true;
+			moves[logicalStartPoint.X, logicalStartPoint.Y] = 0;
+			while (queue.Count > 0)
+			{
+				var point = queue.Dequeue();
+				int currentPathLength = moves[point.X, point.Y];
+				foreach (var neighbor in GetNeighbors(point))
+				{
+					if (destinationHashSet.Contains(neighbor))
+					{
+						return currentPathLength + 1;
+					}
+
+					if (IsPointInSize(neighbor, _gameParams.MapSize) && !isVisited[neighbor.X, neighbor.Y] && !obstaclesHashSet.Contains(neighbor))
+					{
+						isVisited[neighbor.X, neighbor.Y] = true;
+						moves[neighbor.X, neighbor.Y] = currentPathLength + 1;
+						queue.Enqueue(neighbor);
+					}
+				}
+			}
+
+			return null;
+		}
+
+		private static IEnumerable<Point> GetNeighbors(Point point)
+		{
+			yield return new Point(point.X - 1, point.Y);
+			yield return new Point(point.X + 1, point.Y);
+			yield return new Point(point.X, point.Y - 1);
+			yield return new Point(point.X, point.Y + 1);
+		}
+
+		private static bool IsPointInSize(Point point, Size size)
+		{
+			return point.X >= 0 && point.Y >= 0 && point.X < size.Width && point.Y < size.Height;
 		}
 	}
 }
