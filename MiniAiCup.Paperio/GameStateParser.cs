@@ -40,8 +40,22 @@ namespace MiniAiCup.Paperio
 				Territory = jPlayer["territory"].Cast<JArray>().Select(ParsePoint).ToArray(),
 				Position = ParsePoint((JArray)jPlayer["position"]),
 				Lines = jPlayer["lines"].Cast<JArray>().Select(ParsePoint).ToArray(),
-				Bonuses = jPlayer["bonuses"].Cast<JObject>().Select(ParseActiveBonus).ToArray()
+				Bonuses = jPlayer["bonuses"].Cast<JObject>().Select(ParseActiveBonus).ToArray(),
+				Direction = ParseDirection((string)jPlayer["direction"])
 			};
+		}
+
+		private static Direction? ParseDirection(string sDirection)
+		{
+			switch (sDirection)
+			{
+				case null: return null;
+				case "left": return Direction.Left;
+				case "right": return Direction.Right;
+				case "up": return Direction.Up;
+				case "down": return Direction.Down;
+				default: throw new ArgumentOutOfRangeException(nameof(sDirection), sDirection, null);
+			}
 		}
 
 		private static ActiveBonusInfo ParseActiveBonus(JObject jActiveBonus)

@@ -14,8 +14,6 @@ namespace MiniAiCup.Paperio
 
 		private GameState _currentLogicState;
 
-		private Direction? _prevDirection;
-
 		private PlayerInfo Me => _currentLogicState.Players.First(p => p.Id == "i");
 
 		private IEnumerable<PlayerInfo> Enemies => _currentLogicState.Players.Where(p => p != Me);
@@ -30,7 +28,7 @@ namespace MiniAiCup.Paperio
 			_currentRealState = state;
 			_currentLogicState = ConvertRealGameStateToLogic(state, _gameParams.CellSize);
 
-			var oppositeDirection = _prevDirection?.GetOpposite();
+			var oppositeDirection = Me.Direction?.GetOpposite();
 			var validDirections = Enum.GetValues(typeof(Direction)).Cast<Direction>().Where(c => c != oppositeDirection);
 			var safeDirections = validDirections.Where(IsDirectionSafe).ToList();
 			if (safeDirections.Count == 0)
@@ -39,8 +37,7 @@ namespace MiniAiCup.Paperio
 			}
 
 			int index = _random.Next(0, safeDirections.Count);
-			_prevDirection = safeDirections[index];
-			return _prevDirection.Value;
+			return safeDirections[index];
 		}
 
 		private bool IsDirectionSafe(Direction direction)
@@ -99,7 +96,8 @@ namespace MiniAiCup.Paperio
 				Territory = player.Territory.Select(p => p.ConvertToLogic(cellSize)).ToArray(),
 				Position = player.Position.ConvertToLogic(cellSize),
 				Lines = player.Lines.Select(p => p.ConvertToLogic(cellSize)).ToArray(),
-				Bonuses = player.Bonuses
+				Bonuses = player.Bonuses,
+				Direction = player.Direction
 			};
 		}
 	}

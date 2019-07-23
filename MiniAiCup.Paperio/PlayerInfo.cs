@@ -34,5 +34,10 @@ namespace MiniAiCup.Paperio
 		/// Активные бонусы
 		/// </summary>
 		public ActiveBonusInfo[] Bonuses { get; set; }
+
+		/// <summary>
+		/// Направление
+		/// </summary>
+		public Direction? Direction { get; set; }
 	}
 }
