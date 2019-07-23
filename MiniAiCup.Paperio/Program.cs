@@ -6,7 +6,7 @@ namespace MiniAiCup.Paperio
 	{
 		public static void Main()
 		{
-			var gameParams = GameParams.Load(Console.ReadLine());
+			var gameParams = GameParamsParser.Parse(Console.ReadLine());
 
 			var logic = new RandomGameLogic(gameParams);
 
@@ -17,7 +17,7 @@ namespace MiniAiCup.Paperio
 				{
 					break;
 				}
-				var gameState = GameState.Load(input);
+				var gameState = GameStateParser.Parse(input);
 				PushCommand(logic.GetNextCommand(gameState));
 			}
 		}

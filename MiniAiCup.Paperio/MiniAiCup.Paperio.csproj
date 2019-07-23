@@ -48,7 +48,9 @@
     <Compile Include="BonusType.cs" />
     <Compile Include="Command.cs" />
     <Compile Include="GameParams.cs" />
+    <Compile Include="GameParamsParser.cs" />
     <Compile Include="GameState.cs" />
+    <Compile Include="GameStateParser.cs" />
     <Compile Include="IGameLogic.cs" />
     <Compile Include="PlayerInfo.cs" />
     <Compile Include="Point.cs" />
