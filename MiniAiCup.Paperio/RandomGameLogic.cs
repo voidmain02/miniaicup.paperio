@@ -10,13 +10,15 @@ namespace MiniAiCup.Paperio
 
 		private readonly Random _random = new Random();
 
-		private GameState _currentState;
+		private GameState _currentRealState;
+
+		private GameState _currentLogicState;
 
 		private Direction? _prevDirection;
 
-		private PlayerInfo Me => _currentState.Players.First(p => p.Id == "i");
+		private PlayerInfo Me => _currentLogicState.Players.First(p => p.Id == "i");
 
-		private IEnumerable<PlayerInfo> Enemies => _currentState.Players.Where(p => p != Me);
+		private IEnumerable<PlayerInfo> Enemies => _currentLogicState.Players.Where(p => p != Me);
 
 		public RandomGameLogic(GameParams gameParams)
 		{
@@ -25,51 +27,38 @@ namespace MiniAiCup.Paperio
 
 		public Direction GetNextDirection(GameState state)
 		{
-			_currentState = state;
+			_currentRealState = state;
+			_currentLogicState = ConvertRealGameStateToLogic(state, _gameParams.CellSize);
 
-			var oppositePrevCommand = _prevDirection?.GetOpposite();
-
-			var safeCommands = Enum.GetValues(typeof(Direction)).Cast<Direction>().Where(c => c != oppositePrevCommand && IsCommandSafe(c)).ToList();
-			if (safeCommands.Count == 0)
+			var oppositeDirection = _prevDirection?.GetOpposite();
+			var validDirections = Enum.GetValues(typeof(Direction)).Cast<Direction>().Where(c => c != oppositeDirection);
+			var safeDirections = validDirections.Where(IsDirectionSafe).ToList();
+			if (safeDirections.Count == 0)
 			{
 				return Direction.Left;
 			}
 
-			int index = _random.Next(0, safeCommands.Count);
-			_prevDirection = safeCommands[index];
+			int index = _random.Next(0, safeDirections.Count);
+			_prevDirection = safeDirections[index];
 			return _prevDirection.Value;
 		}
 
-		private bool IsCommandSafe(Direction direction)
+		private bool IsDirectionSafe(Direction direction)
 		{
-			var nextPos = GetNextPosition(direction);
-			return !IsPointOutsideOfMap(nextPos) && !Me.Lines.Contains(nextPos) && GetMinPathLength(nextPos, Me.Territory, Me.Lines).HasValue;
-		}
-
-		private bool IsPointOutsideOfMap(Point point)
-		{
-			int delta = _gameParams.CellSize/2;
-			return point.X < delta || point.X > _gameParams.MapLogicSize.Width*_gameParams.CellSize + delta ||
-				point.Y < delta || point.Y > _gameParams.MapLogicSize.Height*_gameParams.CellSize + delta;
-		}
-
-		private Point GetNextPosition(Direction direction)
-		{
-			return Me.Position.MoveReal(direction, _gameParams.CellSize);
+			var nextPos = Me.Position.MoveLogic(direction);
+			return _gameParams.MapLogicSize.ContainsPoint(nextPos) && !Me.Lines.Contains(nextPos) && GetMinPathLength(nextPos, Me.Territory, Me.Lines).HasValue;
 		}
 
 		private int? GetMinPathLength(Point startPoint, Point[] destination, Point[] obstacles)
 		{
-			var logicalStartPoint = startPoint.ConvertToLogic(_gameParams.CellSize);
-
-			var destinationHashSet = new HashSet<Point>(destination.Select(p => p.ConvertToLogic(_gameParams.CellSize)));
-			var obstaclesHashSet = new HashSet<Point>(obstacles.Select(p => p.ConvertToLogic(_gameParams.CellSize)));
+			var destinationHashSet = new HashSet<Point>(destination);
+			var obstaclesHashSet = new HashSet<Point>(obstacles);
 			var moves = new int[_gameParams.MapLogicSize.Width, _gameParams.MapLogicSize.Height];
 			var isVisited = new bool[_gameParams.MapLogicSize.Width, _gameParams.MapLogicSize.Height];
 			var queue = new Queue<Point>();
-			queue.Enqueue(logicalStartPoint);
-			isVisited[logicalStartPoint.X, logicalStartPoint.Y] = true;
-			moves[logicalStartPoint.X, logicalStartPoint.Y] = 0;
+			queue.Enqueue(startPoint);
+			isVisited[startPoint.X, startPoint.Y] = true;
+			moves[startPoint.X, startPoint.Y] = 0;
 			while (queue.Count > 0)
 			{
 				var point = queue.Dequeue();
@@ -91,6 +80,27 @@ namespace MiniAiCup.Paperio
 			}
 
 			return null;
+		}
+
+		private static GameState ConvertRealGameStateToLogic(GameState gameState, int cellSize)
+		{
+			return new GameState {
+				Players = gameState.Players.Select(p => ConvertRealPlayerToLogic(p, cellSize)).ToArray(),
+				Bonuses = gameState.Bonuses,
+				TickNumber = gameState.TickNumber
+			};
+		}
+
+		private static PlayerInfo ConvertRealPlayerToLogic(PlayerInfo player, int cellSize)
+		{
+			return new PlayerInfo {
+				Id = player.Id,
+				Score = player.Score,
+				Territory = player.Territory.Select(p => p.ConvertToLogic(cellSize)).ToArray(),
+				Position = player.Position.ConvertToLogic(cellSize),
+				Lines = player.Lines.Select(p => p.ConvertToLogic(cellSize)).ToArray(),
+				Bonuses = player.Bonuses
+			};
 		}
 	}
 }
