@@ -1,9 +1,9 @@
 namespace MiniAiCup.Paperio
 {
 	/// <summary>
-	/// Команда боту
+	/// Направление
 	/// </summary>
-	public enum Command
+	public enum Direction
 	{
 		/// <summary>
 		/// Налево

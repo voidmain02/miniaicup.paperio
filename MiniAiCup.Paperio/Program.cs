@@ -18,25 +18,25 @@ namespace MiniAiCup.Paperio
 					break;
 				}
 				var gameState = GameStateParser.Parse(input);
-				PushCommand(logic.GetNextCommand(gameState));
+				PushCommand(logic.GetNextDirection(gameState));
 			}
 		}
 
-		private static void PushCommand(Command command)
+		private static void PushCommand(Direction direction)
 		{
-			Console.WriteLine($"{{\"command\": \"{CommandToString(command)}\"}}");
+			Console.WriteLine($"{{\"command\": \"{DirectionToString(direction)}\"}}");
 		}
 
-		private static string CommandToString(Command command)
+		private static string DirectionToString(Direction direction)
 		{
-			switch (command)
+			switch (direction)
 			{
-				case Command.Left: return "left";
-				case Command.Right: return "right";
-				case Command.Up: return "up";
-				case Command.Down: return "down";
+				case Direction.Left: return "left";
+				case Direction.Right: return "right";
+				case Direction.Up: return "up";
+				case Direction.Down: return "down";
 				default:
-					throw new ArgumentOutOfRangeException(nameof(command), command, null);
+					throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
 			}
 		}
 	}

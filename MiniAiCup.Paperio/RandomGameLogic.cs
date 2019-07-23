@@ -12,7 +12,7 @@ namespace MiniAiCup.Paperio
 
 		private GameState _currentState;
 
-		private Command? _prevCommand;
+		private Direction? _prevDirection;
 
 		private PlayerInfo Me => _currentState.Players.First(p => p.Id == "i");
 
@@ -23,41 +23,41 @@ namespace MiniAiCup.Paperio
 			_gameParams = gameParams;
 		}
 
-		public Command GetNextCommand(GameState state)
+		public Direction GetNextDirection(GameState state)
 		{
 			_currentState = state;
 
-			var oppositePrevCommand = _prevCommand.HasValue
-				? GetOppositeCommand(_prevCommand.Value)
-				: (Command?)null;
+			var oppositePrevCommand = _prevDirection.HasValue
+				? GetOppositeDirection(_prevDirection.Value)
+				: (Direction?)null;
 
-			var safeCommands = Enum.GetValues(typeof(Command)).Cast<Command>().Where(c => c != oppositePrevCommand && IsCommandSafe(c)).ToList();
+			var safeCommands = Enum.GetValues(typeof(Direction)).Cast<Direction>().Where(c => c != oppositePrevCommand && IsCommandSafe(c)).ToList();
 			if (safeCommands.Count == 0)
 			{
-				return Command.Left;
+				return Direction.Left;
 			}
 
 			int index = _random.Next(0, safeCommands.Count);
-			_prevCommand = safeCommands[index];
-			return _prevCommand.Value;
+			_prevDirection = safeCommands[index];
+			return _prevDirection.Value;
 		}
 
-		private static Command GetOppositeCommand(Command command)
+		private static Direction GetOppositeDirection(Direction direction)
 		{
-			switch (command)
+			switch (direction)
 			{
-				case Command.Left: return Command.Right;
-				case Command.Right: return Command.Left;
-				case Command.Up: return Command.Down;
-				case Command.Down: return Command.Up;
+				case Direction.Left: return Direction.Right;
+				case Direction.Right: return Direction.Left;
+				case Direction.Up: return Direction.Down;
+				case Direction.Down: return Direction.Up;
 				default:
-					throw new ArgumentOutOfRangeException(nameof(command), command, null);
+					throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
 			}
 		}
 
-		private bool IsCommandSafe(Command command)
+		private bool IsCommandSafe(Direction direction)
 		{
-			var nextPos = GetNextPosition(command);
+			var nextPos = GetNextPosition(direction);
 			return !IsPointOutsideOfMap(nextPos) && !Me.Lines.Contains(nextPos) && GetMinPathLength(nextPos, Me.Territory, Me.Lines).HasValue;
 		}
 
@@ -68,16 +68,16 @@ namespace MiniAiCup.Paperio
 				point.Y < delta || point.Y > _gameParams.MapLogicSize.Height*_gameParams.CellSize + delta;
 		}
 
-		private Point GetNextPosition(Command command)
+		private Point GetNextPosition(Direction direction)
 		{
-			switch (command)
+			switch (direction)
 			{
-				case Command.Left: return new Point(Me.Position.X - _gameParams.CellSize, Me.Position.Y);
-				case Command.Right: return new Point(Me.Position.X + _gameParams.CellSize, Me.Position.Y);
-				case Command.Up: return new Point(Me.Position.X, Me.Position.Y + _gameParams.CellSize);
-				case Command.Down: return new Point(Me.Position.X, Me.Position.Y - _gameParams.CellSize);
+				case Direction.Left: return new Point(Me.Position.X - _gameParams.CellSize, Me.Position.Y);
+				case Direction.Right: return new Point(Me.Position.X + _gameParams.CellSize, Me.Position.Y);
+				case Direction.Up: return new Point(Me.Position.X, Me.Position.Y + _gameParams.CellSize);
+				case Direction.Down: return new Point(Me.Position.X, Me.Position.Y - _gameParams.CellSize);
 				default:
-					throw new ArgumentOutOfRangeException(nameof(command), command, null);
+					throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
 			}
 		}
 

@@ -46,7 +46,7 @@
     <Compile Include="ActiveBonusInfo.cs" />
     <Compile Include="BonusInfo.cs" />
     <Compile Include="BonusType.cs" />
-    <Compile Include="Command.cs" />
+    <Compile Include="Direction.cs" />
     <Compile Include="GameParams.cs" />
     <Compile Include="GameParamsParser.cs" />
     <Compile Include="GameState.cs" />
