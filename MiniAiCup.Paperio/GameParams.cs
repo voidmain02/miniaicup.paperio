@@ -8,7 +8,7 @@ namespace MiniAiCup.Paperio
 		/// <summary>
 		/// Размер карты в ячейках
 		/// </summary>
-		public Size MapSize { get; set; }
+		public Size MapLogicSize { get; set; }
 
 		/// <summary>
 		/// Скорость игрока

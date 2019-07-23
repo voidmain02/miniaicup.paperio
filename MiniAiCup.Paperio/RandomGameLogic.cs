@@ -64,8 +64,8 @@ namespace MiniAiCup.Paperio
 		private bool IsPointOutsideOfMap(Point point)
 		{
 			int delta = _gameParams.CellSize/2;
-			return point.X < delta || point.X > _gameParams.MapSize.Width*_gameParams.CellSize + delta ||
-				point.Y < delta || point.Y > _gameParams.MapSize.Height*_gameParams.CellSize + delta;
+			return point.X < delta || point.X > _gameParams.MapLogicSize.Width*_gameParams.CellSize + delta ||
+				point.Y < delta || point.Y > _gameParams.MapLogicSize.Height*_gameParams.CellSize + delta;
 		}
 
 		private Point GetNextPosition(Command command)
@@ -92,8 +92,8 @@ namespace MiniAiCup.Paperio
 
 			var destinationHashSet = new HashSet<Point>(destination.Select(p => ConvertPointToLogical(p, _gameParams.CellSize)));
 			var obstaclesHashSet = new HashSet<Point>(obstacles.Select(p => ConvertPointToLogical(p, _gameParams.CellSize)));
-			var moves = new int[_gameParams.MapSize.Width, _gameParams.MapSize.Height];
-			var isVisited = new bool[_gameParams.MapSize.Width, _gameParams.MapSize.Height];
+			var moves = new int[_gameParams.MapLogicSize.Width, _gameParams.MapLogicSize.Height];
+			var isVisited = new bool[_gameParams.MapLogicSize.Width, _gameParams.MapLogicSize.Height];
 			var queue = new Queue<Point>();
 			queue.Enqueue(logicalStartPoint);
 			isVisited[logicalStartPoint.X, logicalStartPoint.Y] = true;
@@ -109,7 +109,7 @@ namespace MiniAiCup.Paperio
 						return currentPathLength + 1;
 					}
 
-					if (IsPointInSize(neighbor, _gameParams.MapSize) && !isVisited[neighbor.X, neighbor.Y] && !obstaclesHashSet.Contains(neighbor))
+					if (IsPointInSize(neighbor, _gameParams.MapLogicSize) && !isVisited[neighbor.X, neighbor.Y] && !obstaclesHashSet.Contains(neighbor))
 					{
 						isVisited[neighbor.X, neighbor.Y] = true;
 						moves[neighbor.X, neighbor.Y] = currentPathLength + 1;

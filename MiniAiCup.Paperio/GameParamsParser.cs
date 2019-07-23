@@ -15,7 +15,7 @@ namespace MiniAiCup.Paperio
 
 			var jParams = jMessage["params"];
 			return new GameParams {
-				MapSize = new Size((int)jParams["x_cells_count"], (int)jParams["y_cells_count"]),
+				MapLogicSize = new Size((int)jParams["x_cells_count"], (int)jParams["y_cells_count"]),
 				Speed = (int)jParams["speed"],
 				CellSize = (int)jParams["width"]
 			};
