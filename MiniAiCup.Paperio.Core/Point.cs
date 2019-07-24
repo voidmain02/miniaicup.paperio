@@ -5,6 +5,7 @@ namespace MiniAiCup.Paperio.Core
 	/// <summary>
 	/// Координата
 	/// </summary>
+	[Serializable]
 	public struct Point : IEquatable<Point>
 	{
 		/// <summary>

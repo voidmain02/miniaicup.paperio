@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiniAiCup.Paperio.Core", "M
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniAiCup.Paperio.Client", "MiniAiCup.Paperio.Client\MiniAiCup.Paperio.Client.csproj", "{66295429-D284-4F93-A074-8798E1B60506}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniAiCup.Paperio.DebuggerVisualizer", "MiniAiCup.Paperio.DebuggerVisualizer\MiniAiCup.Paperio.DebuggerVisualizer.csproj", "{9B4C2127-5AC1-4D9F-AEAD-AEF4F2442DA5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{66295429-D284-4F93-A074-8798E1B60506}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{66295429-D284-4F93-A074-8798E1B60506}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{66295429-D284-4F93-A074-8798E1B60506}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B4C2127-5AC1-4D9F-AEAD-AEF4F2442DA5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B4C2127-5AC1-4D9F-AEAD-AEF4F2442DA5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B4C2127-5AC1-4D9F-AEAD-AEF4F2442DA5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B4C2127-5AC1-4D9F-AEAD-AEF4F2442DA5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

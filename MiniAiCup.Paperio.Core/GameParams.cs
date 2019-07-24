@@ -1,8 +1,11 @@
+using System;
+
 namespace MiniAiCup.Paperio.Core
 {
 	/// <summary>
 	/// Параметры игры
 	/// </summary>
+	[Serializable]
 	public class GameParams
 	{
 		/// <summary>

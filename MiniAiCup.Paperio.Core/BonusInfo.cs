@@ -1,8 +1,11 @@
+using System;
+
 namespace MiniAiCup.Paperio.Core
 {
 	/// <summary>
 	/// Информация о бонусе на карте
 	/// </summary>
+	[Serializable]
 	public class BonusInfo
 	{
 		/// <summary>

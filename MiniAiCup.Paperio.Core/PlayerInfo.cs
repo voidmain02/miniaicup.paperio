@@ -1,8 +1,11 @@
+using System;
+
 namespace MiniAiCup.Paperio.Core
 {
 	/// <summary>
 	/// Информация об игроке
 	/// </summary>
+	[Serializable]
 	public class PlayerInfo
 	{
 		/// <summary>

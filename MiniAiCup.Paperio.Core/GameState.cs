@@ -1,8 +1,11 @@
+using System;
+
 namespace MiniAiCup.Paperio.Core
 {
 	/// <summary>
 	/// Состояние игры
 	/// </summary>
+	[Serializable]
 	public class GameState
 	{
 		/// <summary>

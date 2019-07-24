@@ -5,6 +5,7 @@ namespace MiniAiCup.Paperio.Core
 	/// <summary>
 	/// Размер
 	/// </summary>
+	[Serializable]
 	public struct Size : IEquatable<Size>
 	{
 		/// <summary>
