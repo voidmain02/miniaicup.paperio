@@ -22,25 +22,34 @@ namespace MiniAiCup.Paperio.DebuggerVisualizer
 
 		private void PictureBox_Paint(object sender, PaintEventArgs e)
 		{
-			var bgBrush = new SolidBrush(Color.FromArgb(212, 223, 235));
+			var bgBrush = new SolidBrush(Color.FromArgb(220, 240, 244));
 			e.Graphics.FillRectangle(bgBrush, 0, 0, 931, 931);
 
 			var territoryColors = new[] {
-				Color.FromArgb(251, 128, 114),
-				Color.FromArgb(128, 177, 211),
-				Color.FromArgb(141, 211, 199),
-				Color.FromArgb(249, 234, 129),
-				Color.FromArgb(190, 186, 218),
-				Color.FromArgb(252, 205, 229)
+				Color.FromArgb(90, 159, 153),
+				Color.FromArgb(216, 27, 96),
+				Color.FromArgb(96, 125, 139),
+				Color.FromArgb(245, 124, 0),
+				Color.FromArgb(92, 107, 192),
+				Color.FromArgb(141, 110, 99)
 			};
 
 			var playerColors = new[] {
-				Color.FromArgb(239, 71, 50),
-				Color.FromArgb(42, 141, 212),
-				Color.FromArgb(54, 191, 166),
-				Color.FromArgb(247, 222, 63),
-				Color.FromArgb(101, 95, 170),
-				Color.FromArgb(252, 124, 190)
+				Color.FromArgb(65, 134, 128),
+				Color.FromArgb(191, 2, 71),
+				Color.FromArgb(71, 100, 114),
+				Color.FromArgb(220, 99, 0),
+				Color.FromArgb(67, 82, 167),
+				Color.FromArgb(116, 85, 74)
+			};
+
+			var lineColors = new[] {
+				Color.FromArgb(138, 189, 187),
+				Color.FromArgb(217, 106, 151),
+				Color.FromArgb(142, 168, 178),
+				Color.FromArgb(236, 167, 91),
+				Color.FromArgb(140, 157, 211),
+				Color.FromArgb(170, 158, 153)
 			};
 
 			var playersIndexes = new Dictionary<string, int>(_gameState.Players.Length);
@@ -51,16 +60,21 @@ namespace MiniAiCup.Paperio.DebuggerVisualizer
 
 			foreach (var player in _gameState.Players)
 			{
-				var territoryBrush = new SolidBrush(territoryColors[playersIndexes[player.Id]]);
-				e.Graphics.FillRectangles(territoryBrush, player.Territory.Select(p => GetCellSizeRectangle(TranslateCoordinates(p))).ToArray());
+				int playerIndex = playersIndexes[player.Id];
 
-				foreach (var linePoint in player.Lines)
+				if (player.Territory.Any())
 				{
-					var translatedLinePoint = TranslateCoordinates(linePoint);
-					e.Graphics.FillEllipse(territoryBrush, translatedLinePoint.X - CellSize/4, translatedLinePoint.Y - CellSize/4, CellSize/2 - 1, CellSize/2 - 1);
+					var territoryBrush = new SolidBrush(territoryColors[playerIndex]);
+					e.Graphics.FillRectangles(territoryBrush, player.Territory.Select(p => GetCellSizeRectangle(TranslateCoordinates(p))).ToArray());
+				}
+				
+				if (player.Lines.Any())
+				{
+					var lineBrush = new SolidBrush(lineColors[playerIndex]);
+					e.Graphics.FillRectangles(lineBrush, player.Lines.Select(p => GetCellSizeRectangle(TranslateCoordinates(p))).ToArray());
 				}
 
-				var playerBrush = new SolidBrush(playerColors[playersIndexes[player.Id]]);
+				var playerBrush = new SolidBrush(playerColors[playerIndex]);
 				e.Graphics.FillRectangle(playerBrush, GetCellSizeRectangle(TranslateCoordinates(player.Position)));
 			}
 		}
