@@ -1,18 +1,20 @@
 using System;
+using MiniAiCup.Paperio.Core;
 
-namespace MiniAiCup.Paperio
+namespace MiniAiCup.Paperio.Client
 {
 	public class Program
 	{
 		public static void Main()
 		{
-			var gameParams = GameParamsParser.Parse(Console.ReadLine());
+			string input = Console.ReadLine();
+			var gameParams = GameParamsParser.Parse(input);
 
 			var logic = new RandomGameLogic(gameParams);
 
 			while (true)
 			{
-				string input = Console.ReadLine();
+				input = Console.ReadLine();
 				if (input == null)
 				{
 					break;

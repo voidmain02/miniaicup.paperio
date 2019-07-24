@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29020.237
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniAiCup.Paperio", "MiniAiCup.Paperio\MiniAiCup.Paperio.csproj", "{242D5E6B-5103-4F2C-B035-52BBAC073831}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiniAiCup.Paperio.Core", "MiniAiCup.Paperio.Core\MiniAiCup.Paperio.Core.csproj", "{8156F763-8BC2-4A0F-B030-79757A717AD2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiniAiCup.Paperio.Client", "MiniAiCup.Paperio.Client\MiniAiCup.Paperio.Client.csproj", "{B090E7E3-C433-4EAC-94CF-390F5D9BE13E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +13,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{242D5E6B-5103-4F2C-B035-52BBAC073831}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{242D5E6B-5103-4F2C-B035-52BBAC073831}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{242D5E6B-5103-4F2C-B035-52BBAC073831}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{242D5E6B-5103-4F2C-B035-52BBAC073831}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8156F763-8BC2-4A0F-B030-79757A717AD2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8156F763-8BC2-4A0F-B030-79757A717AD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8156F763-8BC2-4A0F-B030-79757A717AD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8156F763-8BC2-4A0F-B030-79757A717AD2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B090E7E3-C433-4EAC-94CF-390F5D9BE13E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B090E7E3-C433-4EAC-94CF-390F5D9BE13E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B090E7E3-C433-4EAC-94CF-390F5D9BE13E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B090E7E3-C433-4EAC-94CF-390F5D9BE13E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

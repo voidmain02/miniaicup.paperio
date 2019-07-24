@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace MiniAiCup.Paperio
+namespace MiniAiCup.Paperio.Core
 {
 	public static class PointExtensions
 	{

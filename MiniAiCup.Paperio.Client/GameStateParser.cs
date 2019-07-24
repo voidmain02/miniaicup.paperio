@@ -1,8 +1,9 @@
 using System;
 using System.Linq;
+using MiniAiCup.Paperio.Core;
 using Newtonsoft.Json.Linq;
 
-namespace MiniAiCup.Paperio
+namespace MiniAiCup.Paperio.Client
 {
 	public class GameStateParser
 	{

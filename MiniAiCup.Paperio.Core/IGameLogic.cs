@@ -1,4 +1,4 @@
-namespace MiniAiCup.Paperio
+namespace MiniAiCup.Paperio.Core
 {
 	public interface IGameLogic
 	{

@@ -1,4 +1,4 @@
-namespace MiniAiCup.Paperio
+namespace MiniAiCup.Paperio.Core
 {
 	/// <summary>
 	/// Направление

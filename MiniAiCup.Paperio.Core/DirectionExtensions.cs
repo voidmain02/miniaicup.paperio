@@ -1,6 +1,6 @@
 using System;
 
-namespace MiniAiCup.Paperio
+namespace MiniAiCup.Paperio.Core
 {
 	public static class DirectionExtensions
 	{
