@@ -46,7 +46,7 @@ namespace MiniAiCup.Paperio.Core
 			return PathFinder.GetShortestPath(nextPos, territoryExceptCurrentPosition, linesWithCurrentPosition, _gameParams.MapLogicSize);
 		}
 
-		public Direction GetNextDirection(GameState state)
+		public Direction GetNextDirection(GameState state, out GameDebugData debugData)
 		{
 			_currentRealState = state;
 			_currentLogicState = ConvertRealGameStateToLogic(state, _gameParams.CellSize);
@@ -54,9 +54,17 @@ namespace MiniAiCup.Paperio.Core
 			UpdatePathsToHome();
 
 			var safeDirections = _pathsToHome.Where(x => x.Value != null).Where(x => IsDirectionSafeForMe(x.Key)).ToList();
-			return safeDirections.Count == 0
-				? _pathsToHome.OrderBy(p => p.Value?.Length ?? Int32.MaxValue).First().Key
-				: safeDirections[_random.Next(0, safeDirections.Count)].Key;
+
+			var directionPair = safeDirections.Count == 0
+				? _pathsToHome.OrderBy(p => p.Value?.Length ?? Int32.MaxValue).First()
+				: safeDirections[_random.Next(0, safeDirections.Count)];
+
+			debugData = new GameDebugData {
+				Direction = directionPair.Key,
+				PathToHome = directionPair.Value.Select(p => p.ConvertToReal(_gameParams.CellSize)).ToArray()
+			};
+
+			return directionPair.Key;
 		}
 
 		private IEnumerable<Direction> GetValidDirections(PlayerInfo player)

@@ -1,4 +1,7 @@
 using System;
+using System.Drawing;
+using System.Linq;
+using MiniAiCup.Paperio.Client.Rewind;
 using MiniAiCup.Paperio.Core;
 
 namespace MiniAiCup.Paperio.Client
@@ -20,13 +23,27 @@ namespace MiniAiCup.Paperio.Client
 					break;
 				}
 				var gameState = GameStateParser.Parse(input);
-				PushCommand(game.GetNextDirection(gameState));
+				var nextDirection = game.GetNextDirection(gameState, out var debugData);
+				PushCommand(nextDirection, debugData);
 			}
 		}
 
-		private static void PushCommand(Direction direction)
+		private static void PushCommand(Direction direction, GameDebugData debugData)
 		{
-			Console.WriteLine($"{{\"command\": \"{DirectionToString(direction)}\"}}");
+			Console.WriteLine($"{{\"command\":\"{DirectionToString(direction)}\", \"rewind\":{BuildRewindData(debugData)}}}");
+		}
+
+		private static string BuildRewindData(GameDebugData debugData)
+		{
+			var builder = new RewindBuilder();
+
+			builder.AddRange(debugData.PathToHome.Select(p => new CircleRewindCommand {
+				Center = p,
+				Radius = 7,
+				Color = Color.FromArgb(6, 141, 209)
+			}));
+
+			return builder.ToString();
 		}
 
 		private static string DirectionToString(Direction direction)
