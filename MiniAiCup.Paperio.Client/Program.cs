@@ -10,23 +10,28 @@ namespace MiniAiCup.Paperio.Client
 	{
 		public static void Main()
 		{
-			string input = Console.ReadLine();
-			var gameParams = GameParamsParser.Parse(input);
-
+			var message = ReadMessage();
+			var gameParams = GameParamsParser.Parse(message);
 			var game = new Game(gameParams);
 
 			while (true)
 			{
-				input = Console.ReadLine();
-				if (input == null)
+				message = ReadMessage();
+				if (message == null || message.Type == MessageType.EndGame)
 				{
 					break;
 				}
 
-				var gameState = GameStateParser.Parse(input);
+				var gameState = GameStateParser.Parse(message);
 				var nextDirection = game.GetNextDirection(gameState, out var debugData);
 				PushCommand(nextDirection, debugData);
 			}
+		}
+
+		private static Message ReadMessage()
+		{
+			string input = Console.ReadLine();
+			return input == null ? null : Message.Load(input);
 		}
 
 		private static void PushCommand(Direction direction, GameDebugData debugData = null)

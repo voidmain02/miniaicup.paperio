@@ -44,6 +44,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Message.cs" />
+    <Compile Include="MessageType.cs" />
     <Compile Include="Rewind\CircleRewindCommand.cs" />
     <Compile Include="GameParamsParser.cs" />
     <Compile Include="GameStateParser.cs" />

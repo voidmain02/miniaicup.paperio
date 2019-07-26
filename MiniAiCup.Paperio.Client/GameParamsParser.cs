@@ -1,20 +1,18 @@
 using System;
 using MiniAiCup.Paperio.Core;
-using Newtonsoft.Json.Linq;
 
 namespace MiniAiCup.Paperio.Client
 {
 	public class GameParamsParser
 	{
-		public static GameParams Parse(string json)
+		public static GameParams Parse(Message message)
 		{
-			var jMessage = JObject.Parse(json);
-			if ((string)jMessage["type"] != "start_game")
+			if (message.Type != MessageType.StartGame)
 			{
-				throw new Exception("Некорректный тип сообщения");
+				throw new Exception("Ожидалось сообщение с типом start_game");
 			}
 
-			var jParams = jMessage["params"];
+			var jParams = message.Data;
 			return new GameParams {
 				MapLogicSize = new Size((int)jParams["x_cells_count"], (int)jParams["y_cells_count"]),
 				Speed = (int)jParams["speed"],

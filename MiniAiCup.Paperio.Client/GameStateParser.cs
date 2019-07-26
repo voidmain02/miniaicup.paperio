@@ -7,15 +7,14 @@ namespace MiniAiCup.Paperio.Client
 {
 	public class GameStateParser
 	{
-		public static GameState Parse(string json)
+		public static GameState Parse(Message message)
 		{
-			var jMessage = JObject.Parse(json);
-			if ((string)jMessage["type"] != "tick")
+			if (message.Type != MessageType.Tick)
 			{
-				throw new Exception("Некорректный тип сообщения");
+				throw new Exception("Ожидалось сообщение с типом tick");
 			}
 
-			var jParams = jMessage["params"];
+			var jParams = message.Data;
 			return new GameState {
 				Players = jParams["players"].Cast<JProperty>().Select(ParsePlayer).ToArray(),
 				Bonuses = jParams["bonuses"].Cast<JObject>().Select(ParseBonus).ToArray(),
