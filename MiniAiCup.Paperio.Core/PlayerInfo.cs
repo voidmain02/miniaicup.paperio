@@ -16,7 +16,7 @@ namespace MiniAiCup.Paperio.Core
 		/// <summary>
 		/// Количество очков
 		/// </summary>
-		public int Score { get; set;  }
+		public int Score { get; set; }
 
 		/// <summary>
 		/// Захваченная территория

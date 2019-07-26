@@ -25,6 +25,7 @@ namespace MiniAiCup.Paperio.Client
 				{
 					break;
 				}
+
 				var gameState = GameStateParser.Parse(input);
 				var nextDirection = game.GetNextDirection(gameState, out var debugData);
 				PushCommand(nextDirection, debugData);

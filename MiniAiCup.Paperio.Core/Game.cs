@@ -10,6 +10,8 @@ namespace MiniAiCup.Paperio.Core
 
 		private readonly Random _random = new Random();
 
+		private readonly Dictionary<Move, Point[]> _pathsToHome;
+
 		private GameState _currentRealState;
 
 		private GameState _currentLogicState;
@@ -18,33 +20,10 @@ namespace MiniAiCup.Paperio.Core
 
 		private IEnumerable<PlayerInfo> Enemies => _currentLogicState.Players.Where(p => p != Me);
 
-		private readonly Dictionary<Move, Point[]> _pathsToHome;
-
 		public Game(GameParams gameParams)
 		{
 			_gameParams = gameParams;
 			_pathsToHome = Enum.GetValues(typeof(Move)).Cast<Move>().ToDictionary(x => x, y => (Point[])null);
-		}
-
-		private void UpdatePathsToHome()
-		{
-			foreach (var move in Enum.GetValues(typeof(Move)).Cast<Move>())
-			{
-				_pathsToHome[move] = IsMoveValid(Me, move)
-					? GetShortestPathToHome(move)
-					: null;
-			}
-		}
-
-		private Point[] GetShortestPathToHome(Move move)
-		{
-			var direction = Me.Direction.Value.GetMoved(move);
-			var nextPos = Me.Position.MoveLogic(direction);
-			var territoryExceptCurrentPosition = Me.Territory.Where(p => p != Me.Position).ToArray();
-			var linesWithCurrentPositionList = Me.Lines.ToList();
-			linesWithCurrentPositionList.Add(Me.Position);
-			var linesWithCurrentPosition = linesWithCurrentPositionList.Distinct().ToArray();
-			return PathFinder.GetShortestPath(nextPos, territoryExceptCurrentPosition, linesWithCurrentPosition, _gameParams.MapLogicSize);
 		}
 
 		public Direction GetNextDirection(GameState state, out GameDebugData debugData)
@@ -68,6 +47,27 @@ namespace MiniAiCup.Paperio.Core
 			};
 
 			return direction;
+		}
+
+		private void UpdatePathsToHome()
+		{
+			foreach (var move in Enum.GetValues(typeof(Move)).Cast<Move>())
+			{
+				_pathsToHome[move] = IsMoveValid(Me, move)
+					? GetShortestPathToHome(move)
+					: null;
+			}
+		}
+
+		private Point[] GetShortestPathToHome(Move move)
+		{
+			var direction = Me.Direction.Value.GetMoved(move);
+			var nextPos = Me.Position.MoveLogic(direction);
+			var territoryExceptCurrentPosition = Me.Territory.Where(p => p != Me.Position).ToArray();
+			var linesWithCurrentPositionList = Me.Lines.ToList();
+			linesWithCurrentPositionList.Add(Me.Position);
+			var linesWithCurrentPosition = linesWithCurrentPositionList.Distinct().ToArray();
+			return PathFinder.GetShortestPath(nextPos, territoryExceptCurrentPosition, linesWithCurrentPosition, _gameParams.MapLogicSize);
 		}
 
 		private IEnumerable<Move> GetValidMoves(PlayerInfo player)

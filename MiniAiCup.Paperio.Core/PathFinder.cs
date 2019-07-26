@@ -45,7 +45,7 @@ namespace MiniAiCup.Paperio.Core
 			{
 				int currentLength = movesMap[currentPoint.X, currentPoint.Y];
 				var resultPath = new List<Point>(currentLength);
-				
+
 				for (int i = currentLength - 1; i >= 0; i--)
 				{
 					resultPath.Add(currentPoint);

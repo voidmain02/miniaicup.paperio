@@ -38,7 +38,7 @@ namespace MiniAiCup.Paperio.Core
 		{
 			unchecked
 			{
-				return (Width*397) ^ Height;
+				return Width*397 ^ Height;
 			}
 		}
 

@@ -38,7 +38,7 @@ namespace MiniAiCup.Paperio.Core
 		{
 			unchecked
 			{
-				return (X*397) ^ Y;
+				return X*397 ^ Y;
 			}
 		}
 
