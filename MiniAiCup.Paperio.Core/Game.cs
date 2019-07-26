@@ -31,6 +31,12 @@ namespace MiniAiCup.Paperio.Core
 			_currentRealState = state;
 			_currentLogicState = ConvertRealGameStateToLogic(state, _gameParams.CellSize);
 
+			if (Me.Direction == null)
+			{
+				debugData = null;
+				return GetStartDirection();
+			}
+
 			UpdatePathsToHome();
 
 			var safeMoves = _pathsToHome.Where(x => x.Value != null).Where(x => IsMoveSafeForMe(x.Key)).ToList();
@@ -47,6 +53,36 @@ namespace MiniAiCup.Paperio.Core
 			};
 
 			return direction;
+		}
+
+		private Direction GetStartDirection()
+		{
+			int maxDistance = 0;
+			var maxDistanceDirection = Direction.Left;
+			foreach (var direction in (Direction[])Enum.GetValues(typeof(Direction)))
+			{
+				int distance = GetDistanceToBorder(Me.Position, direction);
+				if (distance > maxDistance)
+				{
+					maxDistance = distance;
+					maxDistanceDirection = direction;
+				}
+			}
+
+			return maxDistanceDirection;
+		}
+
+		private int GetDistanceToBorder(Point point, Direction direction)
+		{
+			switch (direction)
+			{
+				case Direction.Left: return point.X;
+				case Direction.Up: return _gameParams.MapLogicSize.Height - point.Y - 1;
+				case Direction.Right: return _gameParams.MapLogicSize.Width - point.X - 1;
+				case Direction.Down: return point.Y;
+				default:
+					throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
+			}
 		}
 
 		private void UpdatePathsToHome()

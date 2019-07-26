@@ -15,9 +15,6 @@ namespace MiniAiCup.Paperio.Client
 
 			var game = new Game(gameParams);
 
-			input = Console.ReadLine();
-			PushCommand(Direction.Left);
-
 			while (true)
 			{
 				input = Console.ReadLine();
