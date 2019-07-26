@@ -1,28 +1,23 @@
 namespace MiniAiCup.Paperio.Core
 {
 	/// <summary>
-	/// Направление
+	/// Ход
 	/// </summary>
-	public enum Direction
+	public enum Move
 	{
 		/// <summary>
 		/// Налево
 		/// </summary>
-		Left = 0,
+		Left = -1,
 
 		/// <summary>
-		/// Наверх
+		/// Вперед
 		/// </summary>
-		Up = 1,
+		Forward = 0,
 
 		/// <summary>
 		/// Направо
 		/// </summary>
-		Right = 2,
-
-		/// <summary>
-		/// Вниз
-		/// </summary>
-		Down = 3
+		Right = 1
 	}
 }

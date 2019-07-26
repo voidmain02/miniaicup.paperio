@@ -15,6 +15,9 @@ namespace MiniAiCup.Paperio.Client
 
 			var game = new Game(gameParams);
 
+			input = Console.ReadLine();
+			PushCommand(Direction.Left);
+
 			while (true)
 			{
 				input = Console.ReadLine();
@@ -28,9 +31,16 @@ namespace MiniAiCup.Paperio.Client
 			}
 		}
 
-		private static void PushCommand(Direction direction, GameDebugData debugData)
+		private static void PushCommand(Direction direction, GameDebugData debugData = null)
 		{
-			Console.WriteLine($"{{\"command\":\"{DirectionToString(direction)}\", \"rewind\":{BuildRewindData(debugData)}}}");
+			string commandText = $"{{\"command\":\"{DirectionToString(direction)}\"";
+			if (debugData != null)
+			{
+				commandText += $", \"rewind\":{BuildRewindData(debugData)}";
+			}
+
+			commandText += "}";
+			Console.WriteLine(commandText);
 		}
 
 		private static string BuildRewindData(GameDebugData debugData)

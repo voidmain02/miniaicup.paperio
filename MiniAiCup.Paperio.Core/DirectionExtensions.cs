@@ -6,15 +6,12 @@ namespace MiniAiCup.Paperio.Core
 	{
 		public static Direction GetOpposite(this Direction direction)
 		{
-			switch (direction)
-			{
-				case Direction.Left: return Direction.Right;
-				case Direction.Right: return Direction.Left;
-				case Direction.Up: return Direction.Down;
-				case Direction.Down: return Direction.Up;
-				default:
-					throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
-			}
+			return (Direction)(((int)direction + 2)%4);
+		}
+
+		public static Direction GetMoved(this Direction direction, Move move)
+		{
+			return (Direction)(((int)direction + (int)move + 4)%4);
 		}
 	}
 }

@@ -18,26 +18,27 @@ namespace MiniAiCup.Paperio.Core
 
 		private IEnumerable<PlayerInfo> Enemies => _currentLogicState.Players.Where(p => p != Me);
 
-		private readonly Dictionary<Direction, Point[]> _pathsToHome;
+		private readonly Dictionary<Move, Point[]> _pathsToHome;
 
 		public Game(GameParams gameParams)
 		{
 			_gameParams = gameParams;
-			_pathsToHome = Enum.GetValues(typeof(Direction)).Cast<Direction>().ToDictionary(x => x, y => (Point[])null);
+			_pathsToHome = Enum.GetValues(typeof(Move)).Cast<Move>().ToDictionary(x => x, y => (Point[])null);
 		}
 
 		private void UpdatePathsToHome()
 		{
-			foreach (var direction in Enum.GetValues(typeof(Direction)).Cast<Direction>())
+			foreach (var move in Enum.GetValues(typeof(Move)).Cast<Move>())
 			{
-				_pathsToHome[direction] = IsDirectionValid(Me, direction)
-					? GetShortestPathToHome(direction)
+				_pathsToHome[move] = IsMoveValid(Me, move)
+					? GetShortestPathToHome(move)
 					: null;
 			}
 		}
 
-		private Point[] GetShortestPathToHome(Direction direction)
+		private Point[] GetShortestPathToHome(Move move)
 		{
+			var direction = Me.Direction.Value.GetMoved(move);
 			var nextPos = Me.Position.MoveLogic(direction);
 			var territoryExceptCurrentPosition = Me.Territory.Where(p => p != Me.Position).ToArray();
 			var linesWithCurrentPositionList = Me.Lines.ToList();
@@ -53,45 +54,43 @@ namespace MiniAiCup.Paperio.Core
 
 			UpdatePathsToHome();
 
-			var safeDirections = _pathsToHome.Where(x => x.Value != null).Where(x => IsDirectionSafeForMe(x.Key)).ToList();
+			var safeMoves = _pathsToHome.Where(x => x.Value != null).Where(x => IsMoveSafeForMe(x.Key)).ToList();
 
-			var directionPair = safeDirections.Count == 0
+			var movePair = safeMoves.Count == 0
 				? _pathsToHome.OrderBy(p => p.Value?.Length ?? Int32.MaxValue).First()
-				: safeDirections[_random.Next(0, safeDirections.Count)];
+				: safeMoves[_random.Next(0, safeMoves.Count)];
 
+			var direction = Me.Direction.Value.GetMoved(movePair.Key);
+			var realPathToHome = movePair.Value.Select(p => p.ConvertToReal(_gameParams.CellSize)).ToArray();
 			debugData = new GameDebugData {
-				Direction = directionPair.Key,
-				PathToHome = directionPair.Value.Select(p => p.ConvertToReal(_gameParams.CellSize)).ToArray()
+				Direction = direction,
+				PathToHome = realPathToHome
 			};
 
-			return directionPair.Key;
+			return direction;
 		}
 
-		private IEnumerable<Direction> GetValidDirections(PlayerInfo player)
+		private IEnumerable<Move> GetValidMoves(PlayerInfo player)
 		{
-			return Enum.GetValues(typeof(Direction)).Cast<Direction>().Where(d => IsDirectionValid(player, d));
+			return Enum.GetValues(typeof(Move)).Cast<Move>().Where(d => IsMoveValid(player, d));
 		}
 
-		private bool IsDirectionValid(PlayerInfo player, Direction direction)
+		private bool IsMoveValid(PlayerInfo player, Move move)
 		{
-			if (direction == player.Direction?.GetOpposite())
-			{
-				return false;
-			}
-
-			var nextPos = player.Position.MoveLogic(direction);
+			var nextPos = player.Position.MoveLogic(player.Direction.Value.GetMoved(move));
 			return _gameParams.MapLogicSize.ContainsPoint(nextPos) && !player.Lines.Contains(nextPos);
 		}
 
-		private bool IsDirectionSafeForMe(Direction direction)
+		private bool IsMoveSafeForMe(Move move)
 		{
+			var direction = Me.Direction.Value.GetMoved(move);
 			var nextPos = Me.Position.MoveLogic(direction);
 			if (Me.Territory.Contains(nextPos))
 			{
 				return true;
 			}
 
-			var minPathToTerritoryLength = _pathsToHome[direction]?.Length;
+			var minPathToTerritoryLength = _pathsToHome[move]?.Length;
 			if (minPathToTerritoryLength == null)
 			{
 				return false;
@@ -105,11 +104,12 @@ namespace MiniAiCup.Paperio.Core
 			var enemyTargetList = new List<Point>();
 			enemyTargetList.AddRange(Me.Lines);
 			enemyTargetList.Add(nextPos);
-			enemyTargetList.AddRange(_pathsToHome[direction]);
+			enemyTargetList.AddRange(_pathsToHome[move]);
 			var enemyTarget = enemyTargetList.ToArray();
 
-			int minPathFromEnemyToMyLinesLength = Enemies.SelectMany(p => GetValidDirections(p).Select(d => new { Player = p, Direction = d })).Select(x => {
-				var nextEnemyPos = x.Player.Position.MoveLogic(x.Direction);
+			int minPathFromEnemyToMyLinesLength = Enemies.SelectMany(p => GetValidMoves(p).Select(m => new { Player = p, Move = m })).Select(x => {
+				var enemyDirection = x.Player.Direction.Value.GetMoved(x.Move);
+				var nextEnemyPos = x.Player.Position.MoveLogic(enemyDirection);
 				var obstaclesList = x.Player.Lines.ToList();
 				obstaclesList.Add(x.Player.Position);
 				var obstacles = obstaclesList.Distinct().ToArray();
