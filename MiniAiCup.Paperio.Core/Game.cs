@@ -18,9 +18,32 @@ namespace MiniAiCup.Paperio.Core
 
 		private IEnumerable<PlayerInfo> Enemies => _currentLogicState.Players.Where(p => p != Me);
 
+		private readonly Dictionary<Direction, Point[]> _pathsToHome;
+
 		public Game(GameParams gameParams)
 		{
 			_gameParams = gameParams;
+			_pathsToHome = Enum.GetValues(typeof(Direction)).Cast<Direction>().ToDictionary(x => x, y => (Point[])null);
+		}
+
+		private void UpdatePathsToHome()
+		{
+			foreach (var direction in Enum.GetValues(typeof(Direction)).Cast<Direction>())
+			{
+				_pathsToHome[direction] = IsDirectionValid(Me, direction)
+					? GetShortestPathToHome(direction)
+					: null;
+			}
+		}
+
+		private Point[] GetShortestPathToHome(Direction direction)
+		{
+			var nextPos = Me.Position.MoveLogic(direction);
+			var territoryExceptCurrentPosition = Me.Territory.Where(p => p != Me.Position).ToArray();
+			var linesWithCurrentPositionList = Me.Lines.ToList();
+			linesWithCurrentPositionList.Add(Me.Position);
+			var linesWithCurrentPosition = linesWithCurrentPositionList.Distinct().ToArray();
+			return PathFinder.GetShortestPath(nextPos, territoryExceptCurrentPosition, linesWithCurrentPosition, _gameParams.MapLogicSize);
 		}
 
 		public Direction GetNextDirection(GameState state)
@@ -28,55 +51,64 @@ namespace MiniAiCup.Paperio.Core
 			_currentRealState = state;
 			_currentLogicState = ConvertRealGameStateToLogic(state, _gameParams.CellSize);
 
-			var oppositeDirection = Me.Direction?.GetOpposite();
-			var validDirections = Enum.GetValues(typeof(Direction)).Cast<Direction>().Where(c => c != oppositeDirection);
-			var safeDirections = validDirections.Where(IsDirectionSafe).ToList();
-			if (safeDirections.Count == 0)
-			{
-				return Direction.Left;
-			}
+			UpdatePathsToHome();
 
-			int index = _random.Next(0, safeDirections.Count);
-			return safeDirections[index];
+			var safeDirections = _pathsToHome.Where(x => x.Value != null).Where(x => IsDirectionSafeForMe(x.Key)).ToList();
+			return safeDirections.Count == 0
+				? _pathsToHome.OrderBy(p => p.Value?.Length ?? Int32.MaxValue).First().Key
+				: safeDirections[_random.Next(0, safeDirections.Count)].Key;
 		}
 
-		private bool IsDirectionSafe(Direction direction)
+		private IEnumerable<Direction> GetValidDirections(PlayerInfo player)
+		{
+			return Enum.GetValues(typeof(Direction)).Cast<Direction>().Where(d => IsDirectionValid(player, d));
+		}
+
+		private bool IsDirectionValid(PlayerInfo player, Direction direction)
+		{
+			if (direction == player.Direction?.GetOpposite())
+			{
+				return false;
+			}
+
+			var nextPos = player.Position.MoveLogic(direction);
+			return _gameParams.MapLogicSize.ContainsPoint(nextPos) && !player.Lines.Contains(nextPos);
+		}
+
+		private bool IsDirectionSafeForMe(Direction direction)
 		{
 			var nextPos = Me.Position.MoveLogic(direction);
-			return _gameParams.MapLogicSize.ContainsPoint(nextPos) && !Me.Lines.Contains(nextPos) && GetMinPathLength(nextPos, Me.Territory, Me.Lines).HasValue;
-		}
-
-		private int? GetMinPathLength(Point startPoint, Point[] destination, Point[] obstacles)
-		{
-			var destinationHashSet = new HashSet<Point>(destination);
-			var obstaclesHashSet = new HashSet<Point>(obstacles);
-			var moves = new int[_gameParams.MapLogicSize.Width, _gameParams.MapLogicSize.Height];
-			var isVisited = new bool[_gameParams.MapLogicSize.Width, _gameParams.MapLogicSize.Height];
-			var queue = new Queue<Point>();
-			queue.Enqueue(startPoint);
-			isVisited[startPoint.X, startPoint.Y] = true;
-			moves[startPoint.X, startPoint.Y] = 0;
-			while (queue.Count > 0)
+			if (Me.Territory.Contains(nextPos))
 			{
-				var point = queue.Dequeue();
-				int currentPathLength = moves[point.X, point.Y];
-				foreach (var neighbor in point.GetNeighbors())
-				{
-					if (destinationHashSet.Contains(neighbor))
-					{
-						return currentPathLength + 1;
-					}
-
-					if (_gameParams.MapLogicSize.ContainsPoint(neighbor) && !isVisited[neighbor.X, neighbor.Y] && !obstaclesHashSet.Contains(neighbor))
-					{
-						isVisited[neighbor.X, neighbor.Y] = true;
-						moves[neighbor.X, neighbor.Y] = currentPathLength + 1;
-						queue.Enqueue(neighbor);
-					}
-				}
+				return true;
 			}
 
-			return null;
+			var minPathToTerritoryLength = _pathsToHome[direction]?.Length;
+			if (minPathToTerritoryLength == null)
+			{
+				return false;
+			}
+
+			if (!Enemies.Any())
+			{
+				return true;
+			}
+
+			var enemyTargetList = new List<Point>();
+			enemyTargetList.AddRange(Me.Lines);
+			enemyTargetList.Add(nextPos);
+			enemyTargetList.AddRange(_pathsToHome[direction]);
+			var enemyTarget = enemyTargetList.ToArray();
+
+			int minPathFromEnemyToMyLinesLength = Enemies.SelectMany(p => GetValidDirections(p).Select(d => new { Player = p, Direction = d })).Select(x => {
+				var nextEnemyPos = x.Player.Position.MoveLogic(x.Direction);
+				var obstaclesList = x.Player.Lines.ToList();
+				obstaclesList.Add(x.Player.Position);
+				var obstacles = obstaclesList.Distinct().ToArray();
+				return PathFinder.GetShortestPath(nextEnemyPos, enemyTarget, obstacles, _gameParams.MapLogicSize)?.Length ?? Int32.MaxValue;
+			}).DefaultIfEmpty(Int32.MaxValue).Min();
+
+			return minPathFromEnemyToMyLinesLength > minPathToTerritoryLength;
 		}
 
 		private static GameState ConvertRealGameStateToLogic(GameState gameState, int cellSize)
