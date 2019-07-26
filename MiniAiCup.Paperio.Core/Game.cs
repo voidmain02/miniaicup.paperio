@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace MiniAiCup.Paperio.Core
 {
-	public class RandomGameLogic : IGameLogic
+	public class Game
 	{
 		private readonly GameParams _gameParams;
 
@@ -18,7 +18,7 @@ namespace MiniAiCup.Paperio.Core
 
 		private IEnumerable<PlayerInfo> Enemies => _currentLogicState.Players.Where(p => p != Me);
 
-		public RandomGameLogic(GameParams gameParams)
+		public Game(GameParams gameParams)
 		{
 			_gameParams = gameParams;
 		}

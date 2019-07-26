@@ -10,7 +10,7 @@ namespace MiniAiCup.Paperio.Client
 			string input = Console.ReadLine();
 			var gameParams = GameParamsParser.Parse(input);
 
-			var logic = new RandomGameLogic(gameParams);
+			var game = new Game(gameParams);
 
 			while (true)
 			{
@@ -20,7 +20,7 @@ namespace MiniAiCup.Paperio.Client
 					break;
 				}
 				var gameState = GameStateParser.Parse(input);
-				PushCommand(logic.GetNextDirection(gameState));
+				PushCommand(game.GetNextDirection(gameState));
 			}
 		}
 
