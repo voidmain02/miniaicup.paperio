@@ -50,11 +50,16 @@ namespace MiniAiCup.Paperio.Client
 		{
 			var builder = new RewindBuilder();
 
-			builder.AddRange(debugData.PathToHome.Select(p => new CircleRewindCommand {
-				Center = p,
-				Radius = 7,
-				Color = Color.FromArgb(6, 141, 209)
-			}));
+
+			if (debugData.PathToHome != null)
+			{
+				builder.AddRange(debugData.PathToHome.Select(p => new CircleRewindCommand {
+					Center = p,
+					Radius = 7,
+					Color = Color.FromArgb(6, 141, 209)
+				}));
+			}
+			
 
 			return builder.ToString();
 		}

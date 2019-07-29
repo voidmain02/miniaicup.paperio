@@ -8,17 +8,23 @@ namespace MiniAiCup.Paperio.Core
 	{
 		private readonly GameParams _gameParams;
 
-		private readonly Random _random = new Random();
-
 		private readonly Dictionary<Move, Point[]> _pathsToHome;
+
+		private int? _shortestPathToHomeLength;
 
 		private GameState _currentRealState;
 
 		private GameState _currentLogicState;
 
+		private Point[] _pathToOccupate;
+
+		private HashSet<Point> _myTerritory;
+
 		private PlayerInfo Me => _currentLogicState.Players.First(p => p.Id == "i");
 
 		private IEnumerable<PlayerInfo> Enemies => _currentLogicState.Players.Where(p => p != Me);
+
+		private const int MaxPathToHomeLength = 8;
 
 		public Game(GameParams gameParams)
 		{
@@ -37,22 +43,69 @@ namespace MiniAiCup.Paperio.Core
 				return GetStartDirection();
 			}
 
-			UpdatePathsToHome();
+			var bestMove = Move.Forward;
+			_myTerritory = new HashSet<Point>(Me.Territory);
+			if (_myTerritory.Contains(Me.Position))
+			{
+				UpdatePathToOccupate();
+				foreach (var move in (Move[])Enum.GetValues(typeof(Move)))
+				{
+					if (Me.Position.MoveLogic(Me.Direction.Value.GetMoved(move)) == _pathToOccupate[0])
+					{
+						bestMove = move;
+						break;
+					}
+				}
+			}
+			else
+			{
+				UpdatePathsToHome();
+				var scoresDictionary = new Dictionary<Move, int>();
+				foreach (var move in (Move[])Enum.GetValues(typeof(Move)))
+				{
+					scoresDictionary[move] = ScoreMove(move);
+				}
 
-			var safeMoves = _pathsToHome.Where(x => x.Value != null).Where(x => IsMoveSafeForMe(x.Key)).ToList();
+				bestMove = scoresDictionary.OrderByDescending(p => p.Value).First().Key;
+			}
 
-			var movePair = safeMoves.Count == 0
-				? _pathsToHome.OrderBy(p => p.Value?.Length ?? Int32.MaxValue).First()
-				: safeMoves[_random.Next(0, safeMoves.Count)];
+			var nextDirection = Me.Direction.Value.GetMoved(bestMove);
+			var realPathToHome = _pathsToHome[bestMove] == null
+				? null
+				: _pathsToHome[bestMove].Select(p => p.ConvertToReal(_gameParams.CellSize)).ToArray();
 
-			var direction = Me.Direction.Value.GetMoved(movePair.Key);
-			var realPathToHome = movePair.Value.Select(p => p.ConvertToReal(_gameParams.CellSize)).ToArray();
 			debugData = new GameDebugData {
-				Direction = direction,
+				Direction = nextDirection,
 				PathToHome = realPathToHome
 			};
 
-			return direction;
+			return nextDirection;
+		}
+
+		private int ScoreMove(Move move)
+		{
+			if (_pathsToHome[move] == null)
+			{
+				return -100;
+			}
+
+			if (!IsMoveSafeForMe(move))
+			{
+				return _pathsToHome[move].Length == _shortestPathToHomeLength ? -10 : -50;
+			}
+
+			int longPathToHomePenalty = Math.Min(MaxPathToHomeLength - _pathsToHome[move].Length, 0)*10;
+			int forwardMoveBonus = move == Move.Forward ? 20 : 0;
+
+			return Math.Min(longPathToHomePenalty + forwardMoveBonus, 100);
+		}
+
+		private void UpdatePathToOccupate()
+		{
+			var freeTerritory = Me.Territory.SelectMany(x => x.GetNeighbors()).Distinct()
+				.Where(x => _gameParams.MapLogicSize.ContainsPoint(x) && !_myTerritory.Contains(x)).ToArray();
+			_pathToOccupate = PathFinder.GetShortestPath(Me.Position, freeTerritory, new Point[] { Me.Position.MoveLogic(Me.Direction.Value.GetOpposite()) },
+				_gameParams.MapLogicSize);
 		}
 
 		private Direction GetStartDirection()
@@ -87,11 +140,34 @@ namespace MiniAiCup.Paperio.Core
 
 		private void UpdatePathsToHome()
 		{
+			_shortestPathToHomeLength = Int32.MaxValue;
+			bool pathFound = false;
 			foreach (var move in Enum.GetValues(typeof(Move)).Cast<Move>())
 			{
-				_pathsToHome[move] = IsMoveValid(Me, move)
-					? GetShortestPathToHome(move)
-					: null;
+				if (!IsMoveValid(Me, move))
+				{
+					_pathsToHome[move] = null;
+					continue;
+				}
+
+				var path = GetShortestPathToHome(move);
+				if (path == null)
+				{
+					_pathsToHome[move] = null;
+					continue;
+				}
+
+				pathFound = true;
+				_pathsToHome[move] = path;
+				if (path.Length < _shortestPathToHomeLength)
+				{
+					_shortestPathToHomeLength = path.Length;
+				}
+			}
+
+			if (!pathFound)
+			{
+				_shortestPathToHomeLength = null;
 			}
 		}
 
