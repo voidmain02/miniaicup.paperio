@@ -3,7 +3,8 @@ $archiveName = $targetRef
 if (!$targetRef) {
     $archiveName = "current"
 }
-$targetArchPath = Join-Path "dist" "$archiveName.zip"
+$targetDirPath = "dist"
+$targetArchPath = Join-Path $targetDirPath "$archiveName.zip"
 $projects = "MiniAiCup.Paperio.Client", "MiniAiCup.Paperio.Core"
 $filesToExclude = "*AssemblyInfo.cs"
 
@@ -16,3 +17,6 @@ $projects | Get-ChildItem -Include *.cs -Exclude $filesToExclude -Recurse | Comp
 if ($targetRef) {
     git checkout -
 }
+
+$fullTargetDirPath = Resolve-Path -Path $targetDirPath
+Write-Output "Published to file://$fullTargetDirPath"
