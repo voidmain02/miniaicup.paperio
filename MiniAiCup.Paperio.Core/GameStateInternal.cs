@@ -10,6 +10,8 @@ namespace MiniAiCup.Paperio.Core
 
 		public int CellSize { get; private set; }
 
+		public int Speed { get; private set; }
+
 		public BonusInfo[] Bonuses { get; private set; }
 
 		public int TickNumber { get; private set; }
@@ -44,6 +46,7 @@ namespace MiniAiCup.Paperio.Core
 			PreviousMove = Move.Forward;
 			MapSize = gameParams.MapLogicSize;
 			CellSize = gameParams.CellSize;
+			Speed = gameParams.Speed;
 			ApplyState(state);
 		}
 
@@ -53,6 +56,7 @@ namespace MiniAiCup.Paperio.Core
 			PreviousState = previousState;
 			MapSize = previousState.MapSize;
 			CellSize = previousState.CellSize;
+			Speed = previousState.Speed;
 			ApplyState(state);
 		}
 
@@ -132,7 +136,9 @@ namespace MiniAiCup.Paperio.Core
 			int longPathPenalty = Math.Min(20 - Me.Lines.Count, 0);
 			int longPathToHomePenalty = Math.Min(6 - PathToHome.Length, 0);
 			int forwardMoveBonus = PreviousMove == Move.Forward ? 1 : 0;
-			return outsideBonus + longPathPenalty + longPathToHomePenalty + forwardMoveBonus;
+			int movesLeft = (Constants.MaxTickCount - TickNumber)/(CellSize/Speed);
+			int notEnoughTimePenalty = Math.Min((movesLeft - PathToHome.Length)*10, 0);
+			return outsideBonus + longPathPenalty + longPathToHomePenalty + forwardMoveBonus + notEnoughTimePenalty;
 		}
 
 		public static Point[] GetAllPoints(Size size)
@@ -155,6 +161,9 @@ namespace MiniAiCup.Paperio.Core
 				PreviousMove = move,
 				PreviousState = this,
 				MapSize = MapSize,
+				CellSize = CellSize,
+				Speed = Speed,
+				TickNumber = TickNumber + Speed,
 				Players = Players.Values.Select(p => p == Me ? Simulate(Me, move) : p).Where(p => p != null).ToDictionary(p => p.Id)
 			};
 		}
