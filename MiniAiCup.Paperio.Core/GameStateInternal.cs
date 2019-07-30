@@ -104,6 +104,11 @@ namespace MiniAiCup.Paperio.Core
 				return -800;
 			}
 
+			if (Me.Territory.Count == MapSize.Width*MapSize.Height)
+			{
+				return 0;
+			}
+
 			if (Me.Lines.Count == 0)
 			{
 				var freeTerritory = new HashSet<Point>(GetAllPoints(MapSize));
