@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Linq;
 using MiniAiCup.Paperio.Client.Rewind;
@@ -61,7 +61,7 @@ namespace MiniAiCup.Paperio.Client
 
 			if (debugData.MoveScores != null)
 			{
-				builder.AddRange(((Move[])Enum.GetValues(typeof(Move))).Select(m => new MessageRewindCommand {
+				builder.AddRange(EnumValues.GetAll<Move>().Select(m => new MessageRewindCommand {
 					Text = $"{m.ToString()}: {debugData.MoveScores[m]}"
 				}));
 			}

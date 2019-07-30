@@ -34,7 +34,7 @@ namespace MiniAiCup.Paperio.Core
 			GameStateInternal stateAfterBestMove = null;
 
 			var movesScores = new Dictionary<Move, float>();
-			foreach (var move in (Move[])Enum.GetValues(typeof(Move)))
+			foreach (var move in EnumValues.GetAll<Move>())
 			{
 				var nextState = currentState.Simulate(move);
 				float nextStateScore = nextState.Score();
@@ -62,7 +62,7 @@ namespace MiniAiCup.Paperio.Core
 
 			int maxDistance = 0;
 			var maxDistanceDirection = Direction.Left;
-			foreach (var direction in (Direction[])Enum.GetValues(typeof(Direction)))
+			foreach (var direction in EnumValues.GetAll<Direction>())
 			{
 				int distance = GetDistanceToBorder(currentPosition, direction);
 				if (distance > maxDistance)
