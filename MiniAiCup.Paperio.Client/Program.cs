@@ -50,7 +50,6 @@ namespace MiniAiCup.Paperio.Client
 		{
 			var builder = new RewindBuilder();
 
-
 			if (debugData.PathToHome != null)
 			{
 				builder.AddRange(debugData.PathToHome.Select(p => new CircleRewindCommand {
@@ -59,7 +58,13 @@ namespace MiniAiCup.Paperio.Client
 					Color = Color.FromArgb(6, 141, 209)
 				}));
 			}
-			
+
+			if (debugData.MoveScores != null)
+			{
+				builder.AddRange(((Move[])Enum.GetValues(typeof(Move))).Select(m => new MessageRewindCommand {
+					Text = $"{m.ToString()}: {debugData.MoveScores[m]}"
+				}));
+			}
 
 			return builder.ToString();
 		}

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace MiniAiCup.Paperio.Core
@@ -32,10 +33,12 @@ namespace MiniAiCup.Paperio.Core
 			float bestScore = -1.0f;
 			GameStateInternal stateAfterBestMove = null;
 
+			var movesScores = new Dictionary<Move, float>();
 			foreach (var move in (Move[])Enum.GetValues(typeof(Move)))
 			{
 				var nextState = currentState.Simulate(move);
 				float nextStateScore = nextState.Score();
+				movesScores[move] = nextStateScore;
 				if (nextStateScore > bestScore)
 				{
 					bestScore = nextStateScore;
@@ -48,6 +51,7 @@ namespace MiniAiCup.Paperio.Core
 			_lastMove = bestMove;
 
 			GameDebugData.Current.PathToHome = stateAfterBestMove.PathToHome.Select(p => p.ConvertToReal(_gameParams.CellSize)).ToArray();
+			GameDebugData.Current.MoveScores = movesScores;
 
 			return currentState.Me.Direction.GetMoved(bestMove);
 		}
