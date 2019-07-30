@@ -61,7 +61,7 @@ namespace MiniAiCup.Paperio.Core
 
 		private Direction GetStartDirection(GameState state)
 		{
-			var currentPosition = state.Players.First(p => p.Id == "i").Position.ConvertToLogic(_gameParams.CellSize);
+			var currentPosition = state.Players.First(p => p.Id == Constants.MyId).Position.ConvertToLogic(_gameParams.CellSize);
 
 			int maxDistance = 0;
 			var maxDistanceDirection = Direction.Left;

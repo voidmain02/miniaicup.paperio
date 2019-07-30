@@ -34,8 +34,8 @@ namespace MiniAiCup.Paperio.Core
 
 		private GameStateInternal()
 		{
-			_me = new Lazy<PlayerInternal>(() => Players.ContainsKey("i") ? Players["i"] : null);
-			_enemies = new Lazy<PlayerInternal[]>(() => Players.Values.Where(p => p.Id != "i").ToArray());
+			_me = new Lazy<PlayerInternal>(() => Players.ContainsKey(Constants.MyId) ? Players[Constants.MyId] : null);
+			_enemies = new Lazy<PlayerInternal[]>(() => Players.Values.Where(p => p.Id != Constants.MyId).ToArray());
 			_pathToHome = new Lazy<Point[]>(BuildPathToHome);
 		}
 
