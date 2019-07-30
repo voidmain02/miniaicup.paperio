@@ -117,9 +117,11 @@ namespace MiniAiCup.Paperio.Core
 				return -900;
 			}
 
+			var myLinesWithShortestPathToHome = new HashSet<Point>(Me.Lines);
+			myLinesWithShortestPathToHome.UnionWith(PathToHome.Take(PathToHome.Length - 1));
 			int minPathFromEnemyToMyLines = Enemies.Length == 0
 				? Int32.MaxValue
-				: Enemies.Select(e => PathFinder.GetShortestPath(e.Position, Me.Lines, e.Lines, MapSize)?.Length ?? Int32.MaxValue).Min() - 1;
+				: Enemies.Select(e => PathFinder.GetShortestPath(e.Position, myLinesWithShortestPathToHome, e.Lines, MapSize)?.Length ?? Int32.MaxValue).Min() - 1;
 
 			if (minPathFromEnemyToMyLines <= PathToHome.Length)
 			{
