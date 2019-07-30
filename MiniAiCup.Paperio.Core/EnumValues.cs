@@ -4,7 +4,7 @@ namespace MiniAiCup.Paperio.Core
 {
 	public static class EnumValues
 	{
-		public static T[] GetAll<T>() where T : Enum
+		public static T[] GetAll<T>() where T : struct, IConvertible
 		{
 			return AllEnumValuesArray<T>.Instance;
 		}
