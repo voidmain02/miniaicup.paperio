@@ -88,105 +88,58 @@ namespace MiniAiCup.Paperio.Core
 			return PathFinder.GetShortestPath(Me.Position, Me.Territory, Me.Lines, MapSize);
 		}
 
-		public float Score()
+		public int Score()
 		{
 			if (Me == null)
 			{
-				return -1.0f;
+				return -1000;
 			}
 
-			if (Me.Territory.Contains(Me.Position))
+			if (Me.Lines.Count == 0)
 			{
-				var freeTerritory = new HashSet<Point>(Me.Territory.SelectMany(x => x.GetNeighbors()).Distinct().Where(x => MapSize.ContainsPoint(x) && !Me.Territory.Contains(x)));
+				var freeTerritory = new HashSet<Point>(GetAllPoints(MapSize));
+				freeTerritory.ExceptWith(Me.Territory);
 				var obstacles = new HashSet<Point> { Me.Position.MoveLogic(Me.Direction.GetOpposite()) };
 				var pathToOutside = PathFinder.GetShortestPath(Me.Position, freeTerritory, obstacles, MapSize);
 
-				var scoring = new InsideScoring {
-					MinPathToOutsideLength = pathToOutside.Length
-				};
-				return scoring.Calc();
+				int pathToOutsidePenalty = 1 - pathToOutside.Length;
+				int backToHomeBonus = PreviousState?.Me.Lines.Count ?? 0;
+				return backToHomeBonus + pathToOutsidePenalty;
 			}
-			else
+
+			if (PathToHome == null)
 			{
-				if (PathToHome == null)
-				{
-					return -1.0f;
-				}
-
-				int minPathFromEnemyToMyLines = Enemies.Length == 0
-					? Int32.MaxValue
-					: Enemies.Select(e => PathFinder.GetShortestPath(e.Position, Me.Lines, e.Lines, MapSize)?.Length ?? Int32.MaxValue).Min();
-
-				var scoring = new OutsideScoring {
-					MinPathToHomeLength = PathToHome.Length,
-					MinPathFromEnemyToMyLinesLength = minPathFromEnemyToMyLines,
-					IsForwardMove = PreviousMove == Move.Forward
-				};
-				return scoring.Calc();
+				return -900;
 			}
+
+			int minPathFromEnemyToMyLines = Enemies.Length == 0
+				? Int32.MaxValue
+				: Enemies.Select(e => PathFinder.GetShortestPath(e.Position, Me.Lines, e.Lines, MapSize)?.Length ?? Int32.MaxValue).Min() - 1;
+
+			if (minPathFromEnemyToMyLines <= PathToHome.Length)
+			{
+				return (minPathFromEnemyToMyLines - PathToHome.Length - 2)*10;
+			}
+
+			int outsideBonus = 10;
+			int longPathPenalty = Math.Min(20 - Me.Lines.Count, 0);
+			int longPathToHomePenalty = Math.Min(6 - PathToHome.Length, 0);
+			int forwardMoveBonus = PreviousMove == Move.Forward ? 1 : 0;
+			return outsideBonus + longPathPenalty + longPathToHomePenalty + forwardMoveBonus;
 		}
 
-
-		private class OutsideScoring
+		public static Point[] GetAllPoints(Size size)
 		{
-			public int MinPathToHomeLength { get; set; }
-
-			public int MinPathFromEnemyToMyLinesLength { get; set; }
-
-			public bool IsForwardMove { get; set; }
-
-			public float Calc()
+			var points = new Point[size.Width*size.Height];
+			for (int y = 0; y < size.Height; y++)
 			{
-				if (MinPathFromEnemyToMyLinesLength < MinPathToHomeLength + 1)
+				for (int x = 0; x < size.Width; x++)
 				{
-					return -0.5f;
+					points[size.Width*y + x] = new Point(x, y);
 				}
-
-				float longPathToHomePenalty = Math.Min(10 - MinPathToHomeLength, 0)*0.1f;
-				float forwardMoveBonus = IsForwardMove ? 0.3f : 0.0f;
-				float score = longPathToHomePenalty + forwardMoveBonus;
-				return EnsureInRange(score, -1.0f, 1.0f);
 			}
 
-			private static float EnsureInRange(float value, float min, float max)
-			{
-				if (value < min)
-				{
-					return min;
-				}
-
-				if (value > max)
-				{
-					return max;
-				}
-
-				return value;
-			}
-		}
-
-		private class InsideScoring
-		{
-			public int MinPathToOutsideLength { get; set; }
-
-			public float Calc()
-			{
-				return EnsureInRange((2 - MinPathToOutsideLength)/10.0f, -1.0f, 1.0f);
-			}
-
-			private static float EnsureInRange(float value, float min, float max)
-			{
-				if (value < min)
-				{
-					return min;
-				}
-
-				if (value > max)
-				{
-					return max;
-				}
-
-				return value;
-			}
+			return points;
 		}
 
 		public GameStateInternal Simulate(Move move)

@@ -8,7 +8,7 @@ namespace MiniAiCup.Paperio.Core
 
 		public Point[] PathToHome { get; set; }
 
-		public Dictionary<Move, float> MoveScores { get; set; }
+		public Dictionary<Move, int> MoveScores { get; set; }
 
 		private GameDebugData()
 		{
