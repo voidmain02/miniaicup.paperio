@@ -5,15 +5,13 @@ namespace MiniAiCup.Paperio.Core
 {
 	public class PathFinder
 	{
-		public static Point[] GetShortestPath(Point startPoint, Point[] destination, Point[] obstacles, Size mapSize)
+		public static Point[] GetShortestPath(Point startPoint, HashSet<Point> destinationHashSet, HashSet<Point> obstaclesHashSet, Size mapSize)
 		{
-			var destinationHashSet = new HashSet<Point>(destination);
 			if (destinationHashSet.Contains(startPoint))
 			{
 				return new Point[] {};
 			}
 
-			var obstaclesHashSet = new HashSet<Point>(obstacles);
 			var moves = new int[mapSize.Width, mapSize.Height];
 			var isVisited = new bool[mapSize.Width, mapSize.Height];
 			var queue = new Queue<Point>();

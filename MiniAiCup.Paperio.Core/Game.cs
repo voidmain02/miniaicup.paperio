@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace MiniAiCup.Paperio.Core
@@ -8,113 +7,68 @@ namespace MiniAiCup.Paperio.Core
 	{
 		private readonly GameParams _gameParams;
 
-		private readonly Dictionary<Move, Point[]> _pathsToHome;
+		private bool _isInitialized;
 
-		private int? _shortestPathToHomeLength;
+		private Move _lastMove;
 
-		private GameState _currentRealState;
-
-		private GameState _currentLogicState;
-
-		private Point[] _pathToOccupate;
-
-		private HashSet<Point> _myTerritory;
-
-		private PlayerInfo Me => _currentLogicState.Players.First(p => p.Id == "i");
-
-		private IEnumerable<PlayerInfo> Enemies => _currentLogicState.Players.Where(p => p != Me);
-
-		private const int MaxPathToHomeLength = 8;
+		private GameStateInternal _lastState;
 
 		public Game(GameParams gameParams)
 		{
 			_gameParams = gameParams;
-			_pathsToHome = Enum.GetValues(typeof(Move)).Cast<Move>().ToDictionary(x => x, y => (Point[])null);
 		}
 
 		public Direction GetNextDirection(GameState state, out GameDebugData debugData)
 		{
-			_currentRealState = state;
-			_currentLogicState = ConvertRealGameStateToLogic(state, _gameParams.CellSize);
-
-			if (Me.Direction == null)
+			if (_isInitialized == false)
 			{
-				debugData = null;
-				return GetStartDirection();
+				_isInitialized = true;
+				_lastMove = Move.Forward;
+				var direction = GetStartDirection(state);
+				debugData = new GameDebugData {
+					Direction = direction
+				};
+				return direction;
 			}
 
+			var currentState = new GameStateInternal(state, _gameParams, _lastState, _lastMove);
 			var bestMove = Move.Forward;
-			_myTerritory = new HashSet<Point>(Me.Territory);
-			if (_myTerritory.Contains(Me.Position))
+			float bestScore = -1.0f;
+			GameStateInternal stateAfterBestMove = null;
+
+			foreach (var move in (Move[])Enum.GetValues(typeof(Move)))
 			{
-				UpdatePathToOccupate();
-				foreach (var move in (Move[])Enum.GetValues(typeof(Move)))
+				var nextState = currentState.Simulate(move);
+				float nextStateScore = nextState.Score();
+				if (nextStateScore > bestScore)
 				{
-					if (Me.Position.MoveLogic(Me.Direction.Value.GetMoved(move)) == _pathToOccupate[0])
-					{
-						bestMove = move;
-						break;
-					}
+					bestScore = nextStateScore;
+					bestMove = move;
+					stateAfterBestMove = nextState;
 				}
 			}
-			else
-			{
-				UpdatePathsToHome();
-				var scoresDictionary = new Dictionary<Move, int>();
-				foreach (var move in (Move[])Enum.GetValues(typeof(Move)))
-				{
-					scoresDictionary[move] = ScoreMove(move);
-				}
 
-				bestMove = scoresDictionary.OrderByDescending(p => p.Value).First().Key;
-			}
+			_lastState = currentState;
+			_lastMove = bestMove;
 
-			var nextDirection = Me.Direction.Value.GetMoved(bestMove);
-			var realPathToHome = _pathsToHome[bestMove] == null
-				? null
-				: _pathsToHome[bestMove].Select(p => p.ConvertToReal(_gameParams.CellSize)).ToArray();
-
+			var bestMoveDirection = currentState.Me.Direction.GetMoved(bestMove);
 			debugData = new GameDebugData {
-				Direction = nextDirection,
-				PathToHome = realPathToHome
+				Direction = bestMoveDirection,
+				PathToHome = stateAfterBestMove.PathToHome.Select(p => p.ConvertToReal(_gameParams.CellSize)).ToArray()
 			};
 
-			return nextDirection;
+			return bestMoveDirection;
 		}
 
-		private int ScoreMove(Move move)
+		private Direction GetStartDirection(GameState state)
 		{
-			if (_pathsToHome[move] == null)
-			{
-				return -100;
-			}
+			var currentPosition = state.Players.First(p => p.Id == "i").Position.ConvertToLogic(_gameParams.CellSize);
 
-			if (!IsMoveSafeForMe(move))
-			{
-				return _pathsToHome[move].Length == _shortestPathToHomeLength ? -10 : -50;
-			}
-
-			int longPathToHomePenalty = Math.Min(MaxPathToHomeLength - _pathsToHome[move].Length, 0)*10;
-			int forwardMoveBonus = move == Move.Forward ? 20 : 0;
-
-			return Math.Min(longPathToHomePenalty + forwardMoveBonus, 100);
-		}
-
-		private void UpdatePathToOccupate()
-		{
-			var freeTerritory = Me.Territory.SelectMany(x => x.GetNeighbors()).Distinct()
-				.Where(x => _gameParams.MapLogicSize.ContainsPoint(x) && !_myTerritory.Contains(x)).ToArray();
-			_pathToOccupate = PathFinder.GetShortestPath(Me.Position, freeTerritory, new Point[] { Me.Position.MoveLogic(Me.Direction.Value.GetOpposite()) },
-				_gameParams.MapLogicSize);
-		}
-
-		private Direction GetStartDirection()
-		{
 			int maxDistance = 0;
 			var maxDistanceDirection = Direction.Left;
 			foreach (var direction in (Direction[])Enum.GetValues(typeof(Direction)))
 			{
-				int distance = GetDistanceToBorder(Me.Position, direction);
+				int distance = GetDistanceToBorder(currentPosition, direction);
 				if (distance > maxDistance)
 				{
 					maxDistance = distance;
@@ -136,121 +90,6 @@ namespace MiniAiCup.Paperio.Core
 				default:
 					throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
 			}
-		}
-
-		private void UpdatePathsToHome()
-		{
-			_shortestPathToHomeLength = Int32.MaxValue;
-			bool pathFound = false;
-			foreach (var move in Enum.GetValues(typeof(Move)).Cast<Move>())
-			{
-				if (!IsMoveValid(Me, move))
-				{
-					_pathsToHome[move] = null;
-					continue;
-				}
-
-				var path = GetShortestPathToHome(move);
-				if (path == null)
-				{
-					_pathsToHome[move] = null;
-					continue;
-				}
-
-				pathFound = true;
-				_pathsToHome[move] = path;
-				if (path.Length < _shortestPathToHomeLength)
-				{
-					_shortestPathToHomeLength = path.Length;
-				}
-			}
-
-			if (!pathFound)
-			{
-				_shortestPathToHomeLength = null;
-			}
-		}
-
-		private Point[] GetShortestPathToHome(Move move)
-		{
-			var direction = Me.Direction.Value.GetMoved(move);
-			var nextPos = Me.Position.MoveLogic(direction);
-			var territoryExceptCurrentPosition = Me.Territory.Where(p => p != Me.Position).ToArray();
-			var linesWithCurrentPositionList = Me.Lines.ToList();
-			linesWithCurrentPositionList.Add(Me.Position);
-			var linesWithCurrentPosition = linesWithCurrentPositionList.Distinct().ToArray();
-			return PathFinder.GetShortestPath(nextPos, territoryExceptCurrentPosition, linesWithCurrentPosition, _gameParams.MapLogicSize);
-		}
-
-		private IEnumerable<Move> GetValidMoves(PlayerInfo player)
-		{
-			return Enum.GetValues(typeof(Move)).Cast<Move>().Where(d => IsMoveValid(player, d));
-		}
-
-		private bool IsMoveValid(PlayerInfo player, Move move)
-		{
-			var nextPos = player.Position.MoveLogic(player.Direction.Value.GetMoved(move));
-			return _gameParams.MapLogicSize.ContainsPoint(nextPos) && !player.Lines.Contains(nextPos);
-		}
-
-		private bool IsMoveSafeForMe(Move move)
-		{
-			var direction = Me.Direction.Value.GetMoved(move);
-			var nextPos = Me.Position.MoveLogic(direction);
-			if (Me.Territory.Contains(nextPos))
-			{
-				return true;
-			}
-
-			var minPathToTerritoryLength = _pathsToHome[move]?.Length;
-			if (minPathToTerritoryLength == null)
-			{
-				return false;
-			}
-
-			if (!Enemies.Any())
-			{
-				return true;
-			}
-
-			var enemyTargetList = new List<Point>();
-			enemyTargetList.AddRange(Me.Lines);
-			enemyTargetList.Add(nextPos);
-			enemyTargetList.AddRange(_pathsToHome[move]);
-			var enemyTarget = enemyTargetList.ToArray();
-
-			int minPathFromEnemyToMyLinesLength = Enemies.SelectMany(p => GetValidMoves(p).Select(m => new { Player = p, Move = m })).Select(x => {
-				var enemyDirection = x.Player.Direction.Value.GetMoved(x.Move);
-				var nextEnemyPos = x.Player.Position.MoveLogic(enemyDirection);
-				var obstaclesList = x.Player.Lines.ToList();
-				obstaclesList.Add(x.Player.Position);
-				var obstacles = obstaclesList.Distinct().ToArray();
-				return PathFinder.GetShortestPath(nextEnemyPos, enemyTarget, obstacles, _gameParams.MapLogicSize)?.Length ?? Int32.MaxValue;
-			}).DefaultIfEmpty(Int32.MaxValue).Min();
-
-			return minPathFromEnemyToMyLinesLength > minPathToTerritoryLength;
-		}
-
-		private static GameState ConvertRealGameStateToLogic(GameState gameState, int cellSize)
-		{
-			return new GameState {
-				Players = gameState.Players.Select(p => ConvertRealPlayerToLogic(p, cellSize)).ToArray(),
-				Bonuses = gameState.Bonuses,
-				TickNumber = gameState.TickNumber
-			};
-		}
-
-		private static PlayerInfo ConvertRealPlayerToLogic(PlayerInfo player, int cellSize)
-		{
-			return new PlayerInfo {
-				Id = player.Id,
-				Score = player.Score,
-				Territory = player.Territory.Select(p => p.ConvertToLogic(cellSize)).ToArray(),
-				Position = player.Position.ConvertToLogic(cellSize),
-				Lines = player.Lines.Select(p => p.ConvertToLogic(cellSize)).ToArray(),
-				Bonuses = player.Bonuses,
-				Direction = player.Direction
-			};
 		}
 	}
 }
