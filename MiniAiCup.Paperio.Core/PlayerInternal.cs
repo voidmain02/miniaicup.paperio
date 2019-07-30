@@ -16,6 +16,6 @@ namespace MiniAiCup.Paperio.Core
 
 		public ActiveBonusInfo[] Bonuses { get; set; }
 
-		public Direction Direction { get; set; }
+		public Direction? Direction { get; set; }
 	}
 }

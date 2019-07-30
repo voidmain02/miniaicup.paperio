@@ -75,7 +75,7 @@ namespace MiniAiCup.Paperio.Core
 				Position = player.Position.ConvertToLogic(cellSize),
 				Lines = new HashSet<Point>(player.Lines.Select(p => p.ConvertToLogic(cellSize))),
 				Bonuses = player.Bonuses,
-				Direction = player.Direction.Value
+				Direction = player.Direction
 			};
 		}
 
@@ -95,11 +95,16 @@ namespace MiniAiCup.Paperio.Core
 				return -1000;
 			}
 
+			if (Me.Direction == null)
+			{
+				return -800;
+			}
+
 			if (Me.Lines.Count == 0)
 			{
 				var freeTerritory = new HashSet<Point>(GetAllPoints(MapSize));
 				freeTerritory.ExceptWith(Me.Territory);
-				var obstacles = new HashSet<Point> { Me.Position.MoveLogic(Me.Direction.GetOpposite()) };
+				var obstacles = new HashSet<Point> { Me.Position.MoveLogic(Me.Direction.Value.GetOpposite()) };
 				var pathToOutside = PathFinder.GetShortestPath(Me.Position, freeTerritory, obstacles, MapSize);
 
 				int pathToOutsidePenalty = 1 - pathToOutside.Length;
@@ -154,8 +159,11 @@ namespace MiniAiCup.Paperio.Core
 
 		private PlayerInternal Simulate(PlayerInternal player, Move move)
 		{
-			var nextDirection = player.Direction.GetMoved(move);
-			var nextPos = player.Position.MoveLogic(nextDirection);
+			var nextDirection = player.Direction?.GetMoved(move);
+			var nextPos = nextDirection == null
+				? player.Position
+				: player.Position.MoveLogic(nextDirection.Value);
+
 			if (!MapSize.ContainsPoint(nextPos))
 			{
 				return null;
