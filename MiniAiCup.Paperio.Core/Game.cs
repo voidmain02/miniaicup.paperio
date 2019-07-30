@@ -28,7 +28,10 @@ namespace MiniAiCup.Paperio.Core
 				return GetStartDirection(state);
 			}
 
-			var currentState = new GameStateInternal(state, _gameParams, _lastState, _lastMove);
+			var currentState = _lastState == null
+				? new GameStateInternal(state, _gameParams)
+				: new GameStateInternal(state, _lastState, _lastMove);
+
 			var bestMove = Move.Forward;
 			float bestScore = -1.0f;
 			GameStateInternal stateAfterBestMove = null;

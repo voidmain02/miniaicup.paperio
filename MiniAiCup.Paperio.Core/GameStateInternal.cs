@@ -8,6 +8,8 @@ namespace MiniAiCup.Paperio.Core
 	{
 		public Size MapSize { get; private set; }
 
+		public int CellSize { get; private set; }
+
 		public BonusInfo[] Bonuses { get; private set; }
 
 		public int TickNumber { get; private set; }
@@ -37,17 +39,31 @@ namespace MiniAiCup.Paperio.Core
 			_pathToHome = new Lazy<Point[]>(BuildPathToHome);
 		}
 
-		public GameStateInternal(GameState state, GameParams gameParams, GameStateInternal previousState, Move previousMove) : this()
+		public GameStateInternal(GameState state, GameParams gameParams) : this()
 		{
+			PreviousMove = Move.Forward;
 			MapSize = gameParams.MapLogicSize;
+			CellSize = gameParams.CellSize;
+			ApplyState(state);
+		}
+
+		public GameStateInternal(GameState state, GameStateInternal previousState, Move previousMove) : this()
+		{
+			PreviousMove = previousMove;
+			PreviousState = previousState;
+			MapSize = previousState.MapSize;
+			CellSize = previousState.CellSize;
+			ApplyState(state);
+		}
+
+		private void ApplyState(GameState state)
+		{
 			TickNumber = state.TickNumber;
 			Bonuses = state.Bonuses.Select(b => new BonusInfo {
 				Type = b.Type,
-				Position = b.Position.ConvertToLogic(gameParams.CellSize)
+				Position = b.Position.ConvertToLogic(CellSize)
 			}).ToArray();
-			Players = state.Players.Select(p => BuildInternalPlayer(p, gameParams.CellSize)).ToDictionary(p => p.Id);
-			PreviousState = previousState;
-			PreviousMove = previousMove;
+			Players = state.Players.Select(p => BuildInternalPlayer(p, CellSize)).ToDictionary(p => p.Id);
 		}
 
 		private static PlayerInternal BuildInternalPlayer(PlayerInfo player, int cellSize)
