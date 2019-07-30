@@ -193,8 +193,9 @@ namespace MiniAiCup.Paperio.Core
 		{
 			return new GameStateInternal {
 				PreviousMove = move,
+				PreviousState = this,
 				MapSize = MapSize,
-				Players = Players.Values.Select(p => Simulate(p, p == Me ? move : Move.Forward)).Where(p => p != null).ToDictionary(p => p.Id)
+				Players = Players.Values.Select(p => p == Me ? Simulate(Me, move) : p).Where(p => p != null).ToDictionary(p => p.Id)
 			};
 		}
 
@@ -212,11 +213,9 @@ namespace MiniAiCup.Paperio.Core
 				return null;
 			}
 
-			var lines = new HashSet<Point>(player.Lines);
-			if (!player.Territory.Contains(nextPos))
-			{
-				lines.Add(nextPos);
-			}
+			var lines = !player.Territory.Contains(nextPos)
+				? new HashSet<Point>(player.Lines) { nextPos }
+				: new HashSet<Point>();
 
 			return new PlayerInternal {
 				Direction = nextDirection,
