@@ -18,17 +18,13 @@ namespace MiniAiCup.Paperio.Core
 			_gameParams = gameParams;
 		}
 
-		public Direction GetNextDirection(GameState state, out GameDebugData debugData)
+		public Direction GetNextDirection(GameState state)
 		{
 			if (_isInitialized == false)
 			{
 				_isInitialized = true;
 				_lastMove = Move.Forward;
-				var direction = GetStartDirection(state);
-				debugData = new GameDebugData {
-					Direction = direction
-				};
-				return direction;
+				return GetStartDirection(state);
 			}
 
 			var currentState = new GameStateInternal(state, _gameParams, _lastState, _lastMove);
@@ -51,13 +47,9 @@ namespace MiniAiCup.Paperio.Core
 			_lastState = currentState;
 			_lastMove = bestMove;
 
-			var bestMoveDirection = currentState.Me.Direction.GetMoved(bestMove);
-			debugData = new GameDebugData {
-				Direction = bestMoveDirection,
-				PathToHome = stateAfterBestMove.PathToHome.Select(p => p.ConvertToReal(_gameParams.CellSize)).ToArray()
-			};
+			GameDebugData.Current.PathToHome = stateAfterBestMove.PathToHome.Select(p => p.ConvertToReal(_gameParams.CellSize)).ToArray();
 
-			return bestMoveDirection;
+			return currentState.Me.Direction.GetMoved(bestMove);
 		}
 
 		private Direction GetStartDirection(GameState state)
