@@ -133,8 +133,8 @@ namespace MiniAiCup.Paperio.Core
 			}
 
 			int outsideBonus = 10;
-			int longPathPenalty = Math.Min(20 - Me.Lines.Count, 0);
-			int longPathToHomePenalty = Math.Min(6 - PathToHome.Length, 0);
+			int longPathPenalty = Enemies.Length > 0 ? Math.Min(20 - Me.Lines.Count, 0) : 0;
+			int longPathToHomePenalty = Enemies.Length > 0 ? Math.Min(6 - PathToHome.Length, 0) : 0;
 			int forwardMoveBonus = PreviousMove == Move.Forward ? 1 : 0;
 			int movesLeft = (Constants.MaxTickCount - TickNumber)/(CellSize/Speed);
 			int notEnoughTimePenalty = Math.Min((movesLeft - PathToHome.Length)*10, 0);
