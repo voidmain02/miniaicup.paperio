@@ -85,7 +85,7 @@ namespace MiniAiCup.Paperio.Core
 				Score = player.Score,
 				Territory = new HashSet<Point>(player.Territory.Select(p => p.ConvertToLogic(cellSize))),
 				Position = player.Position.ConvertToLogic(cellSize),
-				Lines = new Path(player.Lines.Select(p => p.ConvertToLogic(cellSize))),
+				Tail = new Path(player.Lines.Select(p => p.ConvertToLogic(cellSize))),
 				Bonuses = player.Bonuses,
 				Direction = player.Direction
 			};
@@ -97,7 +97,7 @@ namespace MiniAiCup.Paperio.Core
 			{
 				return null;
 			}
-			return PathFinder.GetShortestPath(Me.Position, Me.Territory, Me.Lines.HashSet, MapSize);
+			return PathFinder.GetShortestPath(Me.Position, Me.Territory, Me.Tail.HashSet, MapSize);
 		}
 
 		public int Score()
@@ -117,7 +117,7 @@ namespace MiniAiCup.Paperio.Core
 				return 0;
 			}
 
-			if (Me.Lines.Length == 0)
+			if (Me.Tail.Length == 0)
 			{
 				var freeTerritory = new HashSet<Point>(GetAllPoints(MapSize));
 				freeTerritory.ExceptWith(Me.Territory);
@@ -125,7 +125,7 @@ namespace MiniAiCup.Paperio.Core
 				var pathToOutside = PathFinder.GetShortestPath(Me.Position, freeTerritory, obstacles, MapSize);
 
 				int pathToOutsidePenalty = 1 - pathToOutside.Length;
-				int backToHomeBonus = PreviousState?.Me.Lines.Length ?? 0;
+				int backToHomeBonus = PreviousState?.Me.Tail.Length ?? 0;
 				return backToHomeBonus + pathToOutsidePenalty;
 			}
 
@@ -134,19 +134,19 @@ namespace MiniAiCup.Paperio.Core
 				return -900;
 			}
 
-			var myLinesWithShortestPathToHome = new HashSet<Point>(Me.Lines);
-			myLinesWithShortestPathToHome.UnionWith(PathToHome.Take(PathToHome.Length - 1));
-			int minPathFromEnemyToMyLines = Enemies.Length == 0
+			var myTailWithShortestPathToHome = new HashSet<Point>(Me.Tail);
+			myTailWithShortestPathToHome.UnionWith(PathToHome.Take(PathToHome.Length - 1));
+			int minPathFromEnemyToMyTail = Enemies.Length == 0
 				? Int32.MaxValue
-				: Enemies.Select(e => PathFinder.GetShortestPath(e.Position, myLinesWithShortestPathToHome, e.Lines.HashSet, MapSize)?.Length ?? Int32.MaxValue).Min() - 1;
+				: Enemies.Select(e => PathFinder.GetShortestPath(e.Position, myTailWithShortestPathToHome, e.Tail.HashSet, MapSize)?.Length ?? Int32.MaxValue).Min() - 1;
 
-			if (minPathFromEnemyToMyLines <= PathToHome.Length)
+			if (minPathFromEnemyToMyTail <= PathToHome.Length)
 			{
-				return (minPathFromEnemyToMyLines - PathToHome.Length - 2)*10;
+				return (minPathFromEnemyToMyTail - PathToHome.Length - 2)*10;
 			}
 
 			int outsideBonus = 10;
-			int longPathPenalty = Enemies.Length > 0 ? Math.Min(20 - Me.Lines.Length, 0) : 0;
+			int longPathPenalty = Enemies.Length > 0 ? Math.Min(20 - Me.Tail.Length, 0) : 0;
 			int longPathToHomePenalty = Enemies.Length > 0 ? Math.Min(6 - PathToHome.Length, 0) : 0;
 			int forwardMoveBonus = PreviousMove == Move.Forward ? 1 : 0;
 			int movesLeft = (Constants.MaxTickCount - TickNumber)/(CellSize/Speed);

@@ -30,18 +30,18 @@ namespace MiniAiCup.Paperio.Core
 				return null;
 			}
 
-			if (player.Lines.Contains(nextPos))
+			if (player.Tail.Contains(nextPos))
 			{
 				return null;
 			}
 
-			var lines = !player.Territory.Contains(nextPos)
-				? player.Lines.Append(nextPos)
+			var tail = !player.Territory.Contains(nextPos)
+				? player.Tail.Append(nextPos)
 				: Path.Empty;
 
 			return new PlayerInternal {
 				Direction = nextDirection,
-				Lines = lines,
+				Tail = tail,
 				Position = nextPos,
 				Territory = new HashSet<Point>(player.Territory),
 				Id = player.Id,
