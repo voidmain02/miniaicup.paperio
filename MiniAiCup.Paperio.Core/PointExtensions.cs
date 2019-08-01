@@ -13,6 +13,19 @@ namespace MiniAiCup.Paperio.Core
 			yield return new Point(point.X, point.Y + 1);
 		}
 
+		public static IEnumerable<Point> GetEightNeighbors(this Point point)
+		{
+			yield return new Point(point.X - 1, point.Y);
+			yield return new Point(point.X + 1, point.Y);
+			yield return new Point(point.X, point.Y - 1);
+			yield return new Point(point.X, point.Y + 1);
+
+			yield return new Point(point.X - 1, point.Y - 1);
+			yield return new Point(point.X - 1, point.Y + 1);
+			yield return new Point(point.X + 1, point.Y - 1);
+			yield return new Point(point.X + 1, point.Y + 1);
+		}
+
 		public static Point ConvertToLogic(this Point realPoint, int cellSize)
 		{
 			return new Point(realPoint.X/cellSize, realPoint.Y/cellSize);

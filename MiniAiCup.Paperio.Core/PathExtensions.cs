@@ -15,5 +15,19 @@ namespace MiniAiCup.Paperio.Core
 			pointsList.Add(point);
 			return new Path(pointsList);
 		}
+
+		public static Path RemoveFromEnd(this Path path, int count)
+		{
+			return path.Length <= count
+				? Path.Empty
+				: new Path(path.Take(path.Length - count));
+		}
+
+		public static Path RemoveFromStart(this Path path, int count)
+		{
+			return path.Length <= count
+				? Path.Empty
+				: new Path(path.Skip(count));
+		}
 	}
 }
