@@ -11,7 +11,7 @@ namespace MiniAiCup.Paperio.Core
 
 		private readonly List<Point> _list;
 
-		public HashSet<Point> HashSet { get; }
+		private readonly PointsSet _pointsSet;
 
 		public int Length => _list.Count;
 
@@ -20,9 +20,9 @@ namespace MiniAiCup.Paperio.Core
 		public Path(IEnumerable<Point> points)
 		{
 			_list = new List<Point>(points);
-			HashSet = new HashSet<Point>(_list);
+			_pointsSet = new PointsSet(_list);
 
-			if (_list.Count != HashSet.Count)
+			if (_list.Count != _pointsSet.Count)
 			{
 				throw new ArgumentException();
 			}
@@ -36,6 +36,11 @@ namespace MiniAiCup.Paperio.Core
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return GetEnumerator();
+		}
+
+		public PointsSet AsPointsSet()
+		{
+			return _pointsSet;
 		}
 	}
 }

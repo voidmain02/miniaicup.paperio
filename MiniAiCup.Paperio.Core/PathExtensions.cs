@@ -6,7 +6,7 @@ namespace MiniAiCup.Paperio.Core
 	{
 		public static Path Append(this Path path, Point point)
 		{
-			if (path.HashSet.Contains(point))
+			if (path.AsPointsSet().Contains(point))
 			{
 				return path;
 			}

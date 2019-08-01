@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace MiniAiCup.Paperio.Core
 {
 	public class PlayerInternal
@@ -8,7 +6,7 @@ namespace MiniAiCup.Paperio.Core
 
 		public int Score { get; set; }
 
-		public HashSet<Point> Territory { get; set; }
+		public PointsSet Territory { get; set; }
 
 		public Point Position { get; set; }
 

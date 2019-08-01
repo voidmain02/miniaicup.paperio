@@ -83,7 +83,7 @@ namespace MiniAiCup.Paperio.Core
 			return new PlayerInternal {
 				Id = player.Id,
 				Score = player.Score,
-				Territory = new HashSet<Point>(player.Territory.Select(p => p.ConvertToLogic(cellSize))),
+				Territory = new PointsSet(player.Territory.Select(p => p.ConvertToLogic(cellSize))),
 				Position = player.Position.ConvertToLogic(cellSize),
 				Tail = new Path(player.Lines.Select(p => p.ConvertToLogic(cellSize))),
 				Bonuses = player.Bonuses,
@@ -97,7 +97,7 @@ namespace MiniAiCup.Paperio.Core
 			{
 				return null;
 			}
-			return PathFinder.GetShortestPath(Me.Position, Me.Territory, Me.Tail.HashSet, MapSize);
+			return PathFinder.GetShortestPath(Me.Position, Me.Territory, Me.Tail.AsPointsSet(), MapSize);
 		}
 
 		public int Score()
@@ -119,9 +119,8 @@ namespace MiniAiCup.Paperio.Core
 
 			if (Me.Tail.Length == 0)
 			{
-				var freeTerritory = new HashSet<Point>(GetAllPoints(MapSize));
-				freeTerritory.ExceptWith(Me.Territory);
-				var obstacles = new HashSet<Point> { Me.Position.MoveLogic(Me.Direction.Value.GetOpposite()) };
+				var freeTerritory = new PointsSet(GetAllPoints(MapSize)).ExceptWith(Me.Territory);
+				var obstacles = new PointsSet(new[] { Me.Position.MoveLogic(Me.Direction.Value.GetOpposite()) });
 				var pathToOutside = PathFinder.GetShortestPath(Me.Position, freeTerritory, obstacles, MapSize);
 
 				int pathToOutsidePenalty = 1 - pathToOutside.Length;
@@ -134,11 +133,10 @@ namespace MiniAiCup.Paperio.Core
 				return -900;
 			}
 
-			var myTailWithShortestPathToHome = new HashSet<Point>(Me.Tail);
-			myTailWithShortestPathToHome.UnionWith(PathToHome.Take(PathToHome.Length - 1));
+			var myTailWithShortestPathToHome = new PointsSet(Me.Tail).UnionWith(PathToHome.Take(PathToHome.Length - 1));
 			int minPathFromEnemyToMyTail = Enemies.Length == 0
 				? Int32.MaxValue
-				: Enemies.Select(e => PathFinder.GetShortestPath(e.Position, myTailWithShortestPathToHome, e.Tail.HashSet, MapSize)?.Length ?? Int32.MaxValue).Min() - 1;
+				: Enemies.Select(e => PathFinder.GetShortestPath(e.Position, myTailWithShortestPathToHome, e.Tail.AsPointsSet(), MapSize)?.Length ?? Int32.MaxValue).Min() - 1;
 
 			if (minPathFromEnemyToMyTail <= PathToHome.Length)
 			{

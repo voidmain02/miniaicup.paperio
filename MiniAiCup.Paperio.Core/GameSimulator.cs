@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 
 namespace MiniAiCup.Paperio.Core
@@ -43,7 +42,7 @@ namespace MiniAiCup.Paperio.Core
 				Direction = nextDirection,
 				Tail = tail,
 				Position = nextPos,
-				Territory = new HashSet<Point>(player.Territory),
+				Territory = new PointsSet(player.Territory),
 				Id = player.Id,
 				Bonuses = player.Bonuses,
 				Score = player.Score
