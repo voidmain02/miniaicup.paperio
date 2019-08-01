@@ -12,7 +12,7 @@ namespace MiniAiCup.Paperio.Core
 
 		public Point Position { get; set; }
 
-		public HashSet<Point> Lines { get; set; }
+		public Path Lines { get; set; }
 
 		public ActiveBonusInfo[] Bonuses { get; set; }
 

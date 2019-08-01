@@ -36,8 +36,8 @@ namespace MiniAiCup.Paperio.Core
 			}
 
 			var lines = !player.Territory.Contains(nextPos)
-				? new HashSet<Point>(player.Lines) { nextPos }
-				: new HashSet<Point>();
+				? player.Lines.Append(nextPos)
+				: Path.Empty;
 
 			return new PlayerInternal {
 				Direction = nextDirection,

@@ -5,11 +5,11 @@ namespace MiniAiCup.Paperio.Core
 {
 	public class PathFinder
 	{
-		public static Point[] GetShortestPath(Point startPoint, HashSet<Point> destinationHashSet, HashSet<Point> obstaclesHashSet, Size mapSize)
+		public static Path GetShortestPath(Point startPoint, HashSet<Point> destinationHashSet, HashSet<Point> obstaclesHashSet, Size mapSize)
 		{
 			if (destinationHashSet.Contains(startPoint))
 			{
-				return new Point[] {};
+				return Path.Empty;
 			}
 
 			var moves = new int[mapSize.Width, mapSize.Height];
@@ -39,7 +39,7 @@ namespace MiniAiCup.Paperio.Core
 				}
 			}
 
-			Point[] GetPath(int[,] movesMap, Point currentPoint)
+			Path GetPath(int[,] movesMap, Point currentPoint)
 			{
 				int currentLength = movesMap[currentPoint.X, currentPoint.Y];
 				var resultPath = new List<Point>(currentLength);
@@ -59,7 +59,7 @@ namespace MiniAiCup.Paperio.Core
 				}
 
 				resultPath.Reverse();
-				return resultPath.ToArray();
+				return new Path(resultPath);
 			}
 
 			return null;
