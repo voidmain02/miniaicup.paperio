@@ -6,21 +6,21 @@ namespace MiniAiCup.Paperio.Core
 {
 	public class GameStateInternal
 	{
-		public Size MapSize { get; private set; }
+		public Size MapSize { get; }
 
-		public int CellSize { get; private set; }
+		public int CellSize { get; }
 
-		public int Speed { get; private set; }
+		public int Speed { get; }
 
-		public BonusInfo[] Bonuses { get; private set; }
+		public BonusInfo[] Bonuses { get; }
 
-		public int TickNumber { get; private set; }
+		public int TickNumber { get; }
 
-		public Dictionary<string, PlayerInternal> Players { get; private set; }
+		public Dictionary<string, PlayerInternal> Players { get; }
 
-		public GameStateInternal PreviousState { get; private set; }
+		public GameStateInternal PreviousState { get; }
 
-		public Move PreviousMove { get; private set; }
+		public Move PreviousMove { get; }
 
 		private readonly Lazy<PlayerInternal> _me;
 
@@ -34,40 +34,48 @@ namespace MiniAiCup.Paperio.Core
 
 		public Point[] PathToHome => _pathToHome.Value;
 
-		private GameStateInternal()
+		private GameStateInternal(Size mapSize, int cellSize, int speed)
 		{
+			MapSize = mapSize;
+			CellSize = cellSize;
+			Speed = speed;
+
 			_me = new Lazy<PlayerInternal>(() => Players.ContainsKey(Constants.MyId) ? Players[Constants.MyId] : null);
 			_enemies = new Lazy<PlayerInternal[]>(() => Players.Values.Where(p => p.Id != Constants.MyId).ToArray());
 			_pathToHome = new Lazy<Point[]>(BuildPathToHome);
 		}
 
-		public GameStateInternal(GameState state, GameParams gameParams) : this()
-		{
-			PreviousMove = Move.Forward;
-			MapSize = gameParams.MapLogicSize;
-			CellSize = gameParams.CellSize;
-			Speed = gameParams.Speed;
-			ApplyState(state);
-		}
-
-		public GameStateInternal(GameState state, GameStateInternal previousState, Move previousMove) : this()
-		{
-			PreviousMove = previousMove;
-			PreviousState = previousState;
-			MapSize = previousState.MapSize;
-			CellSize = previousState.CellSize;
-			Speed = previousState.Speed;
-			ApplyState(state);
-		}
-
-		private void ApplyState(GameState state)
+		private GameStateInternal(GameState state, Size mapSize, int cellSize, int speed) : this(mapSize, cellSize, speed)
 		{
 			TickNumber = state.TickNumber;
+			Players = state.Players.Select(p => BuildInternalPlayer(p, CellSize)).ToDictionary(p => p.Id);
 			Bonuses = state.Bonuses.Select(b => new BonusInfo {
 				Type = b.Type,
 				Position = b.Position.ConvertToLogic(CellSize)
 			}).ToArray();
-			Players = state.Players.Select(p => BuildInternalPlayer(p, CellSize)).ToDictionary(p => p.Id);
+		}
+
+		public GameStateInternal(GameState state, GameParams gameParams) : this(state, gameParams.MapLogicSize, gameParams.CellSize, gameParams.Speed)
+		{
+			PreviousMove = Move.Forward;
+			PreviousState = null;
+		}
+
+		public GameStateInternal(GameState state, GameStateInternal previousState, Move previousMove) : this(state, previousState.MapSize, previousState.CellSize, previousState.Speed)
+		{
+			PreviousMove = previousMove;
+			PreviousState = previousState;
+		}
+
+		public GameStateInternal(int tickNumber, IEnumerable<PlayerInternal> players, IEnumerable<BonusInfo> bonuses, GameStateInternal previousState, Move previousMove)
+			: this(previousState.MapSize, previousState.CellSize, previousState.Speed)
+		{
+			TickNumber = tickNumber;
+			Players = players.ToDictionary(p => p.Id);
+			Bonuses = bonuses.ToArray();
+
+			PreviousState = previousState;
+			PreviousMove = previousMove;
 		}
 
 		private static PlayerInternal BuildInternalPlayer(PlayerInfo player, int cellSize)
@@ -158,51 +166,6 @@ namespace MiniAiCup.Paperio.Core
 			}
 
 			return points;
-		}
-
-		public GameStateInternal Simulate(Move move)
-		{
-			return new GameStateInternal {
-				PreviousMove = move,
-				PreviousState = this,
-				MapSize = MapSize,
-				CellSize = CellSize,
-				Speed = Speed,
-				TickNumber = TickNumber + Speed,
-				Players = Players.Values.Select(p => p == Me ? Simulate(Me, move) : p).Where(p => p != null).ToDictionary(p => p.Id)
-			};
-		}
-
-		private PlayerInternal Simulate(PlayerInternal player, Move move)
-		{
-			var nextDirection = player.Direction?.GetMoved(move);
-			var nextPos = nextDirection == null
-				? player.Position
-				: player.Position.MoveLogic(nextDirection.Value);
-
-			if (!MapSize.ContainsPoint(nextPos))
-			{
-				return null;
-			}
-
-			if (Players[player.Id].Lines.Contains(nextPos))
-			{
-				return null;
-			}
-
-			var lines = !player.Territory.Contains(nextPos)
-				? new HashSet<Point>(player.Lines) { nextPos }
-				: new HashSet<Point>();
-
-			return new PlayerInternal {
-				Direction = nextDirection,
-				Lines = lines,
-				Position = nextPos,
-				Territory = new HashSet<Point>(player.Territory),
-				Id = player.Id,
-				Bonuses = player.Bonuses,
-				Score = player.Score
-			};
 		}
 	}
 }
