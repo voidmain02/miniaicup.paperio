@@ -8,13 +8,9 @@ namespace MiniAiCup.Paperio.DebuggerVisualizer
 {
 	public partial class GameStateForm : Form
 	{
-		private readonly GameState _gameState;
+		private readonly DebugStateView _gameState;
 
-		private const int WidthInCells = 31;
-		private const int HeightInCells = 31;
-		private const int CellSize = 30;
-
-		public GameStateForm(GameState gameState)
+		public GameStateForm(DebugStateView gameState)
 		{
 			_gameState = gameState;
 			InitializeComponent();
@@ -43,7 +39,7 @@ namespace MiniAiCup.Paperio.DebuggerVisualizer
 				Color.FromArgb(116, 85, 74)
 			};
 
-			var lineColors = new[] {
+			var tailColors = new[] {
 				Color.FromArgb(138, 189, 187),
 				Color.FromArgb(217, 106, 151),
 				Color.FromArgb(142, 168, 178),
@@ -52,11 +48,15 @@ namespace MiniAiCup.Paperio.DebuggerVisualizer
 				Color.FromArgb(170, 158, 153)
 			};
 
-			var playersIndexes = new Dictionary<string, int>(_gameState.Players.Length);
-			for (int i = 0; i < _gameState.Players.Length; i++)
-			{
-				playersIndexes.Add(_gameState.Players[i].Id, i);
-			}
+			var playersIndexes = new Dictionary<string, int> {
+				{ "i", 0 },
+				{ "1", 0 },
+				{ "2", 1 },
+				{ "3", 2 },
+				{ "4", 3 },
+				{ "5", 4 },
+				{ "6", 5 }
+			};
 
 			foreach (var player in _gameState.Players)
 			{
@@ -65,28 +65,28 @@ namespace MiniAiCup.Paperio.DebuggerVisualizer
 				if (player.Territory.Any())
 				{
 					var territoryBrush = new SolidBrush(territoryColors[playerIndex]);
-					e.Graphics.FillRectangles(territoryBrush, player.Territory.Select(p => GetCellSizeRectangle(TranslateCoordinates(p))).ToArray());
+					e.Graphics.FillRectangles(territoryBrush, player.Territory.Select(p => GetCellSizeRectangle(TranslateCoordinates(p, _gameState.Size), _gameState.CellSize)).ToArray());
 				}
 				
-				if (player.Lines.Any())
+				if (player.Tail.Any())
 				{
-					var lineBrush = new SolidBrush(lineColors[playerIndex]);
-					e.Graphics.FillRectangles(lineBrush, player.Lines.Select(p => GetCellSizeRectangle(TranslateCoordinates(p))).ToArray());
+					var tailBrush = new SolidBrush(tailColors[playerIndex]);
+					e.Graphics.FillRectangles(tailBrush, player.Tail.Select(p => GetCellSizeRectangle(TranslateCoordinates(p, _gameState.Size), _gameState.CellSize)).ToArray());
 				}
 
 				var playerBrush = new SolidBrush(playerColors[playerIndex]);
-				e.Graphics.FillRectangle(playerBrush, GetCellSizeRectangle(TranslateCoordinates(player.Position)));
+				e.Graphics.FillRectangle(playerBrush, GetCellSizeRectangle(TranslateCoordinates(player.Position, _gameState.Size), _gameState.CellSize));
 			}
 		}
 
-		private static Core.Point TranslateCoordinates(Core.Point point)
+		private static Core.Point TranslateCoordinates(Core.Point point, Core.Size mapSize)
 		{
-			return new Core.Point(point.X, HeightInCells*CellSize - point.Y - 1);
+			return new Core.Point(point.X, mapSize.Height - point.Y - 1);
 		}
 
-		private static Rectangle GetCellSizeRectangle(Core.Point center)
+		private static Rectangle GetCellSizeRectangle(Core.Point point, int cellSize)
 		{
-			return new Rectangle(center.X - CellSize/2, center.Y - CellSize/2, CellSize - 1, CellSize - 1);
+			return new Rectangle(point.X*cellSize, point.Y*cellSize, cellSize - 1, cellSize - 1);
 		}
 	}
 }

@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.DebuggerVisualizers;
 using MiniAiCup.Paperio.Core;
 using MiniAiCup.Paperio.DebuggerVisualizer;
 
-[assembly: DebuggerVisualizer(typeof(GameStateVisualizer), Target=typeof(GameState))]
+[assembly: DebuggerVisualizer(typeof(GameStateVisualizer), Target=typeof(DebugStateView))]
 
 namespace MiniAiCup.Paperio.DebuggerVisualizer
 {
@@ -22,7 +22,7 @@ namespace MiniAiCup.Paperio.DebuggerVisualizer
 				throw new ArgumentNullException(nameof(objectProvider));
 			}
 
-			var gameState = objectProvider.GetObject() as GameState;
+			var gameState = objectProvider.GetObject() as DebugStateView;
 			using (var displayForm = new GameStateForm(gameState))
 			{
 				windowService.ShowDialog(displayForm);

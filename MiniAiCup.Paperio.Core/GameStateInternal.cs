@@ -34,6 +34,8 @@ namespace MiniAiCup.Paperio.Core
 
 		public Path PathToHome => _pathToHome.Value;
 
+		public DebugStateView DebugStateView => GetDebugStateView();
+
 		private GameStateInternal(Size mapSize, int cellSize, int speed)
 		{
 			MapSize = mapSize;
@@ -164,6 +166,25 @@ namespace MiniAiCup.Paperio.Core
 			}
 
 			return points;
+		}
+
+		private DebugStateView GetDebugStateView()
+		{
+			return new DebugStateView {
+				Size = MapSize,
+				CellSize = CellSize,
+				Players = Players.Values.Select(GetDebugPlayerView).ToArray()
+			};
+		}
+
+		private static DebugPlayerView GetDebugPlayerView(PlayerInternal player)
+		{
+			return new DebugPlayerView {
+				Id = player.Id,
+				Territory = player.Territory.ToArray(),
+				Tail = player.Tail.ToArray(),
+				Position = player.Position
+			};
 		}
 	}
 }
