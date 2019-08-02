@@ -24,7 +24,7 @@ namespace MiniAiCup.Paperio.Core
 		{
 			_mapSize = state.MapSize;
 
-			int tickNumber = state.TickNumber + state.Speed;
+			int tickNumber = state.TickNumber + state.CellSize/state.Speed;
 			var bonuses = state.Bonuses;
 
 			_players = new List<PlayerInternal>();
