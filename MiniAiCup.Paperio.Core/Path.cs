@@ -17,6 +17,8 @@ namespace MiniAiCup.Paperio.Core
 
 		public Point this[int index] => _list[index];
 
+		public int IndexOf(Point point) => _list.IndexOf(point);
+
 		public Path(IEnumerable<Point> points)
 		{
 			_list = new List<Point>(points);

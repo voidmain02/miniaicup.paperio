@@ -1,10 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MiniAiCup.Paperio.Core
 {
 	public class PointsSet : IEnumerable<Point>
 	{
+		public static PointsSet Empty { get; } = new PointsSet(Enumerable.Empty<Point>());
+
 		private readonly HashSet<Point> _hashSet;
 
 		public int Count => _hashSet.Count;

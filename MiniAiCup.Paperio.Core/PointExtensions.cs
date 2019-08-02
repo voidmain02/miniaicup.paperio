@@ -62,5 +62,11 @@ namespace MiniAiCup.Paperio.Core
 					throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
 			}
 		}
+
+		public static bool IsNeighbor(this Point point1, Point point2)
+		{
+			return point1.X == point2.X && Math.Abs(point1.Y - point2.Y) == 1 ||
+				point1.Y == point2.Y && Math.Abs(point1.X - point2.X) == 1;
+		}
 	}
 }
