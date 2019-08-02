@@ -112,7 +112,7 @@ namespace MiniAiCup.Paperio.Core
 			for(int i_lp1 = 0; i_lp1 < tail.Length; i_lp1++)
 			{
 				var lp1 = tail[i_lp1];
-				foreach (var point in lp1.GetEightNeighbors())
+				foreach (var point in lp1.GetNeighbors())
 				{
 					if (!boundary.Contains(point))
 					{
@@ -132,14 +132,14 @@ namespace MiniAiCup.Paperio.Core
 								continue;
 							}
 
-							var path = GetPath(startPoint.Value, point, boundary);
+							var path = GetPath(point, startPoint.Value, boundary);
 							if (path == null || path.Length == 0)
 							{
 								continue;
 							}
 
-							var voidPoints = tail.Skip(i_lp2 - 1).Take(i_lp1 - i_lp2 + 1).ToList();
-							voidPoints.AddRange(path);
+							var voidPoints = new List<Point>(path);
+							voidPoints.AddRange(tail.Skip(i_lp2).Take(i_lp1 - i_lp2 + 1));
 							voids.Add(voidPoints);
 						}
 
@@ -162,7 +162,7 @@ namespace MiniAiCup.Paperio.Core
 				}
 			}
 			var obstacles = new PointsSet(allPoints).ExceptWith(boundary);
-			return PathFinder.GetShortestPath(startPoint, new PointsSet(new[] { endPoint }), obstacles, _mapSize);
+			return PathFinder.GetShortestPath(startPoint, new PointsSet(new[] { endPoint }), obstacles, _mapSize)?.Prepend(startPoint);
 		}
 
 		private static Point? GetNearestBoundaryPoint(Point point, PointsSet boundary)

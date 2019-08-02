@@ -16,6 +16,18 @@ namespace MiniAiCup.Paperio.Core
 			return new Path(pointsList);
 		}
 
+		public static Path Prepend(this Path path, Point point)
+		{
+			if (path.AsPointsSet().Contains(point))
+			{
+				return path;
+			}
+
+			var pointsList = path.ToList();
+			pointsList.Insert(0, point);
+			return new Path(pointsList);
+		}
+
 		public static Path RemoveFromEnd(this Path path, int count)
 		{
 			return path.Length <= count
