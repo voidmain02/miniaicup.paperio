@@ -34,6 +34,10 @@ namespace MiniAiCup.Paperio.Core
 
 		public Path PathToHome => _pathToHome.Value;
 
+		private readonly Lazy<PointsSet> _allMapPoints;
+
+		public PointsSet AllMapPoints => _allMapPoints.Value;
+
 		public DebugStateView DebugStateView => GetDebugStateView();
 
 		private GameStateInternal(Size mapSize, int cellSize, int speed)
@@ -45,6 +49,7 @@ namespace MiniAiCup.Paperio.Core
 			_me = new Lazy<PlayerInternal>(() => Players.ContainsKey(Constants.MyId) ? Players[Constants.MyId] : null);
 			_enemies = new Lazy<PlayerInternal[]>(() => Players.Values.Where(p => p.Id != Constants.MyId).ToArray());
 			_pathToHome = new Lazy<Path>(BuildPathToHome);
+			_allMapPoints = new Lazy<PointsSet>(() => MapSize.GetAllLogicPoints());
 		}
 
 		private GameStateInternal(GameState state, Size mapSize, int cellSize, int speed) : this(mapSize, cellSize, speed)
@@ -67,6 +72,8 @@ namespace MiniAiCup.Paperio.Core
 		{
 			PreviousMove = previousMove;
 			PreviousState = previousState;
+
+			_allMapPoints = previousState._allMapPoints;
 		}
 
 		public GameStateInternal(int tickNumber, IEnumerable<PlayerInternal> players, IEnumerable<BonusInfo> bonuses, GameStateInternal previousState, Move previousMove)
@@ -78,6 +85,8 @@ namespace MiniAiCup.Paperio.Core
 
 			PreviousState = previousState;
 			PreviousMove = previousMove;
+
+			_allMapPoints = previousState._allMapPoints;
 		}
 
 		private static PlayerInternal BuildInternalPlayer(PlayerInfo player, int cellSize)

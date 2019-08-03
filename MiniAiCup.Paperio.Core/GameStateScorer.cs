@@ -24,7 +24,7 @@ namespace MiniAiCup.Paperio.Core
 
 			if (state.Me.Tail.Length == 0)
 			{
-				var freeTerritory = new PointsSet(GetAllPoints(state.MapSize)).ExceptWith(state.Me.Territory);
+				var freeTerritory = state.AllMapPoints.ExceptWith(state.Me.Territory);
 				var obstacles = new PointsSet(new[] { state.Me.Position.MoveLogic(state.Me.Direction.Value.GetOpposite()) });
 				var pathToOutside = PathFinder.GetShortestPath(state.Me.Position, freeTerritory, obstacles, state.MapSize);
 
@@ -55,20 +55,6 @@ namespace MiniAiCup.Paperio.Core
 			int movesLeft = (Constants.MaxTickCount - state.TickNumber)/(state.CellSize/state.Speed);
 			int notEnoughTimePenalty = Math.Min((movesLeft - state.PathToHome.Length)*10, 0);
 			return outsideBonus + longPathPenalty + longPathToHomePenalty + forwardMoveBonus + notEnoughTimePenalty;
-		}
-
-		public static Point[] GetAllPoints(Size size)
-		{
-			var points = new Point[size.Width*size.Height];
-			for (int y = 0; y < size.Height; y++)
-			{
-				for (int x = 0; x < size.Width; x++)
-				{
-					points[size.Width*y + x] = new Point(x, y);
-				}
-			}
-
-			return points;
 		}
 	}
 }

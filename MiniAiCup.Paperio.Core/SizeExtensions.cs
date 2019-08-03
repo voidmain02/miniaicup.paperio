@@ -16,5 +16,19 @@ namespace MiniAiCup.Paperio.Core
 		{
 			return new Size(logicSize.Width*cellSize, logicSize.Height*cellSize);
 		}
+
+		public static PointsSet GetAllLogicPoints(this Size size)
+		{
+			var points = new Point[size.Width*size.Height];
+			for (int y = 0; y < size.Height; y++)
+			{
+				for (int x = 0; x < size.Width; x++)
+				{
+					points[size.Width*y + x] = new Point(x, y);
+				}
+			}
+
+			return new PointsSet(points);
+		}
 	}
 }
