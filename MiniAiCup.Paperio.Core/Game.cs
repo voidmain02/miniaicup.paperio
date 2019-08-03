@@ -37,11 +37,12 @@ namespace MiniAiCup.Paperio.Core
 			GameStateInternal stateAfterBestMove = null;
 
 			var simulator = new GameSimulator();
+			var scorer = new GameStateScorer();
 			var movesScores = new Dictionary<Move, int>();
 			foreach (var move in EnumValues.GetAll<Move>())
 			{
 				var nextState = simulator.Simulate(currentState, move);
-				int nextStateScore = nextState.Score();
+				int nextStateScore = scorer.Score(nextState);
 				movesScores[move] = nextStateScore;
 				if (nextStateScore > bestScore)
 				{
