@@ -34,6 +34,10 @@ namespace MiniAiCup.Paperio.Core
 
 		public PointsSet AllMapPoints => _allMapPoints.Value;
 
+		private readonly Lazy<int[,]> _dangerousMap;
+
+		public int[,] DangerousMap => _dangerousMap.Value;
+
 		public DebugStateView DebugView => GetDebugView();
 
 		private GameStateInternal(Size mapSize, int cellSize, int speed)
@@ -45,6 +49,21 @@ namespace MiniAiCup.Paperio.Core
 			_me = new Lazy<PlayerInternal>(() => Players.ContainsKey(Constants.MyId) ? Players[Constants.MyId] : null);
 			_enemies = new Lazy<PlayerInternal[]>(() => Players.Values.Where(p => p.Id != Constants.MyId).ToArray());
 			_allMapPoints = new Lazy<PointsSet>(() => MapSize.GetAllLogicPoints());
+			_dangerousMap = new Lazy<int[,]>(BuildDangerousMap);
+		}
+
+		private int[,] BuildDangerousMap()
+		{
+			var map = new int[MapSize.Width, MapSize.Height];
+			for (int y = 0; y < MapSize.Height; y++)
+			{
+				for (int x = 0; x < MapSize.Width; x++)
+				{
+					map[x, y] = Enemies.Min(e => e.DistanceMap[x, y]);
+				}
+			}
+
+			return map;
 		}
 
 		private GameStateInternal(GameState state, Size mapSize, int cellSize, int speed) : this(mapSize, cellSize, speed)

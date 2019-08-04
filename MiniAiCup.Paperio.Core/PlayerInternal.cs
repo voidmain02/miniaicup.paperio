@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace MiniAiCup.Paperio.Core
@@ -27,10 +28,15 @@ namespace MiniAiCup.Paperio.Core
 
 		public DebugPlayerView DebugView => GetDebugView();
 
+		private readonly Lazy<int[,]> _distanceMap;
+
+		public int[,] DistanceMap => _distanceMap.Value;
+
 		private PlayerInternal(string id, Size mapSize)
 		{
 			_mapSize = mapSize;
 			_pathToHome = new Lazy<Path>(BuildPathToHome);
+			_distanceMap = new Lazy<int[,]>(BuildDistanceMap);
 
 			Id = id;
 		}
@@ -70,6 +76,45 @@ namespace MiniAiCup.Paperio.Core
 		private Path BuildPathToHome()
 		{
 			return PathFinder.GetShortestPath(Position, Territory, Tail.AsPointsSet(), _mapSize);
+		}
+
+		private int[,] BuildDistanceMap()
+		{
+			var map = new int[_mapSize.Width, _mapSize.Height];
+			for (int y = 0; y < _mapSize.Height; y++)
+			{
+				for (int x = 0; x < _mapSize.Width; x++)
+				{
+					map[x, y] = Int32.MaxValue;
+				}
+			}
+
+			var visited = new bool[_mapSize.Width, _mapSize.Height];
+
+			map[Position.X, Position.Y] = 0;
+			visited[Position.X, Position.Y] = true;
+
+			var queue = new Queue<Point>(_mapSize.Width*_mapSize.Height);
+			queue.Enqueue(Position);
+
+			while (queue.Count > 0)
+			{
+				var currentPoint = queue.Dequeue();
+				int currentLength = map[currentPoint.X, currentPoint.Y];
+				foreach (var neighbor in currentPoint.GetNeighbors())
+				{
+					if (!_mapSize.ContainsPoint(neighbor) || visited[neighbor.X, neighbor.Y] || Tail.AsPointsSet().Contains(neighbor))
+					{
+						continue;
+					}
+
+					map[neighbor.X, neighbor.Y] = currentLength + 1;
+					visited[neighbor.X, neighbor.Y] = true;
+					queue.Enqueue(neighbor);
+				}
+			}
+
+			return map;
 		}
 	}
 }
