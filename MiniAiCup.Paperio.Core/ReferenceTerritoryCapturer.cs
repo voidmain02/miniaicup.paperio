@@ -3,19 +3,21 @@ using System.Linq;
 
 namespace MiniAiCup.Paperio.Core
 {
-	public class TerritoryCapturer
+	public class ReferenceTerritoryCapturer : ITerritoryCapturer
 	{
 		private readonly Size _mapSize;
-		private readonly PointsSet _territory;
 
-		public TerritoryCapturer(Size mapSize, PointsSet territory)
+		private PointsSet _territory;
+
+		public ReferenceTerritoryCapturer(Size mapSize)
 		{
 			_mapSize = mapSize;
-			_territory = territory;
 		}
 
-		public PointsSet Capture(Path tail)
+		public PointsSet Capture(PointsSet territory, Path tail)
 		{
+			_territory = territory;
+
 			if (tail.Length <= 1)
 			{
 				return PointsSet.Empty;

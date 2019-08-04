@@ -5,9 +5,22 @@ using NUnit.Framework;
 
 namespace MiniAiCup.Paperio.Tests
 {
+	[TestFixtureSource("FixtureArgs")]
 	public class TerritoryCapturerTests
 	{
-		private readonly Size _mapSize = new Size(15, 15);
+		private static readonly Size MapSize = new Size(15, 15);
+
+		public static object[] FixtureArgs = {
+			new object[] { new ReferenceTerritoryCapturer(MapSize) },
+			new object[] { new BfsTerritoryCapturer(MapSize) }
+		};
+
+		private readonly ITerritoryCapturer _capturer;
+
+		public TerritoryCapturerTests(ITerritoryCapturer capturer)
+		{
+			_capturer = capturer;
+		}
 
 		[Test]
 		public void SimpleCaptureTest()
@@ -65,8 +78,7 @@ namespace MiniAiCup.Paperio.Tests
 				new Point(8, 9)
 			};
 
-			var capturer = new TerritoryCapturer(_mapSize, new PointsSet(territory));
-			var factCapture = capturer.Capture(new Path(tail));
+			var factCapture = _capturer.Capture(new PointsSet(territory), new Path(tail));
 
 			Assert.IsTrue(AreEquals(factCapture, expectedCapture));
 		}
@@ -125,8 +137,7 @@ namespace MiniAiCup.Paperio.Tests
 				new Point(9, 7)
 			};
 
-			var capturer = new TerritoryCapturer(_mapSize, new PointsSet(territory));
-			var factCapture = capturer.Capture(new Path(tail));
+			var factCapture = _capturer.Capture(new PointsSet(territory), new Path(tail));
 
 			Assert.IsTrue(AreEquals(factCapture, expectedCapture));
 		}
@@ -187,8 +198,7 @@ namespace MiniAiCup.Paperio.Tests
 				new Point(9, 5)
 			};
 
-			var capturer = new TerritoryCapturer(_mapSize, new PointsSet(territory));
-			var factCapture = capturer.Capture(new Path(tail));
+			var factCapture = _capturer.Capture(new PointsSet(territory), new Path(tail));
 
 			Assert.IsTrue(AreEquals(factCapture, expectedCapture));
 		}
@@ -268,8 +278,7 @@ namespace MiniAiCup.Paperio.Tests
 				new Point(8, 6)
 			};
 
-			var capturer = new TerritoryCapturer(_mapSize, new PointsSet(territory));
-			var factCapture = capturer.Capture(new Path(tail));
+			var factCapture = _capturer.Capture(new PointsSet(territory), new Path(tail));
 
 			Assert.IsTrue(AreEquals(factCapture, expectedCapture));
 		}
@@ -356,8 +365,7 @@ namespace MiniAiCup.Paperio.Tests
 				new Point(9, 6)
 			};
 
-			var capturer = new TerritoryCapturer(_mapSize, new PointsSet(territory));
-			var factCapture = capturer.Capture(new Path(tail));
+			var factCapture = _capturer.Capture(new PointsSet(territory), new Path(tail));
 
 			Assert.IsTrue(AreEquals(factCapture, expectedCapture));
 		}
@@ -457,8 +465,7 @@ namespace MiniAiCup.Paperio.Tests
 				new Point(9, 2)
 			};
 
-			var capturer = new TerritoryCapturer(_mapSize, new PointsSet(territory));
-			var factCapture = capturer.Capture(new Path(tail));
+			var factCapture = _capturer.Capture(new PointsSet(territory), new Path(tail));
 
 			Assert.IsTrue(AreEquals(factCapture, expectedCapture));
 		}
@@ -531,16 +538,15 @@ namespace MiniAiCup.Paperio.Tests
 				new Point(10, 5)
 			};
 
-			var capturer = new TerritoryCapturer(_mapSize, new PointsSet(territory));
-			var factCapture = capturer.Capture(new Path(tail));
+			var factCapture = _capturer.Capture(new PointsSet(territory), new Path(tail));
 
 			Assert.IsTrue(AreEquals(factCapture, expectedCapture));
 		}
 
-		private bool AreEquals(IEnumerable<Point> fact, IEnumerable<Point> expected)
+		private static bool AreEquals(IEnumerable<Point> fact, IEnumerable<Point> expected)
 		{
-			var orderedFact = fact.OrderBy(p => p.Y*_mapSize.Height + p.X).ToList();
-			var orderedExpected = expected.OrderBy(p => p.Y*_mapSize.Height + p.X).ToList();
+			var orderedFact = fact.OrderBy(p => p.Y*MapSize.Height + p.X).ToList();
+			var orderedExpected = expected.OrderBy(p => p.Y*MapSize.Height + p.X).ToList();
 
 			return orderedFact.SequenceEqual(orderedExpected);
 		}

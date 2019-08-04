@@ -50,8 +50,8 @@ namespace MiniAiCup.Paperio.Core
 			{
 				UpdatePlayerTail(player);
 
-				var capturer = new TerritoryCapturer(_mapSize, player.Territory);
-				var capturedTerritory = capturer.Capture(player.Tail);
+				var capturer = new ReferenceTerritoryCapturer(_mapSize);
+				var capturedTerritory = capturer.Capture(player.Territory, player.Tail);
 				_capturedTerritoryPerPlayer.Add(player, capturedTerritory);
 
 				if (capturedTerritory.Count > 0)
