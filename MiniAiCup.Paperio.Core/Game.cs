@@ -8,6 +8,10 @@ namespace MiniAiCup.Paperio.Core
 	{
 		private readonly GameParams _gameParams;
 
+		private readonly GameSimulator _simulator;
+
+		private readonly GameStateScorer _scorer;
+
 		private bool _isInitialized;
 
 		private Move _lastMove;
@@ -17,6 +21,9 @@ namespace MiniAiCup.Paperio.Core
 		public Game(GameParams gameParams)
 		{
 			_gameParams = gameParams;
+
+			_simulator = new GameSimulator(_gameParams.MapLogicSize);
+			_scorer = new GameStateScorer();
 		}
 
 		public Direction GetNextDirection(GameState state)
@@ -36,13 +43,11 @@ namespace MiniAiCup.Paperio.Core
 			int bestScore = Int32.MinValue;
 			GameStateInternal stateAfterBestMove = null;
 
-			var simulator = new GameSimulator();
-			var scorer = new GameStateScorer();
 			var movesScores = new Dictionary<Move, int>();
 			foreach (var move in EnumValues.GetAll<Move>())
 			{
-				var nextState = simulator.Simulate(currentState, move);
-				int nextStateScore = scorer.Score(nextState);
+				var nextState = _simulator.Simulate(currentState, move);
+				int nextStateScore = _scorer.Score(nextState);
 				movesScores[move] = nextStateScore;
 				if (nextStateScore > bestScore)
 				{

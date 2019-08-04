@@ -7,9 +7,18 @@ namespace MiniAiCup.Paperio.Core
 	{
 		private readonly Size _mapSize;
 
+		private readonly List<Point> _mapBoundaryPoints;
+
+		private readonly PointsSet _mapAllPoints;
+
+		private readonly bool[,] _visited;
+
 		public BfsTerritoryCapturer(Size mapSize)
 		{
 			_mapSize = mapSize;
+			_mapBoundaryPoints = GetBoundary(_mapSize).ToList();
+			_mapAllPoints = _mapSize.GetAllLogicPoints();
+			_visited = new bool[mapSize.Width, mapSize.Height];
 		}
 
 		public PointsSet Capture(PointsSet territory, Path tail)
@@ -24,13 +33,14 @@ namespace MiniAiCup.Paperio.Core
 				return PointsSet.Empty;
 			}
 
+			ResetVisited();
+
 			var usedPoints = territory.UnionWith(tail);
-			var visited = new bool[_mapSize.Width, _mapSize.Height];
-			var startBoundaryPoints = GetBoundary(_mapSize).Where(p => !usedPoints.Contains(p));
+			var startBoundaryPoints = _mapBoundaryPoints.Where(p => !usedPoints.Contains(p));
 			var outsidePoints = new List<Point>(startBoundaryPoints);
 			foreach (var outsidePoint in outsidePoints)
 			{
-				visited[outsidePoint.X, outsidePoint.Y] = true;
+				_visited[outsidePoint.X, outsidePoint.Y] = true;
 			}
 
 			var queue = new Queue<Point>(outsidePoints);
@@ -44,12 +54,12 @@ namespace MiniAiCup.Paperio.Core
 						continue;
 					}
 
-					if (visited[neighbor.X, neighbor.Y])
+					if (_visited[neighbor.X, neighbor.Y])
 					{
 						continue;
 					}
 
-					visited[neighbor.X, neighbor.Y] = true;
+					_visited[neighbor.X, neighbor.Y] = true;
 					if (usedPoints.Contains(neighbor))
 					{
 						continue;
@@ -59,9 +69,18 @@ namespace MiniAiCup.Paperio.Core
 				}
 			}
 
-			var allPoints = _mapSize.GetAllLogicPoints();
-			var newTerritoryPoints = allPoints.ExceptWith(outsidePoints);
-			return newTerritoryPoints.ExceptWith(territory);
+			return _mapAllPoints.ExceptWith(outsidePoints).ExceptWith(territory);
+		}
+
+		private void ResetVisited()
+		{
+			for (int y = 0; y < _mapSize.Height; y++)
+			{
+				for (int x = 0; x < _mapSize.Width; x++)
+				{
+					_visited[x, y] = false;
+				}
+			}
 		}
 
 		private static IEnumerable<Point> GetBoundary(Size size)

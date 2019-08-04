@@ -5,7 +5,7 @@ namespace MiniAiCup.Paperio.Core
 {
 	public class GameSimulator
 	{
-		private Size _mapSize;
+		private readonly Size _mapSize;
 
 		private List<PlayerInternal> _players;
 
@@ -13,17 +13,19 @@ namespace MiniAiCup.Paperio.Core
 
 		private Dictionary<PlayerInternal, int> _scoresGainedPerPlayer;
 
+		private readonly ITerritoryCapturer _territoryCapturer;
+
 		private readonly IEnemyStrategy _enemyStrategy;
 
-		public GameSimulator(IEnemyStrategy enemyStrategy = null)
+		public GameSimulator(Size mapSize, IEnemyStrategy enemyStrategy = null)
 		{
+			_mapSize = mapSize;
+			_territoryCapturer = new BfsTerritoryCapturer(_mapSize);
 			_enemyStrategy = enemyStrategy;
 		}
 
 		public GameStateInternal Simulate(GameStateInternal state, Move move)
 		{
-			_mapSize = state.MapSize;
-
 			int tickNumber = state.TickNumber + state.CellSize/state.Speed;
 			var bonuses = state.Bonuses;
 
@@ -50,8 +52,7 @@ namespace MiniAiCup.Paperio.Core
 			{
 				UpdatePlayerTail(player);
 
-				var capturer = new ReferenceTerritoryCapturer(_mapSize);
-				var capturedTerritory = capturer.Capture(player.Territory, player.Tail);
+				var capturedTerritory = _territoryCapturer.Capture(player.Territory, player.Tail);
 				_capturedTerritoryPerPlayer.Add(player, capturedTerritory);
 
 				if (capturedTerritory.Count > 0)
