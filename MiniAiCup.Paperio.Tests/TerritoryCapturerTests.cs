@@ -3,7 +3,7 @@ using System.Linq;
 using MiniAiCup.Paperio.Core;
 using NUnit.Framework;
 
-namespace MiniAiCup.Paperio.TerritoryCapturerTests
+namespace MiniAiCup.Paperio.Tests
 {
 	public class TerritoryCapturerTests
 	{
