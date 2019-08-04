@@ -30,7 +30,7 @@ namespace MiniAiCup.Paperio.Core
 			_players = new List<PlayerInternal>();
 			foreach (var srcPlayer in state.Players.Values)
 			{
-				var player = ClonePlayer(srcPlayer);
+				var player = (PlayerInternal)srcPlayer.Clone();
 				_players.Add(player);
 
 				if (srcPlayer == state.Me)
@@ -201,19 +201,6 @@ namespace MiniAiCup.Paperio.Core
 		private bool CheckIsPlayerAte(PlayerInternal player)
 		{
 			return _capturedTerritoryPerPlayer.Where(x => x.Key != player).Any(capture => capture.Value.Contains(player.Position));
-		}
-
-		private static PlayerInternal ClonePlayer(PlayerInternal player)
-		{
-			return new PlayerInternal {
-				Id = player.Id,
-				Score = player.Score,
-				Territory = new PointsSet(player.Territory),
-				Position = player.Position,
-				Tail = new Path(player.Tail),
-				Bonuses = (ActiveBonusInfo[])player.Bonuses.Clone(),
-				Direction = player.Direction
-			};
 		}
 	}
 }

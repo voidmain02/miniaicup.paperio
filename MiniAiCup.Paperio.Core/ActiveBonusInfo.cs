@@ -6,7 +6,7 @@ namespace MiniAiCup.Paperio.Core
 	/// Информация о действующем бонусе
 	/// </summary>
 	[Serializable]
-	public class ActiveBonusInfo
+	public class ActiveBonusInfo : ICloneable
 	{
 		/// <summary>
 		/// Тип
@@ -17,5 +17,13 @@ namespace MiniAiCup.Paperio.Core
 		/// Оставшееся время действия бонуса
 		/// </summary>
 		public int RemainingTicks { get; set; }
+
+		public object Clone()
+		{
+			return new ActiveBonusInfo {
+				Type = Type,
+				RemainingTicks = RemainingTicks
+			};
+		}
 	}
 }

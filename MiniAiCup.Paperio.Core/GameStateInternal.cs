@@ -30,15 +30,11 @@ namespace MiniAiCup.Paperio.Core
 
 		public PlayerInternal[] Enemies => _enemies.Value;
 
-		private readonly Lazy<Path> _pathToHome;
-
-		public Path PathToHome => _pathToHome.Value;
-
 		private readonly Lazy<PointsSet> _allMapPoints;
 
 		public PointsSet AllMapPoints => _allMapPoints.Value;
 
-		public DebugStateView DebugStateView => GetDebugStateView();
+		public DebugStateView DebugView => GetDebugView();
 
 		private GameStateInternal(Size mapSize, int cellSize, int speed)
 		{
@@ -48,14 +44,13 @@ namespace MiniAiCup.Paperio.Core
 
 			_me = new Lazy<PlayerInternal>(() => Players.ContainsKey(Constants.MyId) ? Players[Constants.MyId] : null);
 			_enemies = new Lazy<PlayerInternal[]>(() => Players.Values.Where(p => p.Id != Constants.MyId).ToArray());
-			_pathToHome = new Lazy<Path>(BuildPathToHome);
 			_allMapPoints = new Lazy<PointsSet>(() => MapSize.GetAllLogicPoints());
 		}
 
 		private GameStateInternal(GameState state, Size mapSize, int cellSize, int speed) : this(mapSize, cellSize, speed)
 		{
 			TickNumber = state.TickNumber;
-			Players = state.Players.Select(p => BuildInternalPlayer(p, CellSize)).ToDictionary(p => p.Id);
+			Players = state.Players.Select(p => new PlayerInternal(p, mapSize, cellSize)).ToDictionary(p => p.Id);
 			Bonuses = state.Bonuses.Select(b => new BonusInfo {
 				Type = b.Type,
 				Position = b.Position.ConvertToLogic(CellSize)
@@ -89,44 +84,12 @@ namespace MiniAiCup.Paperio.Core
 			_allMapPoints = previousState._allMapPoints;
 		}
 
-		private static PlayerInternal BuildInternalPlayer(PlayerInfo player, int cellSize)
-		{
-			return new PlayerInternal {
-				Id = player.Id,
-				Score = player.Score,
-				Territory = new PointsSet(player.Territory.Select(p => p.ConvertToLogic(cellSize))),
-				Position = player.Position.ConvertToLogic(cellSize),
-				Tail = new Path(player.Lines.Select(p => p.ConvertToLogic(cellSize))),
-				Bonuses = player.Bonuses,
-				Direction = player.Direction
-			};
-		}
-
-		private Path BuildPathToHome()
-		{
-			if (Me == null)
-			{
-				return null;
-			}
-			return PathFinder.GetShortestPath(Me.Position, Me.Territory, Me.Tail.AsPointsSet(), MapSize);
-		}
-
-		private DebugStateView GetDebugStateView()
+		private DebugStateView GetDebugView()
 		{
 			return new DebugStateView {
 				Size = MapSize,
 				CellSize = CellSize,
-				Players = Players.Values.Select(GetDebugPlayerView).ToArray()
-			};
-		}
-
-		private static DebugPlayerView GetDebugPlayerView(PlayerInternal player)
-		{
-			return new DebugPlayerView {
-				Id = player.Id,
-				Territory = player.Territory.ToArray(),
-				Tail = player.Tail.ToArray(),
-				Position = player.Position
+				Players = Players.Values.Select(p => p.DebugView).ToArray()
 			};
 		}
 	}
