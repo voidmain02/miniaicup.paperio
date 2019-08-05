@@ -25,8 +25,16 @@ namespace MiniAiCup.Paperio.Client
 				}
 
 				var gameState = GameStateParser.Parse(message);
-				var nextDirection = game.GetNextDirection(gameState);
-				PushCommand(nextDirection, GameDebugData.Current);
+				try
+				{
+					var nextDirection = game.GetNextDirection(gameState);
+					PushCommand(nextDirection, GameDebugData.Current);
+				}
+				catch (Exception e)
+				{
+					PushErrorInfo(e);
+					throw;
+				}
 			}
 		}
 
@@ -46,6 +54,11 @@ namespace MiniAiCup.Paperio.Client
 
 			commandText += "}";
 			Console.WriteLine(commandText);
+		}
+
+		private static void PushErrorInfo(Exception e)
+		{
+			Console.WriteLine($"{{\"debug\":\"{e}\"}}");
 		}
 
 		private static string BuildRewindData(GameDebugData debugData)
