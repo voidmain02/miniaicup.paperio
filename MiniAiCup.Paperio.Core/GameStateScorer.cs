@@ -41,7 +41,7 @@ namespace MiniAiCup.Paperio.Core
 			var myTailWithShortestPathToHome = state.Me.Tail.AsPointsSet().UnionWith(state.Me.PathToHome.Take(state.Me.PathToHome.Length - 1));
 			int minPathFromEnemyToMyTail = state.Enemies.Length == 0
 				? Int32.MaxValue
-				: state.Enemies.Select(e => PathFinder.GetShortestPath(e.Position, myTailWithShortestPathToHome, e.Tail.AsPointsSet(), state.MapSize)?.Length ?? Int32.MaxValue).Min() - 1;
+				: myTailWithShortestPathToHome.Min(p => state.DangerousMap[p.X, p.Y]) - 1;
 
 			if (minPathFromEnemyToMyTail <= state.Me.PathToHome.Length)
 			{
