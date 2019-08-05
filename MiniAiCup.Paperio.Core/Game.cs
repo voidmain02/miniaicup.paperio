@@ -60,10 +60,12 @@ namespace MiniAiCup.Paperio.Core
 			_lastState = currentState;
 			_lastMove = bestMove;
 
+#if DEBUG
 			GameDebugData.Current.GameParams = _gameParams;
 			GameDebugData.Current.PathToHome = stateAfterBestMove.Me.PathToHome.Select(p => p.ConvertToReal(_gameParams.CellSize)).ToArray();
 			GameDebugData.Current.MoveScores = movesScores;
 			GameDebugData.Current.DangerousMap = currentState.DangerousMap;
+#endif
 
 			return currentState.Me.Direction.Value.GetMoved(bestMove);
 		}

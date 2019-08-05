@@ -28,7 +28,11 @@ namespace MiniAiCup.Paperio.Client
 				try
 				{
 					var nextDirection = game.GetNextDirection(gameState);
-					PushCommand(nextDirection, GameDebugData.Current);
+#if DEBUG
+					PushCommandWithRewind(nextDirection, GameDebugData.Current);
+#else
+					PushCommand(nextDirection);
+#endif
 				}
 				catch (Exception e)
 				{
@@ -44,7 +48,7 @@ namespace MiniAiCup.Paperio.Client
 			return input == null ? null : Message.Load(input);
 		}
 
-		private static void PushCommand(Direction direction, GameDebugData debugData = null)
+		private static void PushCommandWithRewind(Direction direction, GameDebugData debugData)
 		{
 			string commandText = $"{{\"command\":\"{DirectionToString(direction)}\"";
 			if (debugData != null)
@@ -54,6 +58,11 @@ namespace MiniAiCup.Paperio.Client
 
 			commandText += "}";
 			Console.WriteLine(commandText);
+		}
+
+		private static void PushCommand(Direction direction)
+		{
+			Console.WriteLine($"{{\"command\":\"{DirectionToString(direction)}\"}}");
 		}
 
 		private static void PushErrorInfo(Exception e)
