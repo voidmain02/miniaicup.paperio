@@ -80,6 +80,62 @@ namespace MiniAiCup.Paperio.Core
 
 		private int[,] BuildDistanceMap()
 		{
+			return Tail.Length > 1 ? BuildOutsideDistanceMap() : BuildInsideDistanceMap();
+		}
+
+		private int[,] BuildInsideDistanceMap()
+		{
+			var map = new int[_mapSize.Width, _mapSize.Height];
+			for (int y = 0; y < _mapSize.Height; y++)
+			{
+				for (int x = 0; x < _mapSize.Width; x++)
+				{
+					map[x, y] = GetDistanceBetweenPoints(Position, new Point(x, y));
+				}
+			}
+
+			if (Direction == null)
+			{
+				return map;
+			}
+
+			switch (Direction.Value)
+			{
+				case Core.Direction.Left:
+					for (int x = Position.X + 1; x < _mapSize.Width; x++)
+					{
+						map[x, Position.Y] += 2;
+					}
+					break;
+				case Core.Direction.Up:
+					for (int y = Position.Y - 1; y >= 0; y--)
+					{
+						map[Position.X, y] += 2;
+					}
+					break;
+				case Core.Direction.Right:
+					for (int x = Position.X - 1; x >= 0; x--)
+					{
+						map[x, Position.Y] += 2;
+					}
+					break;
+				case Core.Direction.Down:
+					for (int y = Position.X + 1; y < _mapSize.Height; y++)
+					{
+						map[Position.X, y] += 2;
+					}
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
+
+			return map;
+		}
+
+		private int[,] BuildOutsideDistanceMap()
+		{
+			var homePoints = new List<(Point Point, Direction SourceDirection, int PathLength)>();
+
 			var map = new int[_mapSize.Width, _mapSize.Height];
 			for (int y = 0; y < _mapSize.Height; y++)
 			{
@@ -88,7 +144,6 @@ namespace MiniAiCup.Paperio.Core
 					map[x, y] = Int32.MaxValue;
 				}
 			}
-
 			var visited = new bool[_mapSize.Width, _mapSize.Height];
 
 			map[Position.X, Position.Y] = 0;
@@ -101,9 +156,20 @@ namespace MiniAiCup.Paperio.Core
 			{
 				var currentPoint = queue.Dequeue();
 				int currentLength = map[currentPoint.X, currentPoint.Y];
-				foreach (var neighbor in currentPoint.GetNeighbors())
+				foreach (var direction in EnumValues.GetAll<Direction>())
 				{
-					if (!_mapSize.ContainsPoint(neighbor) || visited[neighbor.X, neighbor.Y] || Tail.AsPointsSet().Contains(neighbor))
+					var neighbor = currentPoint.MoveLogic(direction);
+					if (!_mapSize.ContainsPoint(neighbor) || Tail.AsPointsSet().Contains(neighbor))
+					{
+						continue;
+					}
+
+					if (Territory.Contains(neighbor) && !Territory.Contains(currentPoint))
+					{
+						homePoints.Add((neighbor, direction, currentLength + 1));
+					}
+
+					if (visited[neighbor.X, neighbor.Y])
 					{
 						continue;
 					}
@@ -114,7 +180,64 @@ namespace MiniAiCup.Paperio.Core
 				}
 			}
 
+			if (homePoints.Count == 0)
+			{
+				return map;
+			}
+
+			var mapAfterHome = new int[_mapSize.Width, _mapSize.Height];
+			var visitedAfterHome = new bool[_mapSize.Width, _mapSize.Height];
+			foreach (var tailPoint in Tail)
+			{
+				mapAfterHome[tailPoint.X, tailPoint.Y] = homePoints.Min(x => GetDistanceBetweenPoints(x.Point, tailPoint, x.SourceDirection) + x.PathLength);
+				visitedAfterHome[tailPoint.X, tailPoint.Y] = true;
+				queue.Enqueue(tailPoint);
+			}
+
+			while (queue.Count > 0)
+			{
+				var currentPoint = queue.Dequeue();
+				int currentLength = mapAfterHome[currentPoint.X, currentPoint.Y];
+				foreach (var neighbor in currentPoint.GetNeighbors())
+				{
+					if (!_mapSize.ContainsPoint(neighbor) || visitedAfterHome[neighbor.X, neighbor.Y])
+					{
+						continue;
+					}
+
+					mapAfterHome[neighbor.X, neighbor.Y] = currentLength + 1;
+					visitedAfterHome[neighbor.X, neighbor.Y] = true;
+					queue.Enqueue(neighbor);
+				}
+			}
+
+			for (int y = 0; y < _mapSize.Height; y++)
+			{
+				for (int x = 0; x < _mapSize.Width; x++)
+				{
+					map[x, y] = Math.Min(map[x, y], mapAfterHome[x, y]);
+				}
+			}
+
 			return map;
+		}
+
+		private static int GetDistanceBetweenPoints(Point src, Point dst)
+		{
+			return Math.Abs(src.X - dst.X) + Math.Abs(src.Y - dst.Y);
+		}
+
+		private static int GetDistanceBetweenPoints(Point src, Point dst, Direction? direction)
+		{
+			int distance = GetDistanceBetweenPoints(src, dst);
+
+			if (dst.X == src.X && (dst.Y > src.Y && direction == Core.Direction.Down || dst.Y < src.Y && direction == Core.Direction.Up) ||
+				dst.Y == src.Y && (dst.X > src.X && direction == Core.Direction.Left || dst.X < src.X && direction == Core.Direction.Right))
+			{
+				distance += 2;
+			}
+
+			return distance;
 		}
 	}
 }
