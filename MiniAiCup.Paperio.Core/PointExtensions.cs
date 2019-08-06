@@ -8,22 +8,21 @@ namespace MiniAiCup.Paperio.Core
 		public static IEnumerable<Point> GetNeighbors(this Point point)
 		{
 			yield return new Point(point.X - 1, point.Y);
+			yield return new Point(point.X, point.Y + 1);
 			yield return new Point(point.X + 1, point.Y);
 			yield return new Point(point.X, point.Y - 1);
-			yield return new Point(point.X, point.Y + 1);
 		}
 
 		public static IEnumerable<Point> GetEightNeighbors(this Point point)
 		{
 			yield return new Point(point.X - 1, point.Y);
-			yield return new Point(point.X + 1, point.Y);
-			yield return new Point(point.X, point.Y - 1);
-			yield return new Point(point.X, point.Y + 1);
-
-			yield return new Point(point.X - 1, point.Y - 1);
 			yield return new Point(point.X - 1, point.Y + 1);
-			yield return new Point(point.X + 1, point.Y - 1);
+			yield return new Point(point.X, point.Y + 1);
 			yield return new Point(point.X + 1, point.Y + 1);
+			yield return new Point(point.X + 1, point.Y);
+			yield return new Point(point.X + 1, point.Y - 1);
+			yield return new Point(point.X, point.Y - 1);
+			yield return new Point(point.X - 1, point.Y - 1);
 		}
 
 		public static Point ConvertToLogic(this Point realPoint, int cellSize)
@@ -42,8 +41,8 @@ namespace MiniAiCup.Paperio.Core
 			switch (direction)
 			{
 				case Direction.Left: return new Point(point.X - 1, point.Y);
-				case Direction.Right: return new Point(point.X + 1, point.Y);
 				case Direction.Up: return new Point(point.X, point.Y + 1);
+				case Direction.Right: return new Point(point.X + 1, point.Y);
 				case Direction.Down: return new Point(point.X, point.Y - 1);
 				default:
 					throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
@@ -55,8 +54,8 @@ namespace MiniAiCup.Paperio.Core
 			switch (direction)
 			{
 				case Direction.Left: return new Point(point.X - cellSize, point.Y);
-				case Direction.Right: return new Point(point.X + cellSize, point.Y);
 				case Direction.Up: return new Point(point.X, point.Y + cellSize);
+				case Direction.Right: return new Point(point.X + cellSize, point.Y);
 				case Direction.Down: return new Point(point.X, point.Y - cellSize);
 				default:
 					throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
