@@ -27,7 +27,7 @@ namespace MiniAiCup.Paperio.Core
 			var bonuses = state.Bonuses;
 
 			_players = new List<PlayerInternal>();
-			foreach (var srcPlayer in state.Players.Values)
+			foreach (var srcPlayer in state.Players)
 			{
 				var player = (PlayerInternal)srcPlayer.Clone();
 				_players.Add(player);
@@ -105,7 +105,7 @@ namespace MiniAiCup.Paperio.Core
 				player.Score += _scoresGainedPerPlayer[player];
 			}
 
-			return new GameStateInternal(tickNumber, _players, bonuses, state, move);
+			return new GameStateInternal(tickNumber, _players.ToArray(), bonuses, state, move);
 		}
 
 		private void ResolveCollisions()

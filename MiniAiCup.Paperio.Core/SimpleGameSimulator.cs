@@ -22,7 +22,7 @@ namespace MiniAiCup.Paperio.Core
 			var nextBonuses = state.Bonuses;
 
 			var me = (PlayerInternal)state.Me.Clone();
-			var enemies = new List<PlayerInternal>(state.Enemies);
+			var enemies = state.Enemies;
 			MovePlayer(me, move);
 
 			if (!Game.Params.MapLogicSize.ContainsPoint(me.Position) || // Выехал за пределы карты
@@ -71,8 +71,13 @@ namespace MiniAiCup.Paperio.Core
 				}
 			}
 
-			enemies.Add(me);
-			var players = enemies.Except(losers);
+			var players = new PlayerInternal[enemies.Length - losers.Count + 1];
+			players[0] = me;
+			int index = 1;
+			foreach (var enemy in enemies.Except(losers))
+			{
+				players[index++] = enemy;
+			}
 
 			return new GameStateInternal(nextTickNumber, players, nextBonuses, state, move);
 		}

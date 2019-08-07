@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace MiniAiCup.Paperio.Core
@@ -10,7 +9,7 @@ namespace MiniAiCup.Paperio.Core
 
 		public int TickNumber { get; }
 
-		public Dictionary<string, PlayerInternal> Players { get; }
+		public PlayerInternal[] Players { get; }
 
 		public GameStateInternal PreviousState { get; }
 
@@ -32,15 +31,15 @@ namespace MiniAiCup.Paperio.Core
 
 		private GameStateInternal()
 		{
-			_me = new Lazy<PlayerInternal>(() => Players.ContainsKey(Constants.MyId) ? Players[Constants.MyId] : null);
-			_enemies = new Lazy<PlayerInternal[]>(() => Players.Values.Where(p => p.Id != Constants.MyId).ToArray());
+			_me = new Lazy<PlayerInternal>(() => Players.FirstOrDefault(p => p.Id == Constants.MyId));
+			_enemies = new Lazy<PlayerInternal[]>(() => Players.Where(p => p.Id != Constants.MyId).ToArray());
 			_dangerousMap = new Lazy<int[,]>(BuildDangerousMap);
 		}
 
 		public GameStateInternal(GameState state) : this()
 		{
 			TickNumber = state.TickNumber;
-			Players = state.Players.Select(p => new PlayerInternal(p)).ToDictionary(p => p.Id);
+			Players = state.Players.Select(p => new PlayerInternal(p)).ToArray();
 			Bonuses = state.Bonuses.Select(b => new BonusInfo {
 				Type = b.Type,
 				Position = b.Position.ConvertToLogic(Game.Params.CellSize)
@@ -56,11 +55,11 @@ namespace MiniAiCup.Paperio.Core
 			PreviousState = previousState;
 		}
 
-		public GameStateInternal(int tickNumber, IEnumerable<PlayerInternal> players, IEnumerable<BonusInfo> bonuses, GameStateInternal previousState, Move previousMove) : this()
+		public GameStateInternal(int tickNumber, PlayerInternal[] players, BonusInfo[] bonuses, GameStateInternal previousState, Move previousMove) : this()
 		{
 			TickNumber = tickNumber;
-			Players = players.ToDictionary(p => p.Id);
-			Bonuses = bonuses.ToArray();
+			Players = players;
+			Bonuses = bonuses;
 
 			PreviousState = previousState;
 			PreviousMove = previousMove;
@@ -91,7 +90,7 @@ namespace MiniAiCup.Paperio.Core
 			return new DebugStateView {
 				Size = Game.Params.MapLogicSize,
 				CellSize = Game.Params.CellSize,
-				Players = Players.Values.Select(p => p.DebugView).ToArray()
+				Players = Players.Select(p => p.DebugView).ToArray()
 			};
 		}
 	}
