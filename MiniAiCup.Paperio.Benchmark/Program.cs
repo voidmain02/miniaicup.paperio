@@ -6,7 +6,7 @@ namespace MiniAiCup.Paperio.Benchmark
 	{
 		public static void Main(string[] args)
 		{
-			var summary = BenchmarkRunner.Run<FillDistanceArrayBenchmark>();
+			var summary = BenchmarkRunner.Run<FillArrayBenchmark>();
 		}
 	}
 }
