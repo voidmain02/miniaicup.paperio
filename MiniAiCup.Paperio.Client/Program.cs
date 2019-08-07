@@ -78,11 +78,16 @@ namespace MiniAiCup.Paperio.Client
 
 			if (debugData.BestTrajectory != null)
 			{
-				builder.AddRange(debugData.BestTrajectory.Select(p => new CircleRewindCommand {
-					Center = p,
-					Radius = 7,
-					Color = Color.FromArgb(6, 141, 209)
-				}));
+				const int minOpacity = 20;
+				for (int i = 0; i < debugData.BestTrajectory.Length; i++)
+				{
+					var p = debugData.BestTrajectory[i];
+					builder.Add(new CircleRewindCommand {
+						Center = p,
+						Radius = 7,
+						Color = Color.FromArgb(255 - i*((255 - minOpacity)/debugData.BestTrajectory.Length), 6, 141, 209)
+					});
+				}
 			}
 
 			if (debugData.DangerousMap != null)
