@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -9,10 +10,13 @@ namespace MiniAiCup.Paperio.Core
 
 		private readonly bool[,] _visited;
 
+		private readonly bool[,] _emptyVisited;
+
 		public BfsTerritoryCapturer()
 		{
 			_mapBoundaryPoints = GetBoundary(Game.Params.MapLogicSize).ToList();
 			_visited = Game.GetNewMap<bool>();
+			_emptyVisited = Game.GetNewMap<bool>();
 		}
 
 		public PointsSet Capture(PointsSet territory, Path tail)
@@ -68,13 +72,7 @@ namespace MiniAiCup.Paperio.Core
 
 		private void ResetVisited()
 		{
-			for (int y = 0; y < Game.Params.MapLogicSize.Height; y++)
-			{
-				for (int x = 0; x < Game.Params.MapLogicSize.Width; x++)
-				{
-					_visited[x, y] = false;
-				}
-			}
+			Buffer.BlockCopy(_emptyVisited, 0, _visited, 0, Game.Params.MapLogicSize.Width*Game.Params.MapLogicSize.Height);
 		}
 
 		private static IEnumerable<Point> GetBoundary(Size size)
