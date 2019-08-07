@@ -8,22 +8,18 @@ namespace MiniAiCup.Paperio.Core
 	{
 		private readonly GameParams _gameParams;
 
-		private readonly GameSimulator _simulator;
-
-		private readonly GameStateScorer _scorer;
-
 		private bool _isInitialized;
 
 		private Move _lastMove;
 
 		private GameStateInternal _lastState;
 
+		private readonly BestTrajectoryFinder _bestTrajectoryFinder;
+
 		public Game(GameParams gameParams)
 		{
 			_gameParams = gameParams;
-
-			_simulator = new GameSimulator(_gameParams.MapLogicSize);
-			_scorer = new GameStateScorer();
+			_bestTrajectoryFinder = new BestTrajectoryFinder(_gameParams.MapLogicSize, 5);
 		}
 
 		public Direction GetNextDirection(GameState state)
@@ -39,35 +35,36 @@ namespace MiniAiCup.Paperio.Core
 				? new GameStateInternal(state, _gameParams)
 				: new GameStateInternal(state, _lastState, _lastMove);
 
-			var bestMove = Move.Forward;
-			int bestScore = Int32.MinValue;
-			GameStateInternal stateAfterBestMove = null;
+			var bestState = _bestTrajectoryFinder.FindBestState(currentState);
 
-			var movesScores = new Dictionary<Move, int>();
-			foreach (var move in EnumValues.GetAll<Move>())
-			{
-				var nextState = _simulator.Simulate(currentState, move);
-				int nextStateScore = _scorer.Score(nextState);
-				movesScores[move] = nextStateScore;
-				if (nextStateScore > bestScore)
-				{
-					bestScore = nextStateScore;
-					bestMove = move;
-					stateAfterBestMove = nextState;
-				}
-			}
+			var statesList = GetStates(bestState, currentState);
+			var nextState = statesList.First();
+			var nextDirection = nextState.Me.Direction;
 
 			_lastState = currentState;
-			_lastMove = bestMove;
+			_lastMove = nextState.PreviousMove;
 
 #if DEBUG
 			GameDebugData.Current.GameParams = _gameParams;
-			GameDebugData.Current.PathToHome = stateAfterBestMove.Me.PathToHome.Select(p => p.ConvertToReal(_gameParams.CellSize)).ToArray();
-			GameDebugData.Current.MoveScores = movesScores;
 			GameDebugData.Current.DangerousMap = currentState.DangerousMap;
+			GameDebugData.Current.BestTrajectory = statesList.Select(s => s.Me.Position.ConvertToReal(_gameParams.CellSize)).ToArray();
 #endif
 
-			return currentState.Me.Direction.Value.GetMoved(bestMove);
+			return nextDirection.Value;
+		}
+
+		private static List<GameStateInternal> GetStates(GameStateInternal lastState, GameStateInternal initialState)
+		{
+			var states = new List<GameStateInternal>();
+			var currentState = lastState;
+			while (currentState != initialState)
+			{
+				states.Add(currentState);
+				currentState = currentState.PreviousState;
+			}
+
+			states.Reverse();
+			return states;
 		}
 
 		private Direction GetStartDirection(GameState state)

@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace MiniAiCup.Paperio.Core
 {
-	public class GameSimulator
+	public class ReferenceGameSimulator
 	{
 		private readonly Size _mapSize;
 
@@ -17,7 +17,7 @@ namespace MiniAiCup.Paperio.Core
 
 		private readonly IEnemyStrategy _enemyStrategy;
 
-		public GameSimulator(Size mapSize, IEnemyStrategy enemyStrategy = null)
+		public ReferenceGameSimulator(Size mapSize, IEnemyStrategy enemyStrategy = null)
 		{
 			_mapSize = mapSize;
 			_territoryCapturer = new BfsTerritoryCapturer(_mapSize);

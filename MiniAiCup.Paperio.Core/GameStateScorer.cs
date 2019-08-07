@@ -1,5 +1,4 @@
-using System;
-using System.Linq;
+using System.Collections.Generic;
 
 namespace MiniAiCup.Paperio.Core
 {
@@ -17,11 +16,6 @@ namespace MiniAiCup.Paperio.Core
 				return -800;
 			}
 
-			if (state.Me.Territory.Count == state.MapSize.Width*state.MapSize.Height)
-			{
-				return 0;
-			}
-
 			if (state.Me.Tail.Length == 0)
 			{
 				var freeTerritory = state.AllMapPoints.ExceptWith(state.Me.Territory);
@@ -29,8 +23,7 @@ namespace MiniAiCup.Paperio.Core
 				var pathToOutside = PathFinder.GetShortestPath(state.Me.Position, freeTerritory, obstacles, state.MapSize);
 
 				int pathToOutsidePenalty = 1 - pathToOutside.Length;
-				int backToHomeBonus = state.PreviousState?.Me.Tail.Length ?? 0;
-				return backToHomeBonus + pathToOutsidePenalty;
+				return state.Me.Score + pathToOutsidePenalty;
 			}
 
 			if (state.Me.PathToHome == null)
@@ -38,23 +31,15 @@ namespace MiniAiCup.Paperio.Core
 				return -900;
 			}
 
-			var myTailWithShortestPathToHome = state.Me.Tail.AsPointsSet().UnionWith(state.Me.PathToHome.Take(state.Me.PathToHome.Length - 1));
-			int minPathFromEnemyToMyTail = state.Enemies.Length == 0
-				? Int32.MaxValue
-				: myTailWithShortestPathToHome.Min(p => state.DangerousMap[p.X, p.Y]) - 1;
+			var territoryCapturer = new BfsTerritoryCapturer(state.MapSize);
+			var points = new List<Point>();
+			points.AddRange(state.Me.Tail);
+			points.AddRange(state.Me.PathToHome);
+			var captured = territoryCapturer.Capture(state.Me.Territory, new Path(points));
+			int potentialScore = captured.Count*Constants.NeutralTerritoryScore;
+			int potentialScoreBonus = (int)(potentialScore*0.9);
 
-			if (minPathFromEnemyToMyTail <= state.Me.PathToHome.Length)
-			{
-				return (minPathFromEnemyToMyTail - state.Me.PathToHome.Length - 2)*10;
-			}
-
-			int outsideBonus = 10;
-			int longPathPenalty = state.Enemies.Length > 0 ? Math.Min(20 - state.Me.Tail.Length, 0) : 0;
-			int longPathToHomePenalty = state.Enemies.Length > 0 ? Math.Min(6 - state.Me.PathToHome.Length, 0) : 0;
-			int forwardMoveBonus = state.PreviousMove == Move.Forward ? 1 : 0;
-			int movesLeft = (Constants.MaxTickCount - state.TickNumber)/(state.CellSize/state.Speed);
-			int notEnoughTimePenalty = Math.Min((movesLeft - state.Me.PathToHome.Length)*10, 0);
-			return outsideBonus + longPathPenalty + longPathToHomePenalty + forwardMoveBonus + notEnoughTimePenalty;
+			return state.Me.Score + potentialScoreBonus;
 		}
 	}
 }

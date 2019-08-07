@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace MiniAiCup.Paperio.Core
 {
 	public class GameDebugData
@@ -8,9 +6,7 @@ namespace MiniAiCup.Paperio.Core
 
 		public GameParams GameParams { get; set; }
 
-		public Point[] PathToHome { get; set; }
-
-		public Dictionary<Move, int> MoveScores { get; set; }
+		public Point[] BestTrajectory { get; set; }
 
 		public int[,] DangerousMap { get; set; }
 
