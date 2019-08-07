@@ -33,15 +33,31 @@ namespace MiniAiCup.Paperio.Core
 				return -900;
 			}
 
-			var territoryCapturer = new BfsTerritoryCapturer(state.MapSize);
-			var points = new List<Point>();
-			points.AddRange(state.Me.Tail);
-			points.AddRange(state.Me.PathToHome);
-			var captured = territoryCapturer.Capture(state.Me.Territory, new Path(points));
-			int potentialScore = captured.Count*Constants.NeutralTerritoryScore;
+			int potentialScore = CalcPotentialTerritoryCaptureScore(state);
 			int potentialScoreBonus = (int)(potentialScore*0.9);
 
 			return (state.Me.Score + potentialScoreBonus)*scoresMultiplicator;
+		}
+
+		public int CalcPotentialTerritoryCaptureScore(GameStateInternal state)
+		{
+			var territoryCapturer = new BfsTerritoryCapturer(state.MapSize);
+
+			var tailWithPathToHome = new List<Point>(state.Me.Tail.Length + state.Me.PathToHome.Length);
+			tailWithPathToHome.AddRange(state.Me.Tail);
+			tailWithPathToHome.AddRange(state.Me.PathToHome);
+			var capturedTerritory = territoryCapturer.Capture(state.Me.Territory, new Path(tailWithPathToHome));
+			
+			int score = capturedTerritory.Count*Constants.NeutralTerritoryScore;
+			foreach (var enemy in state.Enemies)
+			{
+				int srcCount = enemy.Territory.Count;
+				enemy.Territory = enemy.Territory.ExceptWith(capturedTerritory);
+				int croppedCount = enemy.Territory.Count;
+				score += (srcCount - croppedCount)*(Constants.EnemyTerritoryScore - Constants.NeutralTerritoryScore);
+			}
+
+			return score;
 		}
 	}
 }
