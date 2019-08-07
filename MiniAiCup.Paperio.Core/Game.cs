@@ -11,6 +11,8 @@ namespace MiniAiCup.Paperio.Core
 
 		public static PointsSet AllMapPoints { get; private set; }
 
+		public static int[,] NoEnemiesDangerousMap { get; private set; }
+
 		private Move _lastMove;
 
 		private GameStateInternal _lastState;
@@ -21,6 +23,15 @@ namespace MiniAiCup.Paperio.Core
 		{
 			Params = gameParams;
 			AllMapPoints = Params.MapLogicSize.GetAllLogicPoints();
+
+			NoEnemiesDangerousMap = Game.GetNewMap<int>();
+			for (int y = 0; y < Game.Params.MapLogicSize.Height; y++)
+			{
+				for (int x = 0; x < Game.Params.MapLogicSize.Width; x++)
+				{
+					NoEnemiesDangerousMap[x, y] = Int32.MaxValue;
+				}
+			}
 		}
 
 		public Direction GetNextDirection(GameState state)
