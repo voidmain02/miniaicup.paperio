@@ -5,7 +5,6 @@ using MiniAiCup.Paperio.Core;
 namespace MiniAiCup.Paperio.Benchmark
 {
 	[CoreJob]
-	[RPlotExporter]
 	[RankColumn]
 	public class FillDistanceArrayBenchmark
 	{
