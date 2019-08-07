@@ -55,11 +55,25 @@ namespace MiniAiCup.Paperio.Core
 		private int[,] BuildDangerousMap()
 		{
 			var map = new int[MapSize.Width, MapSize.Height];
-			for (int y = 0; y < MapSize.Height; y++)
+
+			if (Enemies.Any())
 			{
-				for (int x = 0; x < MapSize.Width; x++)
+				for (int y = 0; y < MapSize.Height; y++)
 				{
-					map[x, y] = Enemies.Min(e => e.DistanceMap[x, y]);
+					for (int x = 0; x < MapSize.Width; x++)
+					{
+						map[x, y] = Enemies.Min(e => e.DistanceMap[x, y]);
+					}
+				}
+			}
+			else
+			{
+				for (int y = 0; y < MapSize.Height; y++)
+				{
+					for (int x = 0; x < MapSize.Width; x++)
+					{
+						map[x, y] = Int32.MaxValue;
+					}
 				}
 			}
 
