@@ -16,6 +16,8 @@ namespace MiniAiCup.Paperio.Core
 				return -800;
 			}
 
+			const int scoresMultiplicator = 10;
+
 			if (state.Me.Tail.Length == 0)
 			{
 				var freeTerritory = state.AllMapPoints.ExceptWith(state.Me.Territory);
@@ -23,7 +25,7 @@ namespace MiniAiCup.Paperio.Core
 				var pathToOutside = PathFinder.GetShortestPath(state.Me.Position, freeTerritory, obstacles, state.MapSize);
 
 				int pathToOutsidePenalty = 1 - pathToOutside.Length;
-				return state.Me.Score + pathToOutsidePenalty;
+				return state.Me.Score*scoresMultiplicator + pathToOutsidePenalty;
 			}
 
 			if (state.Me.PathToHome == null)
@@ -39,7 +41,7 @@ namespace MiniAiCup.Paperio.Core
 			int potentialScore = captured.Count*Constants.NeutralTerritoryScore;
 			int potentialScoreBonus = (int)(potentialScore*0.9);
 
-			return state.Me.Score + potentialScoreBonus;
+			return (state.Me.Score + potentialScoreBonus)*scoresMultiplicator;
 		}
 	}
 }
