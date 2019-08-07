@@ -5,14 +5,7 @@ namespace MiniAiCup.Paperio.Core
 {
 	public class ReferenceTerritoryCapturer : ITerritoryCapturer
 	{
-		private readonly Size _mapSize;
-
 		private PointsSet _territory;
-
-		public ReferenceTerritoryCapturer(Size mapSize)
-		{
-			_mapSize = mapSize;
-		}
 
 		public PointsSet Capture(PointsSet territory, Path tail)
 		{
@@ -155,16 +148,8 @@ namespace MiniAiCup.Paperio.Core
 
 		private Path GetPath(Point startPoint, Point endPoint, PointsSet boundary)
 		{
-			var allPoints = new List<Point>(_mapSize.Width * _mapSize.Height);
-			for (int x = 0; x < _mapSize.Width; x++)
-			{
-				for (int y = 0; y < _mapSize.Height; y++)
-				{
-					allPoints.Add(new Point(x, y));
-				}
-			}
-			var obstacles = new PointsSet(allPoints).ExceptWith(boundary);
-			return PathFinder.GetShortestPath(startPoint, new PointsSet(new[] { endPoint }), obstacles, _mapSize)?.Prepend(startPoint);
+			var obstacles = new PointsSet(Game.AllMapPoints).ExceptWith(boundary);
+			return PathFinder.GetShortestPath(startPoint, new PointsSet(new[] { endPoint }), obstacles)?.Prepend(startPoint);
 		}
 
 		private static Point? GetNearestBoundaryPoint(Point point, PointsSet boundary)

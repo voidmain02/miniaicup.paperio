@@ -1,6 +1,5 @@
 using System;
 using System.Drawing;
-using System.Linq;
 using MiniAiCup.Paperio.Client.Rewind;
 using MiniAiCup.Paperio.Core;
 using ColorConverter = MiniAiCup.Paperio.Client.Rewind.ColorConverter;
@@ -14,7 +13,9 @@ namespace MiniAiCup.Paperio.Client
 		{
 			var message = ReadMessage();
 			var gameParams = GameParamsParser.Parse(message);
-			var game = new Game(gameParams);
+			Game.Initialize(gameParams);
+
+			var game = new Game();
 
 			while (true)
 			{
@@ -99,9 +100,9 @@ namespace MiniAiCup.Paperio.Client
 				const double maxHue = 100.0/360.0;
 
 				int maxValue = 0;
-				for (int y = 0; y < debugData.GameParams.MapLogicSize.Height; y++)
+				for (int y = 0; y < Game.Params.MapLogicSize.Height; y++)
 				{
-					for (int x = 0; x < debugData.GameParams.MapLogicSize.Width; x++)
+					for (int x = 0; x < Game.Params.MapLogicSize.Width; x++)
 					{
 						if (debugData.DangerousMap[x, y] != Int32.MaxValue && debugData.DangerousMap[x, y] > maxValue)
 						{
@@ -109,25 +110,25 @@ namespace MiniAiCup.Paperio.Client
 						}
 					}
 				}
-				for (int y = 0; y < debugData.GameParams.MapLogicSize.Height; y++)
+				for (int y = 0; y < Game.Params.MapLogicSize.Height; y++)
 				{
-					for (int x = 0; x < debugData.GameParams.MapLogicSize.Width; x++)
+					for (int x = 0; x < Game.Params.MapLogicSize.Width; x++)
 					{
-						if (debugData.DangerousMap[x, y] > debugData.GameParams.MapLogicSize.Width*debugData.GameParams.MapLogicSize.Height)
+						if (debugData.DangerousMap[x, y] > Game.Params.MapLogicSize.Width*Game.Params.MapLogicSize.Height)
 						{
 							continue;
 						}
 
 						double hue = (double)debugData.DangerousMap[x, y]/(double)maxValue*maxHue;
 
-						builder.Add(new CellRewindCommand(debugData.GameParams.CellSize) {
+						builder.Add(new CellRewindCommand(Game.Params.CellSize) {
 							LogicPoint = new Point(x, y),
 							Color = ColorConverter.FromHsla(hue, 1.0, 0.5, 0.6),
 							Layer = 3
 						});
 						builder.Add(new PopupRewindCommand {
-							Location = new Point(x, y).ConvertToReal(debugData.GameParams.CellSize),
-							Radius = debugData.GameParams.CellSize/2,
+							Location = new Point(x, y).ConvertToReal(Game.Params.CellSize),
+							Radius = Game.Params.CellSize/2,
 							Text = $"dang: {debugData.DangerousMap[x, y]}"
 						});
 					}

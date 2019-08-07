@@ -6,8 +6,6 @@ namespace MiniAiCup.Paperio.Core
 {
 	public class PlayerInternal : ICloneable
 	{
-		private readonly Size _mapSize;
-
 		public string Id { get; }
 
 		public int Score { get; set; }
@@ -32,21 +30,20 @@ namespace MiniAiCup.Paperio.Core
 
 		public int[,] DistanceMap => _distanceMap.Value;
 
-		private PlayerInternal(string id, Size mapSize)
+		private PlayerInternal(string id)
 		{
-			_mapSize = mapSize;
 			_pathToHome = new Lazy<Path>(BuildPathToHome);
 			_distanceMap = new Lazy<int[,]>(BuildDistanceMap);
 
 			Id = id;
 		}
 
-		public PlayerInternal(PlayerInfo player, Size mapSize, int cellSize) : this(player.Id, mapSize)
+		public PlayerInternal(PlayerInfo player) : this(player.Id)
 		{
 			Score = player.Score;
-			Territory = new PointsSet(player.Territory.Select(p => p.ConvertToLogic(cellSize)));
-			Position = player.Position.ConvertToLogic(cellSize);
-			Tail = new Path(player.Lines.Select(p => p.ConvertToLogic(cellSize)));
+			Territory = new PointsSet(player.Territory.Select(p => p.ConvertToLogic(Game.Params.CellSize)));
+			Position = player.Position.ConvertToLogic(Game.Params.CellSize);
+			Tail = new Path(player.Lines.Select(p => p.ConvertToLogic(Game.Params.CellSize)));
 			Bonuses = player.Bonuses;
 			Direction = player.Direction;
 		}
@@ -63,7 +60,7 @@ namespace MiniAiCup.Paperio.Core
 
 		public object Clone()
 		{
-			return new PlayerInternal(Id, _mapSize) {
+			return new PlayerInternal(Id) {
 				Score = Score,
 				Territory = Territory,
 				Position = Position,
@@ -75,7 +72,7 @@ namespace MiniAiCup.Paperio.Core
 
 		private Path BuildPathToHome()
 		{
-			return PathFinder.GetShortestPath(Position, Territory, Tail.AsPointsSet(), _mapSize);
+			return PathFinder.GetShortestPath(Position, Territory, Tail.AsPointsSet());
 		}
 
 		private int[,] BuildDistanceMap()
@@ -85,10 +82,10 @@ namespace MiniAiCup.Paperio.Core
 
 		private int[,] BuildInsideDistanceMap()
 		{
-			var map = new int[_mapSize.Width, _mapSize.Height];
-			for (int y = 0; y < _mapSize.Height; y++)
+			var map = new int[Game.Params.MapLogicSize.Width, Game.Params.MapLogicSize.Height];
+			for (int y = 0; y < Game.Params.MapLogicSize.Height; y++)
 			{
-				for (int x = 0; x < _mapSize.Width; x++)
+				for (int x = 0; x < Game.Params.MapLogicSize.Width; x++)
 				{
 					map[x, y] = GetDistanceBetweenPoints(Position, new Point(x, y));
 				}
@@ -102,7 +99,7 @@ namespace MiniAiCup.Paperio.Core
 			switch (Direction.Value)
 			{
 				case Core.Direction.Left:
-					for (int x = Position.X + 1; x < _mapSize.Width; x++)
+					for (int x = Position.X + 1; x < Game.Params.MapLogicSize.Width; x++)
 					{
 						map[x, Position.Y] += 2;
 					}
@@ -120,7 +117,7 @@ namespace MiniAiCup.Paperio.Core
 					}
 					break;
 				case Core.Direction.Down:
-					for (int y = Position.X + 1; y < _mapSize.Height; y++)
+					for (int y = Position.X + 1; y < Game.Params.MapLogicSize.Height; y++)
 					{
 						map[Position.X, y] += 2;
 					}
@@ -136,20 +133,20 @@ namespace MiniAiCup.Paperio.Core
 		{
 			var homePoints = new List<(Point Point, Direction SourceDirection, int PathLength)>();
 
-			var map = new int[_mapSize.Width, _mapSize.Height];
-			for (int y = 0; y < _mapSize.Height; y++)
+			var map = new int[Game.Params.MapLogicSize.Width, Game.Params.MapLogicSize.Height];
+			for (int y = 0; y < Game.Params.MapLogicSize.Height; y++)
 			{
-				for (int x = 0; x < _mapSize.Width; x++)
+				for (int x = 0; x < Game.Params.MapLogicSize.Width; x++)
 				{
 					map[x, y] = Int32.MaxValue;
 				}
 			}
-			var visited = new bool[_mapSize.Width, _mapSize.Height];
+			var visited = new bool[Game.Params.MapLogicSize.Width, Game.Params.MapLogicSize.Height];
 
 			map[Position.X, Position.Y] = 0;
 			visited[Position.X, Position.Y] = true;
 
-			var queue = new Queue<Point>(_mapSize.Width*_mapSize.Height);
+			var queue = new Queue<Point>(Game.Params.MapLogicSize.Width*Game.Params.MapLogicSize.Height);
 			queue.Enqueue(Position);
 
 			while (queue.Count > 0)
@@ -159,7 +156,7 @@ namespace MiniAiCup.Paperio.Core
 				foreach (var direction in EnumValues.GetAll<Direction>())
 				{
 					var neighbor = currentPoint.MoveLogic(direction);
-					if (!_mapSize.ContainsPoint(neighbor) || Tail.AsPointsSet().Contains(neighbor))
+					if (!Game.Params.MapLogicSize.ContainsPoint(neighbor) || Tail.AsPointsSet().Contains(neighbor))
 					{
 						continue;
 					}
@@ -185,8 +182,8 @@ namespace MiniAiCup.Paperio.Core
 				return map;
 			}
 
-			var mapAfterHome = new int[_mapSize.Width, _mapSize.Height];
-			var visitedAfterHome = new bool[_mapSize.Width, _mapSize.Height];
+			var mapAfterHome = new int[Game.Params.MapLogicSize.Width, Game.Params.MapLogicSize.Height];
+			var visitedAfterHome = new bool[Game.Params.MapLogicSize.Width, Game.Params.MapLogicSize.Height];
 			foreach (var tailPoint in Tail)
 			{
 				mapAfterHome[tailPoint.X, tailPoint.Y] = homePoints.Min(x => GetDistanceBetweenPoints(x.Point, tailPoint, x.SourceDirection) + x.PathLength);
@@ -200,7 +197,7 @@ namespace MiniAiCup.Paperio.Core
 				int currentLength = mapAfterHome[currentPoint.X, currentPoint.Y];
 				foreach (var neighbor in currentPoint.GetNeighbors())
 				{
-					if (!_mapSize.ContainsPoint(neighbor) || visitedAfterHome[neighbor.X, neighbor.Y])
+					if (!Game.Params.MapLogicSize.ContainsPoint(neighbor) || visitedAfterHome[neighbor.X, neighbor.Y])
 					{
 						continue;
 					}
@@ -211,9 +208,9 @@ namespace MiniAiCup.Paperio.Core
 				}
 			}
 
-			for (int y = 0; y < _mapSize.Height; y++)
+			for (int y = 0; y < Game.Params.MapLogicSize.Height; y++)
 			{
-				for (int x = 0; x < _mapSize.Width; x++)
+				for (int x = 0; x < Game.Params.MapLogicSize.Width; x++)
 				{
 					map[x, y] = Math.Min(map[x, y], mapAfterHome[x, y]);
 				}

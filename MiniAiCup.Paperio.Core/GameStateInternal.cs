@@ -6,12 +6,6 @@ namespace MiniAiCup.Paperio.Core
 {
 	public class GameStateInternal
 	{
-		public Size MapSize { get; }
-
-		public int CellSize { get; }
-
-		public int Speed { get; }
-
 		public BonusInfo[] Bonuses { get; }
 
 		public int TickNumber { get; }
@@ -30,37 +24,57 @@ namespace MiniAiCup.Paperio.Core
 
 		public PlayerInternal[] Enemies => _enemies.Value;
 
-		private readonly Lazy<PointsSet> _allMapPoints;
-
-		public PointsSet AllMapPoints => _allMapPoints.Value;
-
 		private readonly Lazy<int[,]> _dangerousMap;
 
 		public int[,] DangerousMap => _dangerousMap.Value;
 
 		public DebugStateView DebugView => GetDebugView();
 
-		private GameStateInternal(Size mapSize, int cellSize, int speed)
+		private GameStateInternal()
 		{
-			MapSize = mapSize;
-			CellSize = cellSize;
-			Speed = speed;
-
 			_me = new Lazy<PlayerInternal>(() => Players.ContainsKey(Constants.MyId) ? Players[Constants.MyId] : null);
 			_enemies = new Lazy<PlayerInternal[]>(() => Players.Values.Where(p => p.Id != Constants.MyId).ToArray());
-			_allMapPoints = new Lazy<PointsSet>(() => MapSize.GetAllLogicPoints());
 			_dangerousMap = new Lazy<int[,]>(BuildDangerousMap);
+		}
+
+		public GameStateInternal(GameState state) : this()
+		{
+			TickNumber = state.TickNumber;
+			Players = state.Players.Select(p => new PlayerInternal(p)).ToDictionary(p => p.Id);
+			Bonuses = state.Bonuses.Select(b => new BonusInfo {
+				Type = b.Type,
+				Position = b.Position.ConvertToLogic(Game.Params.CellSize)
+			}).ToArray();
+
+			PreviousMove = Move.Forward;
+			PreviousState = null;
+		}
+
+		public GameStateInternal(GameState state, GameStateInternal previousState, Move previousMove) : this(state)
+		{
+			PreviousMove = previousMove;
+			PreviousState = previousState;
+		}
+
+		public GameStateInternal(int tickNumber, IEnumerable<PlayerInternal> players, IEnumerable<BonusInfo> bonuses, GameStateInternal previousState, Move previousMove) : this()
+		{
+			TickNumber = tickNumber;
+			Players = players.ToDictionary(p => p.Id);
+			Bonuses = bonuses.ToArray();
+
+			PreviousState = previousState;
+			PreviousMove = previousMove;
 		}
 
 		private int[,] BuildDangerousMap()
 		{
-			var map = new int[MapSize.Width, MapSize.Height];
+			var map = new int[Game.Params.MapLogicSize.Width, Game.Params.MapLogicSize.Height];
 
 			if (Enemies.Any())
 			{
-				for (int y = 0; y < MapSize.Height; y++)
+				for (int y = 0; y < Game.Params.MapLogicSize.Height; y++)
 				{
-					for (int x = 0; x < MapSize.Width; x++)
+					for (int x = 0; x < Game.Params.MapLogicSize.Width; x++)
 					{
 						map[x, y] = Enemies.Min(e => e.DistanceMap[x, y]);
 					}
@@ -68,9 +82,9 @@ namespace MiniAiCup.Paperio.Core
 			}
 			else
 			{
-				for (int y = 0; y < MapSize.Height; y++)
+				for (int y = 0; y < Game.Params.MapLogicSize.Height; y++)
 				{
-					for (int x = 0; x < MapSize.Width; x++)
+					for (int x = 0; x < Game.Params.MapLogicSize.Width; x++)
 					{
 						map[x, y] = Int32.MaxValue;
 					}
@@ -80,48 +94,11 @@ namespace MiniAiCup.Paperio.Core
 			return map;
 		}
 
-		private GameStateInternal(GameState state, Size mapSize, int cellSize, int speed) : this(mapSize, cellSize, speed)
-		{
-			TickNumber = state.TickNumber;
-			Players = state.Players.Select(p => new PlayerInternal(p, mapSize, cellSize)).ToDictionary(p => p.Id);
-			Bonuses = state.Bonuses.Select(b => new BonusInfo {
-				Type = b.Type,
-				Position = b.Position.ConvertToLogic(CellSize)
-			}).ToArray();
-		}
-
-		public GameStateInternal(GameState state, GameParams gameParams) : this(state, gameParams.MapLogicSize, gameParams.CellSize, gameParams.Speed)
-		{
-			PreviousMove = Move.Forward;
-			PreviousState = null;
-		}
-
-		public GameStateInternal(GameState state, GameStateInternal previousState, Move previousMove) : this(state, previousState.MapSize, previousState.CellSize, previousState.Speed)
-		{
-			PreviousMove = previousMove;
-			PreviousState = previousState;
-
-			_allMapPoints = previousState._allMapPoints;
-		}
-
-		public GameStateInternal(int tickNumber, IEnumerable<PlayerInternal> players, IEnumerable<BonusInfo> bonuses, GameStateInternal previousState, Move previousMove)
-			: this(previousState.MapSize, previousState.CellSize, previousState.Speed)
-		{
-			TickNumber = tickNumber;
-			Players = players.ToDictionary(p => p.Id);
-			Bonuses = bonuses.ToArray();
-
-			PreviousState = previousState;
-			PreviousMove = previousMove;
-
-			_allMapPoints = previousState._allMapPoints;
-		}
-
 		private DebugStateView GetDebugView()
 		{
 			return new DebugStateView {
-				Size = MapSize,
-				CellSize = CellSize,
+				Size = Game.Params.MapLogicSize,
+				CellSize = Game.Params.CellSize,
 				Players = Players.Values.Select(p => p.DebugView).ToArray()
 			};
 		}

@@ -22,7 +22,8 @@ namespace MiniAiCup.Paperio.VisioPlayer
 			var gameStates = jData.Where(x => (string)x["type"] == "tick").Select(x => ParseGameState((JObject)x, myPlayerIndex));
 			var decisionGameStates = gameStates.Where(IsDecisionState);
 
-			var game = new Game(gameParams);
+			Game.Initialize(gameParams);
+			var game = new Game();
 			foreach (var state in decisionGameStates.SkipWhile(x => x.TickNumber < startTickNumber))
 			{
 				game.GetNextDirection(state);

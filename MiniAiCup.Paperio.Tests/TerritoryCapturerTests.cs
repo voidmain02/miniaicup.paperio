@@ -8,14 +8,21 @@ namespace MiniAiCup.Paperio.Tests
 	[TestFixtureSource("FixtureArgs")]
 	public class TerritoryCapturerTests
 	{
-		private static readonly Size MapSize = new Size(15, 15);
-
-		public static object[] FixtureArgs = {
-			new object[] { new ReferenceTerritoryCapturer(MapSize) },
-			new object[] { new BfsTerritoryCapturer(MapSize) }
+		public static object[] FixtureArgs => new object[] {
+			new object[] { new ReferenceTerritoryCapturer() },
+			new object[] { new BfsTerritoryCapturer() }
 		};
 
 		private readonly ITerritoryCapturer _capturer;
+
+		static TerritoryCapturerTests()
+		{
+			Game.Initialize(new GameParams {
+				MapLogicSize = new Size(15, 15),
+				CellSize = 30,
+				Speed = 5
+			});
+		}
 
 		public TerritoryCapturerTests(ITerritoryCapturer capturer)
 		{
@@ -545,8 +552,8 @@ namespace MiniAiCup.Paperio.Tests
 
 		private static bool AreEquals(IEnumerable<Point> fact, IEnumerable<Point> expected)
 		{
-			var orderedFact = fact.OrderBy(p => p.Y*MapSize.Height + p.X).ToList();
-			var orderedExpected = expected.OrderBy(p => p.Y*MapSize.Height + p.X).ToList();
+			var orderedFact = fact.OrderBy(p => p.Y*Game.Params.MapLogicSize.Height + p.X).ToList();
+			var orderedExpected = expected.OrderBy(p => p.Y*Game.Params.MapLogicSize.Height + p.X).ToList();
 
 			return orderedFact.SequenceEqual(orderedExpected);
 		}

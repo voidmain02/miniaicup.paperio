@@ -7,20 +7,20 @@ namespace MiniAiCup.Paperio.Core
 {
 	public class Game
 	{
-		private readonly GameParams _gameParams;
+		public static GameParams Params { get; private set; }
 
-		private bool _isInitialized;
+		public static PointsSet AllMapPoints { get; private set; }
 
 		private Move _lastMove;
 
 		private GameStateInternal _lastState;
 
-		private readonly BestTrajectoryFinder _bestTrajectoryFinder;
+		private readonly BestTrajectoryFinder _bestTrajectoryFinder = new BestTrajectoryFinder(5);
 
-		public Game(GameParams gameParams)
+		public static void Initialize(GameParams gameParams)
 		{
-			_gameParams = gameParams;
-			_bestTrajectoryFinder = new BestTrajectoryFinder(_gameParams.MapLogicSize, 5);
+			Params = gameParams;
+			AllMapPoints = Params.MapLogicSize.GetAllLogicPoints();
 		}
 
 		public Direction GetNextDirection(GameState state)
@@ -31,15 +31,13 @@ namespace MiniAiCup.Paperio.Core
 			GameDebugData.Current.Reset();
 #endif
 
-			if (_isInitialized == false)
+			if (state.TickNumber == 1)
 			{
-				_isInitialized = true;
-				_lastMove = Move.Forward;
 				return GetStartDirection(state);
 			}
 
 			var currentState = _lastState == null
-				? new GameStateInternal(state, _gameParams)
+				? new GameStateInternal(state)
 				: new GameStateInternal(state, _lastState, _lastMove);
 
 			var bestState = _bestTrajectoryFinder.FindBestState(currentState);
@@ -55,9 +53,8 @@ namespace MiniAiCup.Paperio.Core
 			stopwatch.Stop();
 
 			GameDebugData.Current.UsedTime = stopwatch.Elapsed;
-			GameDebugData.Current.GameParams = _gameParams;
 			GameDebugData.Current.DangerousMap = currentState.DangerousMap;
-			GameDebugData.Current.BestTrajectory = statesList.Select(s => s.Me.Position.ConvertToReal(_gameParams.CellSize)).ToArray();
+			GameDebugData.Current.BestTrajectory = statesList.Select(s => s.Me.Position.ConvertToReal(Params.CellSize)).ToArray();
 #endif
 
 			return nextDirection.Value;
@@ -79,7 +76,7 @@ namespace MiniAiCup.Paperio.Core
 
 		private Direction GetStartDirection(GameState state)
 		{
-			var currentPosition = state.Players.First(p => p.Id == Constants.MyId).Position.ConvertToLogic(_gameParams.CellSize);
+			var currentPosition = state.Players.First(p => p.Id == Constants.MyId).Position.ConvertToLogic(Params.CellSize);
 
 			int maxDistance = 0;
 			var maxDistanceDirection = Direction.Left;
@@ -101,8 +98,8 @@ namespace MiniAiCup.Paperio.Core
 			switch (direction)
 			{
 				case Direction.Left: return point.X;
-				case Direction.Up: return _gameParams.MapLogicSize.Height - point.Y - 1;
-				case Direction.Right: return _gameParams.MapLogicSize.Width - point.X - 1;
+				case Direction.Up: return Params.MapLogicSize.Height - point.Y - 1;
+				case Direction.Right: return Params.MapLogicSize.Width - point.X - 1;
 				case Direction.Down: return point.Y;
 				default:
 					throw new ArgumentOutOfRangeException(nameof(direction), direction, null);

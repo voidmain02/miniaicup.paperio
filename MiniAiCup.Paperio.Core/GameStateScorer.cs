@@ -24,9 +24,9 @@ namespace MiniAiCup.Paperio.Core
 
 			if (state.Me.Tail.Length == 0)
 			{
-				var freeTerritory = state.AllMapPoints.ExceptWith(state.Me.Territory);
+				var freeTerritory = Game.AllMapPoints.ExceptWith(state.Me.Territory);
 				var obstacles = new PointsSet(new[] { state.Me.Position.MoveLogic(state.Me.Direction.Value.GetOpposite()) });
-				var pathToOutside = PathFinder.GetShortestPath(state.Me.Position, freeTerritory, obstacles, state.MapSize);
+				var pathToOutside = PathFinder.GetShortestPath(state.Me.Position, freeTerritory, obstacles);
 
 				int pathToOutsidePenalty = 1 - pathToOutside.Length;
 				return state.Me.Score*scoresMultiplicator + pathToOutsidePenalty;
@@ -45,7 +45,7 @@ namespace MiniAiCup.Paperio.Core
 
 		public int CalcPotentialTerritoryCaptureScore(GameStateInternal state)
 		{
-			var territoryCapturer = new BfsTerritoryCapturer(state.MapSize);
+			var territoryCapturer = new BfsTerritoryCapturer();
 
 			var tailWithPathToHome = new List<Point>(state.Me.Tail.Length + state.Me.PathToHome.Length);
 			tailWithPathToHome.AddRange(state.Me.Tail);

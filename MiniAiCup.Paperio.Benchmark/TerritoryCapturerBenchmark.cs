@@ -14,12 +14,15 @@ namespace MiniAiCup.Paperio.Benchmark
 
 		private PointsSet _territory;
 		private Path _tail;
-		private Size _mapSize;
-		
+
 		[GlobalSetup]
 		public void Setup()
 		{
-			_mapSize = new Size(31, 31);
+			Game.Initialize(new GameParams {
+				MapLogicSize = new Size(31, 31),
+				CellSize = 30,
+				Speed = 5
+			});
 
 			var territoryPoints = new List<Point>();
 			for (int y = 4; y < 25; y++)
@@ -51,8 +54,8 @@ namespace MiniAiCup.Paperio.Benchmark
 				new Point(8, 24)
 			});
 
-			_reference = new ReferenceTerritoryCapturer(_mapSize);
-			_bfs = new BfsTerritoryCapturer(_mapSize);
+			_reference = new ReferenceTerritoryCapturer();
+			_bfs = new BfsTerritoryCapturer();
 		}
 
 		[Benchmark(Baseline = true)]

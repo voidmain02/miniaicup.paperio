@@ -9,10 +9,10 @@ namespace MiniAiCup.Paperio.Core
 		private readonly SimpleGameSimulator _simulator;
 		private readonly GameStateScorer _scorer;
 
-		public BestTrajectoryFinder(Size mapSize, int depth)
+		public BestTrajectoryFinder(int depth)
 		{
 			_depth = depth;
-			_simulator = new SimpleGameSimulator(mapSize);
+			_simulator = new SimpleGameSimulator();
 			_scorer = new GameStateScorer();
 		}
 

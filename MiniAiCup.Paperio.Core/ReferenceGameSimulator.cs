@@ -5,8 +5,6 @@ namespace MiniAiCup.Paperio.Core
 {
 	public class ReferenceGameSimulator
 	{
-		private readonly Size _mapSize;
-
 		private List<PlayerInternal> _players;
 
 		private Dictionary<PlayerInternal, PointsSet> _capturedTerritoryPerPlayer;
@@ -17,16 +15,15 @@ namespace MiniAiCup.Paperio.Core
 
 		private readonly IEnemyStrategy _enemyStrategy;
 
-		public ReferenceGameSimulator(Size mapSize, IEnemyStrategy enemyStrategy = null)
+		public ReferenceGameSimulator(IEnemyStrategy enemyStrategy = null)
 		{
-			_mapSize = mapSize;
-			_territoryCapturer = new BfsTerritoryCapturer(_mapSize);
+			_territoryCapturer = new BfsTerritoryCapturer();
 			_enemyStrategy = enemyStrategy;
 		}
 
 		public GameStateInternal Simulate(GameStateInternal state, Move move)
 		{
-			int tickNumber = state.TickNumber + state.CellSize/state.Speed;
+			int tickNumber = state.TickNumber + Game.Params.CellSize/Game.Params.Speed;
 			var bonuses = state.Bonuses;
 
 			_players = new List<PlayerInternal>();
@@ -173,7 +170,7 @@ namespace MiniAiCup.Paperio.Core
 			}
 
 			// Выход за границы карты
-			if (!_mapSize.ContainsPoint(player.Position))
+			if (!Game.Params.MapLogicSize.ContainsPoint(player.Position))
 			{
 				return true;
 			}

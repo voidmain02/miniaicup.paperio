@@ -5,13 +5,11 @@ namespace MiniAiCup.Paperio.Core
 {
 	public class SimpleGameSimulator
 	{
-		private readonly Size _mapSize;
 		private readonly ITerritoryCapturer _territoryCapturer;
 
-		public SimpleGameSimulator(Size mapSize)
+		public SimpleGameSimulator()
 		{
-			_mapSize = mapSize;
-			_territoryCapturer = new BfsTerritoryCapturer(mapSize);
+			_territoryCapturer = new BfsTerritoryCapturer();
 		}
 
 		public GameStateInternal Simulate(GameStateInternal state, int currentDepth, Move move)
@@ -20,14 +18,14 @@ namespace MiniAiCup.Paperio.Core
 			GameDebugData.Current.SimulationsCount++;
 #endif
 
-			int nextTickNumber = state.TickNumber + state.CellSize/state.Speed;
+			int nextTickNumber = state.TickNumber + Game.Params.CellSize/Game.Params.Speed;
 			var nextBonuses = state.Bonuses;
 
 			var me = (PlayerInternal)state.Me.Clone();
 			var enemies = new List<PlayerInternal>(state.Enemies);
 			MovePlayer(me, move);
 
-			if (!_mapSize.ContainsPoint(me.Position) || // Выехал за пределы карты
+			if (!Game.Params.MapLogicSize.ContainsPoint(me.Position) || // Выехал за пределы карты
 				me.Tail.Contains(me.Position)) // Наехал сам себе на хвост
 			{
 				return new GameStateInternal(nextTickNumber, enemies, nextBonuses, state, move);

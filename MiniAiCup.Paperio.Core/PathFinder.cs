@@ -5,15 +5,15 @@ namespace MiniAiCup.Paperio.Core
 {
 	public class PathFinder
 	{
-		public static Path GetShortestPath(Point startPoint, PointsSet destinationPoints, PointsSet obstaclesPoints, Size mapSize)
+		public static Path GetShortestPath(Point startPoint, PointsSet destinationPoints, PointsSet obstaclesPoints)
 		{
 			if (destinationPoints.Contains(startPoint))
 			{
 				return Path.Empty;
 			}
 
-			var moves = new int[mapSize.Width, mapSize.Height];
-			var isVisited = new bool[mapSize.Width, mapSize.Height];
+			var moves = new int[Game.Params.MapLogicSize.Width, Game.Params.MapLogicSize.Height];
+			var isVisited = new bool[Game.Params.MapLogicSize.Width, Game.Params.MapLogicSize.Height];
 			var queue = new Queue<Point>();
 			queue.Enqueue(startPoint);
 			isVisited[startPoint.X, startPoint.Y] = true;
@@ -30,7 +30,7 @@ namespace MiniAiCup.Paperio.Core
 						return GetPath(moves, neighbor);
 					}
 
-					if (mapSize.ContainsPoint(neighbor) && !isVisited[neighbor.X, neighbor.Y] && !obstaclesPoints.Contains(neighbor))
+					if (Game.Params.MapLogicSize.ContainsPoint(neighbor) && !isVisited[neighbor.X, neighbor.Y] && !obstaclesPoints.Contains(neighbor))
 					{
 						isVisited[neighbor.X, neighbor.Y] = true;
 						moves[neighbor.X, neighbor.Y] = currentPathLength + 1;
@@ -47,7 +47,7 @@ namespace MiniAiCup.Paperio.Core
 				for (int i = currentLength - 1; i >= 0; i--)
 				{
 					resultPath.Add(currentPoint);
-					var validNeighbors = currentPoint.GetNeighbors().Where(p => mapSize.ContainsPoint(p));
+					var validNeighbors = currentPoint.GetNeighbors().Where(p => Game.Params.MapLogicSize.ContainsPoint(p));
 					foreach (var validNeighbor in validNeighbors)
 					{
 						if (moves[validNeighbor.X, validNeighbor.Y] == i)
