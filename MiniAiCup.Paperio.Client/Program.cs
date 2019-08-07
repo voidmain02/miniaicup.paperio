@@ -76,6 +76,10 @@ namespace MiniAiCup.Paperio.Client
 		{
 			var builder = new RewindBuilder();
 
+			builder.Add(new MessageRewindCommand { Text = $"used time: {debugData.UsedTime}" });
+			builder.Add(new MessageRewindCommand { Text = $"simulations count: {debugData.SimulationsCount}" });
+			builder.Add(new MessageRewindCommand { Text = $"scorings count: {debugData.ScoringsCount}" });
+
 			if (debugData.BestTrajectory != null)
 			{
 				const int minOpacity = 20;

@@ -16,6 +16,10 @@ namespace MiniAiCup.Paperio.Core
 
 		public GameStateInternal Simulate(GameStateInternal state, int currentDepth, Move move)
 		{
+#if DEBUG
+			GameDebugData.Current.SimulationsCount++;
+#endif
+
 			int nextTickNumber = state.TickNumber + state.CellSize/state.Speed;
 			var nextBonuses = state.Bonuses;
 

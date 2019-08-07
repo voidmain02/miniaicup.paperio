@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace MiniAiCup.Paperio.Core
@@ -24,6 +25,12 @@ namespace MiniAiCup.Paperio.Core
 
 		public Direction GetNextDirection(GameState state)
 		{
+#if DEBUG
+			var stopwatch = new Stopwatch();;
+			stopwatch.Start();
+			GameDebugData.Current.Reset();
+#endif
+
 			if (_isInitialized == false)
 			{
 				_isInitialized = true;
@@ -45,6 +52,9 @@ namespace MiniAiCup.Paperio.Core
 			_lastMove = nextState.PreviousMove;
 
 #if DEBUG
+			stopwatch.Stop();
+
+			GameDebugData.Current.UsedTime = stopwatch.Elapsed;
 			GameDebugData.Current.GameParams = _gameParams;
 			GameDebugData.Current.DangerousMap = currentState.DangerousMap;
 			GameDebugData.Current.BestTrajectory = statesList.Select(s => s.Me.Position.ConvertToReal(_gameParams.CellSize)).ToArray();

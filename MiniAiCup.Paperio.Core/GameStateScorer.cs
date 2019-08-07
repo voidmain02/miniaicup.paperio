@@ -6,6 +6,10 @@ namespace MiniAiCup.Paperio.Core
 	{
 		public int Score(GameStateInternal state)
 		{
+#if DEBUG
+			GameDebugData.Current.ScoringsCount++;
+#endif
+
 			if (state.Me == null)
 			{
 				return -1000;
