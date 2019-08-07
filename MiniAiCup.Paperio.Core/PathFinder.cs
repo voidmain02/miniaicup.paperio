@@ -12,8 +12,8 @@ namespace MiniAiCup.Paperio.Core
 				return Path.Empty;
 			}
 
-			var moves = new int[Game.Params.MapLogicSize.Width, Game.Params.MapLogicSize.Height];
-			var isVisited = new bool[Game.Params.MapLogicSize.Width, Game.Params.MapLogicSize.Height];
+			var moves = Game.GetNewMap<int>();
+			var isVisited = Game.GetNewMap<bool>();
 			var queue = new Queue<Point>();
 			queue.Enqueue(startPoint);
 			isVisited[startPoint.X, startPoint.Y] = true;

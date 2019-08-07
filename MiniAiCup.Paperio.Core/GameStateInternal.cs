@@ -68,7 +68,7 @@ namespace MiniAiCup.Paperio.Core
 
 		private int[,] BuildDangerousMap()
 		{
-			var map = new int[Game.Params.MapLogicSize.Width, Game.Params.MapLogicSize.Height];
+			var map = Game.GetNewMap<int>();
 
 			if (Enemies.Any())
 			{

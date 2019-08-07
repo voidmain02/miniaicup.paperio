@@ -60,6 +60,11 @@ namespace MiniAiCup.Paperio.Core
 			return nextDirection.Value;
 		}
 
+		public static T[,] GetNewMap<T>()
+		{
+			return new T[Params.MapLogicSize.Width, Params.MapLogicSize.Height];
+		}
+
 		private static List<GameStateInternal> GetStates(GameStateInternal lastState, GameStateInternal initialState)
 		{
 			var states = new List<GameStateInternal>();

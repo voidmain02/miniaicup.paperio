@@ -82,7 +82,7 @@ namespace MiniAiCup.Paperio.Core
 
 		private int[,] BuildInsideDistanceMap()
 		{
-			var map = new int[Game.Params.MapLogicSize.Width, Game.Params.MapLogicSize.Height];
+			var map = Game.GetNewMap<int>();
 			for (int y = 0; y < Game.Params.MapLogicSize.Height; y++)
 			{
 				for (int x = 0; x < Game.Params.MapLogicSize.Width; x++)
@@ -133,7 +133,7 @@ namespace MiniAiCup.Paperio.Core
 		{
 			var homePoints = new List<(Point Point, Direction SourceDirection, int PathLength)>();
 
-			var map = new int[Game.Params.MapLogicSize.Width, Game.Params.MapLogicSize.Height];
+			var map = Game.GetNewMap<int>();
 			for (int y = 0; y < Game.Params.MapLogicSize.Height; y++)
 			{
 				for (int x = 0; x < Game.Params.MapLogicSize.Width; x++)
@@ -141,7 +141,8 @@ namespace MiniAiCup.Paperio.Core
 					map[x, y] = Int32.MaxValue;
 				}
 			}
-			var visited = new bool[Game.Params.MapLogicSize.Width, Game.Params.MapLogicSize.Height];
+
+			var visited = Game.GetNewMap<bool>();
 
 			map[Position.X, Position.Y] = 0;
 			visited[Position.X, Position.Y] = true;
@@ -182,8 +183,8 @@ namespace MiniAiCup.Paperio.Core
 				return map;
 			}
 
-			var mapAfterHome = new int[Game.Params.MapLogicSize.Width, Game.Params.MapLogicSize.Height];
-			var visitedAfterHome = new bool[Game.Params.MapLogicSize.Width, Game.Params.MapLogicSize.Height];
+			var mapAfterHome = Game.GetNewMap<int>();
+			var visitedAfterHome = Game.GetNewMap<bool>();
 			foreach (var tailPoint in Tail)
 			{
 				mapAfterHome[tailPoint.X, tailPoint.Y] = homePoints.Min(x => GetDistanceBetweenPoints(x.Point, tailPoint, x.SourceDirection) + x.PathLength);

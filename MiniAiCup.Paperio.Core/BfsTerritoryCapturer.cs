@@ -12,7 +12,7 @@ namespace MiniAiCup.Paperio.Core
 		public BfsTerritoryCapturer()
 		{
 			_mapBoundaryPoints = GetBoundary(Game.Params.MapLogicSize).ToList();
-			_visited = new bool[Game.Params.MapLogicSize.Width, Game.Params.MapLogicSize.Height];
+			_visited = Game.GetNewMap<bool>();
 		}
 
 		public PointsSet Capture(PointsSet territory, Path tail)
