@@ -11,12 +11,12 @@ namespace MiniAiCup.Paperio.Core
 		/// <summary>
 		/// Ширина
 		/// </summary>
-		public int Width { get; }
+		public int Width;
 
 		/// <summary>
 		/// Высота
 		/// </summary>
-		public int Height { get; }
+		public int Height;
 
 		public Size(int width, int height)
 		{

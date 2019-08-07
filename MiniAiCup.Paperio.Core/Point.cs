@@ -11,12 +11,12 @@ namespace MiniAiCup.Paperio.Core
 		/// <summary>
 		/// X-координата
 		/// </summary>
-		public int X { get; }
+		public int X;
 
 		/// <summary>
 		/// Y-координата
 		/// </summary>
-		public int Y { get; }
+		public int Y;
 
 		public Point(int x, int y)
 		{
