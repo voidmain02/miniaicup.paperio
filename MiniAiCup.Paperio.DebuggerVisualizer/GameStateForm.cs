@@ -60,21 +60,23 @@ namespace MiniAiCup.Paperio.DebuggerVisualizer
 
 			foreach (var player in _gameState.Players)
 			{
-				int playerIndex = playersIndexes[player.Id];
-
 				if (player.Territory.Any())
 				{
-					var territoryBrush = new SolidBrush(territoryColors[playerIndex]);
+					var territoryBrush = new SolidBrush(territoryColors[playersIndexes[player.Id]]);
 					e.Graphics.FillRectangles(territoryBrush, player.Territory.Select(p => GetCellSizeRectangle(TranslateCoordinates(p, _gameState.Size), _gameState.CellSize)).ToArray());
 				}
-				
+			}
+			foreach (var player in _gameState.Players)
+			{
 				if (player.Tail.Any())
 				{
-					var tailBrush = new SolidBrush(tailColors[playerIndex]);
+					var tailBrush = new SolidBrush(tailColors[playersIndexes[player.Id]]);
 					e.Graphics.FillRectangles(tailBrush, player.Tail.Select(p => GetCellSizeRectangle(TranslateCoordinates(p, _gameState.Size), _gameState.CellSize)).ToArray());
 				}
-
-				var playerBrush = new SolidBrush(playerColors[playerIndex]);
+			}
+			foreach (var player in _gameState.Players)
+			{
+				var playerBrush = new SolidBrush(playerColors[playersIndexes[player.Id]]);
 				e.Graphics.FillRectangle(playerBrush, GetCellSizeRectangle(TranslateCoordinates(player.Position, _gameState.Size), _gameState.CellSize));
 			}
 		}
