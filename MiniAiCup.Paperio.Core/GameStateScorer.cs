@@ -57,8 +57,8 @@ namespace MiniAiCup.Paperio.Core
 			foreach (var enemy in state.Enemies)
 			{
 				int srcCount = enemy.Territory.Count;
-				enemy.Territory = enemy.Territory.ExceptWith(capturedTerritory);
-				int croppedCount = enemy.Territory.Count;
+				var enemyCroppedTerritory = enemy.Territory.ExceptWith(capturedTerritory);
+				int croppedCount = enemyCroppedTerritory.Count;
 				score += (srcCount - croppedCount)*(Constants.EnemyTerritoryScore - Constants.NeutralTerritoryScore);
 			}
 

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using MiniAiCup.Paperio.Core.Debug;
@@ -23,13 +24,13 @@ namespace MiniAiCup.Paperio.Core
 			var nextBonuses = state.Bonuses;
 
 			var me = (PlayerInternal)state.Me.Clone();
-			var enemies = state.Enemies;
+			var enemies = (PlayerInternal[])state.Enemies.Clone();
 			MovePlayer(me, move);
 
 			if (!Game.Params.MapLogicSize.ContainsPoint(me.Position) || // Выехал за пределы карты
 				me.Tail.Contains(me.Position)) // Наехал сам себе на хвост
 			{
-				return new GameStateInternal(nextTickNumber, enemies, nextBonuses, state, move);
+				return new GameStateInternal(nextTickNumber, state.Enemies, nextBonuses, state, move);
 			}
 
 			if (me.Territory.Contains(me.Position))
@@ -40,12 +41,19 @@ namespace MiniAiCup.Paperio.Core
 					me.Tail = Path.Empty;
 					me.Territory = me.Territory.UnionWith(capturedTerritory);
 					me.Score += capturedTerritory.Count*Constants.NeutralTerritoryScore;
-					foreach (var enemy in enemies)
+					for (int i = 0; i < enemies.Length; i++)
 					{
+						var enemy = enemies[i];
 						int srcCount = enemy.Territory.Count;
-						enemy.Territory = enemy.Territory.ExceptWith(capturedTerritory);
-						int croppedCount = enemy.Territory.Count;
-						me.Score += (srcCount - croppedCount)*(Constants.EnemyTerritoryScore - Constants.NeutralTerritoryScore);
+						var enemyCroppedTerritory = enemy.Territory.ExceptWith(capturedTerritory);
+						int croppedCount = enemyCroppedTerritory.Count;
+						if (srcCount != croppedCount)
+						{
+							var clonedEnemy = (PlayerInternal)enemy.Clone();
+							clonedEnemy.Territory = enemyCroppedTerritory;
+							enemies[i] = clonedEnemy;
+							me.Score += (srcCount - croppedCount)*(Constants.EnemyTerritoryScore - Constants.NeutralTerritoryScore);
+						}
 					}
 				}
 			}
@@ -54,11 +62,11 @@ namespace MiniAiCup.Paperio.Core
 				me.Tail = me.Tail.Append(me.Position);
 				if (me.PathToHome == null) // Зашел в тупик
 				{
-					return new GameStateInternal(nextTickNumber, enemies, nextBonuses, state, move);
+					return new GameStateInternal(nextTickNumber, state.Enemies, nextBonuses, state, move);
 				}
 				if (me.Tail.Any(p => state.DangerousMap[p.X, p.Y] <= currentDepth + me.PathToHome.Length + 1)) // Потенциально могут наехать на мой хвост
 				{
-					return new GameStateInternal(nextTickNumber, enemies, nextBonuses, state, move);
+					return new GameStateInternal(nextTickNumber, state.Enemies, nextBonuses, state, move);
 				}
 			}
 
