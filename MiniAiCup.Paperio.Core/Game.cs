@@ -14,6 +14,8 @@ namespace MiniAiCup.Paperio.Core
 
 		public static int[,] NoEnemiesDangerousMap { get; private set; }
 
+		public static int[][,] NoTailDistanceMaps { get; private set; }
+
 		private Move _lastMove;
 
 		private GameStateInternal _lastState;
@@ -25,12 +27,67 @@ namespace MiniAiCup.Paperio.Core
 			Params = gameParams;
 			AllMapPoints = Params.MapLogicSize.GetAllLogicPoints();
 
+			BuildNoEnemiesDangerousMap();
+			BuildNoTailDistanceMaps();
+		}
+
+		private static void BuildNoEnemiesDangerousMap()
+		{
 			NoEnemiesDangerousMap = Game.GetNewMap<int>();
 			for (int y = 0; y < Game.Params.MapLogicSize.Height; y++)
 			{
 				for (int x = 0; x < Game.Params.MapLogicSize.Width; x++)
 				{
 					NoEnemiesDangerousMap[x, y] = Int32.MaxValue;
+				}
+			}
+		}
+
+		private static void BuildNoTailDistanceMaps()
+		{
+			NoTailDistanceMaps = new int[4][,];
+			var center = new Point(Params.MapLogicSize.Width - 1, Params.MapLogicSize.Height - 1);
+			int width = Params.MapLogicSize.Width*2 - 1;
+			int height = Params.MapLogicSize.Height*2 - 1;
+			for (int i = 0; i < 4; i++)
+			{
+				NoTailDistanceMaps[i] = new int[width, height];
+				for (int y = 0; y < height; y++)
+				{
+					for (int x = 0; x < width; x++)
+					{
+						NoTailDistanceMaps[i][x, y] = center.GetDistanceTo(new Point(x, y));
+					}
+				}
+
+				switch ((Direction)i)
+				{
+					case Direction.Left:
+						for (int x = center.X + 1; x < width; x++)
+						{
+							NoTailDistanceMaps[i][x, center.Y] += 2;
+						}
+						break;
+					case Direction.Up:
+						for (int y = center.Y - 1; y >= 0; y--)
+						{
+							NoTailDistanceMaps[i][center.X, y] += 2;
+						}
+						break;
+					case Direction.Right:
+						for (int x = center.X - 1; x >= 0; x--)
+						{
+							NoTailDistanceMaps[i][x, center.Y] += 2;
+						}
+						break;
+					case Direction.Down:
+						for (int y = center.Y + 1; y < height; y++)
+						{
+							NoTailDistanceMaps[i][center.X, y] += 2;
+						}
+						break;
+					default:
+						throw new ArgumentOutOfRangeException();
 				}
 			}
 		}

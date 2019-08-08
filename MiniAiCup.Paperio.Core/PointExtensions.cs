@@ -67,5 +67,23 @@ namespace MiniAiCup.Paperio.Core
 			return point1.X == point2.X && Math.Abs(point1.Y - point2.Y) == 1 ||
 				point1.Y == point2.Y && Math.Abs(point1.X - point2.X) == 1;
 		}
+
+		public static int GetDistanceTo(this Point src, Point dst)
+		{
+			return Math.Abs(src.X - dst.X) + Math.Abs(src.Y - dst.Y);
+		}
+
+		public static int GetDistanceTo(this Point src, Point dst, Direction? direction)
+		{
+			int distance = src.GetDistanceTo(dst);
+
+			if (dst.X == src.X && (dst.Y > src.Y && direction == Direction.Down || dst.Y < src.Y && direction == Direction.Up) ||
+				dst.Y == src.Y && (dst.X > src.X && direction == Direction.Left || dst.X < src.X && direction == Direction.Right))
+			{
+				distance += 2;
+			}
+
+			return distance;
+		}
 	}
 }

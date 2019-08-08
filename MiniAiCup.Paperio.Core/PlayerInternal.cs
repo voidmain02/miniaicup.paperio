@@ -84,47 +84,22 @@ namespace MiniAiCup.Paperio.Core
 		private int[,] BuildInsideDistanceMap()
 		{
 			var map = Game.GetNewMap<int>();
-			for (int y = 0; y < Game.Params.MapLogicSize.Height; y++)
-			{
-				for (int x = 0; x < Game.Params.MapLogicSize.Width; x++)
-				{
-					map[x, y] = GetDistanceBetweenPoints(Position, new Point(x, y));
-				}
-			}
-
 			if (Direction == null)
 			{
-				return map;
+				for (int y = 0; y < Game.Params.MapLogicSize.Height; y++)
+				{
+					for (int x = 0; x < Game.Params.MapLogicSize.Width; x++)
+					{
+						map[x, y] = Position.GetDistanceTo(new Point(x, y));
+					}
+				}
 			}
-
-			switch (Direction.Value)
+			else
 			{
-				case Core.Direction.Left:
-					for (int x = Position.X + 1; x < Game.Params.MapLogicSize.Width; x++)
-					{
-						map[x, Position.Y] += 2;
-					}
-					break;
-				case Core.Direction.Up:
-					for (int y = Position.Y - 1; y >= 0; y--)
-					{
-						map[Position.X, y] += 2;
-					}
-					break;
-				case Core.Direction.Right:
-					for (int x = Position.X - 1; x >= 0; x--)
-					{
-						map[x, Position.Y] += 2;
-					}
-					break;
-				case Core.Direction.Down:
-					for (int y = Position.Y + 1; y < Game.Params.MapLogicSize.Height; y++)
-					{
-						map[Position.X, y] += 2;
-					}
-					break;
-				default:
-					throw new ArgumentOutOfRangeException();
+				var srcArray = Game.NoTailDistanceMaps[(int)Direction.Value];
+				Utils.CopyArrayPart(srcArray, Game.Params.MapLogicSize.Width*2 -1, Game.Params.MapLogicSize.Height*2 - 1,
+					map, Game.Params.MapLogicSize.Width, Game.Params.MapLogicSize.Height,
+					Game.Params.MapLogicSize.Width - Position.X - 1, Game.Params.MapLogicSize.Height - Position.Y - 1);
 			}
 
 			return map;
@@ -182,7 +157,7 @@ namespace MiniAiCup.Paperio.Core
 			var visitedAfterHome = Game.GetNewMap<bool>();
 			foreach (var tailPoint in Tail)
 			{
-				mapAfterHome[tailPoint.X, tailPoint.Y] = homePoints.Min(x => GetDistanceBetweenPoints(x.Point, tailPoint, x.SourceDirection) + x.PathLength);
+				mapAfterHome[tailPoint.X, tailPoint.Y] = homePoints.Min(x => x.Point.GetDistanceTo(tailPoint, x.SourceDirection) + x.PathLength);
 				visitedAfterHome[tailPoint.X, tailPoint.Y] = true;
 				queue.Enqueue(tailPoint);
 			}
@@ -213,24 +188,6 @@ namespace MiniAiCup.Paperio.Core
 			}
 
 			return map;
-		}
-
-		private static int GetDistanceBetweenPoints(Point src, Point dst)
-		{
-			return Math.Abs(src.X - dst.X) + Math.Abs(src.Y - dst.Y);
-		}
-
-		private static int GetDistanceBetweenPoints(Point src, Point dst, Direction? direction)
-		{
-			int distance = GetDistanceBetweenPoints(src, dst);
-
-			if (dst.X == src.X && (dst.Y > src.Y && direction == Core.Direction.Down || dst.Y < src.Y && direction == Core.Direction.Up) ||
-				dst.Y == src.Y && (dst.X > src.X && direction == Core.Direction.Left || dst.X < src.X && direction == Core.Direction.Right))
-			{
-				distance += 2;
-			}
-
-			return distance;
 		}
 	}
 }
