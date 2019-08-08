@@ -54,7 +54,7 @@ namespace MiniAiCup.Paperio.Benchmark
 		public int[,] BufferCopyArray()
 		{
 			var array = new int[_size, _size];
-			Buffer.BlockCopy(_arrayToCopy, 0, array, 0, _size*_size);
+			Buffer.BlockCopy(_arrayToCopy, 0, array, 0, _size*_size*sizeof(int));
 			return array;
 		}
 	}

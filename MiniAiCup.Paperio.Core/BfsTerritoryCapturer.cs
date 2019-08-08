@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -72,7 +71,7 @@ namespace MiniAiCup.Paperio.Core
 
 		private void ResetVisited()
 		{
-			Buffer.BlockCopy(_emptyVisited, 0, _visited, 0, Game.Params.MapLogicSize.Width*Game.Params.MapLogicSize.Height);
+			Utils.FastCopyArray(_emptyVisited, _visited, Game.Params.MapLogicSize.Width*Game.Params.MapLogicSize.Height);
 		}
 
 		private static IEnumerable<Point> GetBoundary(Size size)

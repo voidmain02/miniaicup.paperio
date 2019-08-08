@@ -135,7 +135,7 @@ namespace MiniAiCup.Paperio.Core
 			var homePoints = new List<(Point Point, Direction SourceDirection, int PathLength)>();
 
 			var map = Game.GetNewMap<int>();
-			Buffer.BlockCopy(Game.NoEnemiesDangerousMap, 0, map, 0, Game.Params.MapLogicSize.Width*Game.Params.MapLogicSize.Height);
+			Utils.FastCopyArray(Game.NoEnemiesDangerousMap, map, Game.Params.MapLogicSize.Width*Game.Params.MapLogicSize.Height);
 
 			var visited = Game.GetNewMap<bool>();
 
