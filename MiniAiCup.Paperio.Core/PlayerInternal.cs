@@ -117,7 +117,7 @@ namespace MiniAiCup.Paperio.Core
 					}
 					break;
 				case Core.Direction.Down:
-					for (int y = Position.X + 1; y < Game.Params.MapLogicSize.Height; y++)
+					for (int y = Position.Y + 1; y < Game.Params.MapLogicSize.Height; y++)
 					{
 						map[Position.X, y] += 2;
 					}
