@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using MiniAiCup.Paperio.Core;
+using MiniAiCup.Paperio.Core.Debug;
 
 namespace MiniAiCup.Paperio.DebuggerVisualizer
 {

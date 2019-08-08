@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics;
 using Microsoft.VisualStudio.DebuggerVisualizers;
-using MiniAiCup.Paperio.Core;
+using MiniAiCup.Paperio.Core.Debug;
 using MiniAiCup.Paperio.DebuggerVisualizer;
 
 [assembly: DebuggerVisualizer(typeof(GameStateVisualizer), Target=typeof(DebugStateView))]

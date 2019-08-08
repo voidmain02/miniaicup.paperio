@@ -2,6 +2,7 @@ using System;
 using System.Drawing;
 using MiniAiCup.Paperio.Client.Rewind;
 using MiniAiCup.Paperio.Core;
+using MiniAiCup.Paperio.Core.Debug;
 using ColorConverter = MiniAiCup.Paperio.Client.Rewind.ColorConverter;
 using Point = MiniAiCup.Paperio.Core.Point;
 

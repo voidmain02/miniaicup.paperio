@@ -1,6 +1,6 @@
 using System;
 
-namespace MiniAiCup.Paperio.Core
+namespace MiniAiCup.Paperio.Core.Debug
 {
 	[Serializable]
 	public class DebugPlayerView

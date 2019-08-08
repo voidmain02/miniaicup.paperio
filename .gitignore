@@ -350,3 +350,6 @@ MigrationBackup/
 
 # Dist
 dist/
+
+# Include MiniAiCup.Paperio.Core/Debug
+!MiniAiCup.Paperio.Core/Debug/
