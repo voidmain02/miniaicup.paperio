@@ -107,76 +107,73 @@ namespace MiniAiCup.Paperio.Core
 
 		private int[,] BuildOutsideDistanceMap()
 		{
-			var homePoints = new List<(Point Point, Direction SourceDirection, int PathLength)>();
-
 			var map = Game.GetNewMap<int>();
 			Utils.FastCopyArray(Game.NoEnemiesDangerousMap, map, Game.Params.MapLogicSize.Width*Game.Params.MapLogicSize.Height);
-
 			var visited = Game.GetNewMap<bool>();
+
+			var mapAfterHome = Game.GetNewMap<int>();
+			var visitedAfterHome = Game.GetNewMap<bool>();
 
 			map[Position.X, Position.Y] = 0;
 			visited[Position.X, Position.Y] = true;
 
-			var queue = new Queue<Point>(Game.Params.MapLogicSize.Width*Game.Params.MapLogicSize.Height);
-			queue.Enqueue(Position);
+			var queue = new Queue<(Point Point, bool AfterHome, Direction? VisitHomeDirection)>(Game.Params.MapLogicSize.Width*Game.Params.MapLogicSize.Height);
+			queue.Enqueue((Position, false, null));
 
+			bool visitHome = false;
 			while (queue.Count > 0)
 			{
-				var currentPoint = queue.Dequeue();
-				int currentLength = map[currentPoint.X, currentPoint.Y];
-				foreach (var direction in EnumValues.GetAll<Direction>())
+				(var currentPoint, bool afterHome, var visitHomeDirection) = queue.Dequeue();
+
+				if (!afterHome)
 				{
-					var neighbor = currentPoint.MoveLogic(direction);
-					if (!Game.Params.MapLogicSize.ContainsPoint(neighbor) || Tail.AsPointsSet().Contains(neighbor))
+					int currentLength = map[currentPoint.X, currentPoint.Y];
+					foreach (var direction in EnumValues.GetAll<Direction>())
 					{
-						continue;
-					}
+						var neighbor = currentPoint.MoveLogic(direction);
+						if (!Game.Params.MapLogicSize.ContainsPoint(neighbor) || Tail.AsPointsSet().Contains(neighbor))
+						{
+							continue;
+						}
 
-					if (Territory.Contains(neighbor) && !Territory.Contains(currentPoint))
+						if (Territory.Contains(neighbor) && !Territory.Contains(currentPoint) && !visitedAfterHome[neighbor.X, neighbor.Y])
+						{
+							queue.Enqueue((neighbor, true, direction));
+							mapAfterHome[neighbor.X, neighbor.Y] = currentLength + 1;
+							visitHome = true;
+						}
+
+						if (visited[neighbor.X, neighbor.Y])
+						{
+							continue;
+						}
+
+						map[neighbor.X, neighbor.Y] = currentLength + 1;
+						visited[neighbor.X, neighbor.Y] = true;
+						queue.Enqueue((neighbor, false, null));
+					}
+				}
+				else
+				{
+					int currentLength = mapAfterHome[currentPoint.X, currentPoint.Y];
+					foreach (var direction in EnumValues.GetAll<Direction>())
 					{
-						homePoints.Add((neighbor, direction, currentLength + 1));
-					}
+						var neighbor = currentPoint.MoveLogic(direction);
+						if (!Game.Params.MapLogicSize.ContainsPoint(neighbor) || visitedAfterHome[neighbor.X, neighbor.Y] || visitHomeDirection == direction.GetOpposite())
+						{
+							continue;
+						}
 
-					if (visited[neighbor.X, neighbor.Y])
-					{
-						continue;
+						mapAfterHome[neighbor.X, neighbor.Y] = currentLength + 1;
+						visitedAfterHome[neighbor.X, neighbor.Y] = true;
+						queue.Enqueue((neighbor, true, null));
 					}
-
-					map[neighbor.X, neighbor.Y] = currentLength + 1;
-					visited[neighbor.X, neighbor.Y] = true;
-					queue.Enqueue(neighbor);
 				}
 			}
 
-			if (homePoints.Count == 0)
+			if (!visitHome)
 			{
 				return map;
-			}
-
-			var mapAfterHome = Game.GetNewMap<int>();
-			var visitedAfterHome = Game.GetNewMap<bool>();
-			foreach (var tailPoint in Tail)
-			{
-				mapAfterHome[tailPoint.X, tailPoint.Y] = homePoints.Min(x => x.Point.GetDistanceTo(tailPoint, x.SourceDirection) + x.PathLength);
-				visitedAfterHome[tailPoint.X, tailPoint.Y] = true;
-				queue.Enqueue(tailPoint);
-			}
-
-			while (queue.Count > 0)
-			{
-				var currentPoint = queue.Dequeue();
-				int currentLength = mapAfterHome[currentPoint.X, currentPoint.Y];
-				foreach (var neighbor in currentPoint.GetNeighbors())
-				{
-					if (!Game.Params.MapLogicSize.ContainsPoint(neighbor) || visitedAfterHome[neighbor.X, neighbor.Y])
-					{
-						continue;
-					}
-
-					mapAfterHome[neighbor.X, neighbor.Y] = currentLength + 1;
-					visitedAfterHome[neighbor.X, neighbor.Y] = true;
-					queue.Enqueue(neighbor);
-				}
 			}
 
 			for (int y = 0; y < Game.Params.MapLogicSize.Height; y++)

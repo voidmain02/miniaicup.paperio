@@ -6,7 +6,7 @@ namespace MiniAiCup.Paperio.Benchmark
 	{
 		public static void Main(string[] args)
 		{
-			var summary = BenchmarkRunner.Run<BuildInsideDistanceMapBenchmark>();
+			var summary = BenchmarkRunner.Run<BuildOutsideDistanceMapBenchmark>();
 		}
 	}
 }

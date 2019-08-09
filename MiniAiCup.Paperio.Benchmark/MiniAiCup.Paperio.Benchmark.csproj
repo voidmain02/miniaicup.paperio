@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BuildInsideDistanceMapBenchmark.cs" />
+    <Compile Include="BuildOutsideDistanceMapBenchmark.cs" />
     <Compile Include="FillArrayBenchmark.cs" />
     <Compile Include="FillDistanceArrayBenchmark.cs" />
     <Compile Include="Program.cs" />
