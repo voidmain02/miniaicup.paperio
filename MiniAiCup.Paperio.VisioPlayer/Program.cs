@@ -38,7 +38,9 @@ namespace MiniAiCup.Paperio.VisioPlayer
 				return false;
 			}
 
-			return me.Position.X%15 == 0 && me.Position.Y%15 == 0;
+			const int cellSize = 30;
+
+			return (me.Position.X + cellSize/2)%cellSize == 0 && (me.Position.Y + cellSize/2)%cellSize == 0;
 		}
 
 		private static GameParams ParseGameParams(JObject jParams)
