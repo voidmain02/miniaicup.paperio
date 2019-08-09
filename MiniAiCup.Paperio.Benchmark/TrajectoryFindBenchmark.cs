@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 
 namespace MiniAiCup.Paperio.Benchmark
 {
-	[CoreJob]
+	[ClrJob, MonoJob]
 	[RankColumn]
 	public class TrajectoryFindBenchmark
 	{

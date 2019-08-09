@@ -4,7 +4,7 @@ using MiniAiCup.Paperio.Core;
 
 namespace MiniAiCup.Paperio.Benchmark
 {
-	[CoreJob]
+	[ClrJob, MonoJob]
 	[RankColumn]
 	public class TerritoryCapturerBenchmark
 	{

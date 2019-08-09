@@ -4,7 +4,7 @@ using MiniAiCup.Paperio.Core;
 
 namespace MiniAiCup.Paperio.Benchmark
 {
-	[CoreJob]
+	[ClrJob, MonoJob]
 	[RankColumn]
 	public class BuildInsideDistanceMapBenchmark
 	{
@@ -39,25 +39,25 @@ namespace MiniAiCup.Paperio.Benchmark
 
 				switch ((Direction)i)
 				{
-					case Core.Direction.Left:
+					case Direction.Left:
 						for (int x = center.X + 1; x < _size*2 - 1; x++)
 						{
 							_arraysToCopy[i][x, center.Y] += 2;
 						}
 						break;
-					case Core.Direction.Up:
+					case Direction.Up:
 						for (int y = center.Y - 1; y >= 0; y--)
 						{
 							_arraysToCopy[i][center.X, y] += 2;
 						}
 						break;
-					case Core.Direction.Right:
+					case Direction.Right:
 						for (int x = center.X - 1; x >= 0; x--)
 						{
 							_arraysToCopy[i][x, center.Y] += 2;
 						}
 						break;
-					case Core.Direction.Down:
+					case Direction.Down:
 						for (int y = center.Y + 1; y < _size*2 - 1; y++)
 						{
 							_arraysToCopy[i][center.X, y] += 2;
@@ -83,25 +83,25 @@ namespace MiniAiCup.Paperio.Benchmark
 
 			switch (_direction)
 			{
-				case Core.Direction.Left:
+				case Direction.Left:
 					for (int x = _position.X + 1; x < _size; x++)
 					{
 						map[x, _position.Y] += 2;
 					}
 					break;
-				case Core.Direction.Up:
+				case Direction.Up:
 					for (int y = _position.Y - 1; y >= 0; y--)
 					{
 						map[_position.X, y] += 2;
 					}
 					break;
-				case Core.Direction.Right:
+				case Direction.Right:
 					for (int x = _position.X - 1; x >= 0; x--)
 					{
 						map[x, _position.Y] += 2;
 					}
 					break;
-				case Core.Direction.Down:
+				case Direction.Down:
 					for (int y = _position.Y + 1; y < _size; y++)
 					{
 						map[_position.X, y] += 2;

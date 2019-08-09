@@ -3,7 +3,7 @@ using BenchmarkDotNet.Attributes;
 
 namespace MiniAiCup.Paperio.Benchmark
 {
-	[CoreJob]
+	[ClrJob, MonoJob]
 	[RankColumn]
 	public class FillArrayBenchmark
 	{
