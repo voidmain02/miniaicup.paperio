@@ -18,8 +18,16 @@ namespace MiniAiCup.Paperio.Core
 
 		public GameStateInternal FindBestState(GameStateInternal initialState)
 		{
-			int stepsLeft = (Constants.MaxTickCount - initialState.TickNumber)/(Game.Params.CellSize/Game.Params.Speed);
-			int depth = Math.Min(_depth, stepsLeft + 1);
+			int depth;
+			if (initialState.Enemies.Length == 0)
+			{
+				depth = 1;
+			}
+			else
+			{
+				int stepsLeft = (Constants.MaxTickCount - initialState.TickNumber)/(Game.Params.CellSize/Game.Params.Speed);
+				depth = Math.Min(_depth, stepsLeft + 1);
+			}
 
 			var simulationQueue = new Queue<(GameStateInternal State, int Depth)>();
 			var finalSimulations = new List<GameStateInternal>();
