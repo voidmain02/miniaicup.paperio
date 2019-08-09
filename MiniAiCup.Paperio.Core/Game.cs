@@ -110,10 +110,7 @@ namespace MiniAiCup.Paperio.Core
 				: new GameStateInternal(state, _lastState, _lastMove);
 
 			var bestState = _bestTrajectoryFinder.FindBestState(currentState);
-
-			var statesList = GetStates(bestState, currentState);
-			var nextState = statesList.First();
-			var nextDirection = nextState.Me.Direction;
+			var nextState = GetNextState(bestState, currentState);
 
 			_lastState = currentState;
 			_lastMove = nextState.PreviousMove;
@@ -123,15 +120,26 @@ namespace MiniAiCup.Paperio.Core
 
 			GameDebugData.Current.UsedTime = stopwatch.Elapsed;
 			GameDebugData.Current.DangerousMap = currentState.DangerousMap;
-			GameDebugData.Current.BestTrajectory = statesList.Select(s => s.Me.Position.ConvertToReal(Params.CellSize)).ToArray();
+			GameDebugData.Current.BestTrajectory = GetStates(bestState, currentState).Select(s => s.Me.Position.ConvertToReal(Params.CellSize)).ToArray();
 #endif
 
-			return nextDirection.Value;
+			return nextState.Me.Direction.Value;
 		}
 
 		public static T[,] GetNewMap<T>()
 		{
 			return new T[Params.MapLogicSize.Width, Params.MapLogicSize.Height];
+		}
+
+		private static GameStateInternal GetNextState(GameStateInternal lastState, GameStateInternal initialState)
+		{
+			var currentState = lastState;
+			while (currentState.PreviousState != initialState)
+			{
+				currentState = currentState.PreviousState;
+			}
+
+			return currentState;
 		}
 
 		private static List<GameStateInternal> GetStates(GameStateInternal lastState, GameStateInternal initialState)
