@@ -18,6 +18,9 @@ namespace MiniAiCup.Paperio.Core
 
 		public GameStateInternal FindBestState(GameStateInternal initialState)
 		{
+			int stepsLeft = (Constants.MaxTickCount - initialState.TickNumber)/(Game.Params.CellSize/Game.Params.Speed);
+			int depth = Math.Min(_depth, stepsLeft + 1);
+
 			var simulationQueue = new Queue<(GameStateInternal State, int Depth)>();
 			var finalSimulations = new List<GameStateInternal>();
 
@@ -34,7 +37,7 @@ namespace MiniAiCup.Paperio.Core
 					{
 						continue;
 					}
-					if (currentDepth == _depth - 1)
+					if (currentDepth == depth - 1)
 					{
 						finalSimulations.Add(nextState);
 					}

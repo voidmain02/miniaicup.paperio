@@ -38,6 +38,12 @@ namespace MiniAiCup.Paperio.Core
 				return -900;
 			}
 
+			int stepsLeft = (Constants.MaxTickCount - state.TickNumber)/(Game.Params.CellSize/Game.Params.Speed);
+			if (state.Me.PathToHome.Length > stepsLeft)
+			{
+				return -500;
+			}
+
 			int potentialScore = CalcPotentialTerritoryCaptureScore(state);
 			int potentialScoreBonus = (int)(potentialScore*0.9);
 
