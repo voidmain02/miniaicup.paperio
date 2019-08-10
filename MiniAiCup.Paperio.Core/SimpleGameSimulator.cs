@@ -73,7 +73,7 @@ namespace MiniAiCup.Paperio.Core
 			var losers = new List<PlayerInternal>();
 			foreach (var enemy in enemies)
 			{
-				if (enemy.Tail.AsPointsSet().Contains(me.Position))
+				if (enemy.Tail.AsPointsSet().Contains(me.Position) && enemy.Territory.Min(p => enemy.DistanceMap[p.X, p.Y]) > currentDepth)
 				{
 					losers.Add(enemy);
 					me.Score += Constants.LineKillScore;
