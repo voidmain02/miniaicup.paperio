@@ -20,7 +20,7 @@ namespace MiniAiCup.Paperio.Core
 
 		private GameStateInternal _lastState;
 
-		private readonly BestTrajectoryFinder _bestTrajectoryFinder = new BestTrajectoryFinder(5);
+		private readonly BestTrajectoryFinder _bestTrajectoryFinder = new BestTrajectoryFinder(7);
 
 		public static void Initialize(GameParams gameParams)
 		{
