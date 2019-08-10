@@ -130,7 +130,9 @@ namespace MiniAiCup.Paperio.Core
 
 			GameDebugData.Current.UsedTime = stopwatch.Elapsed;
 			GameDebugData.Current.DangerousMap = currentState.DangerousMap;
-			GameDebugData.Current.BestTrajectory = GetStates(bestState, currentState).Select(s => s.Me.Position.ConvertToReal(Params.CellSize)).ToArray();
+			GameDebugData.Current.BestTrajectory = bestState != null
+				? GetStates(bestState, currentState).Select(s => s.Me.Position.ConvertToReal(Params.CellSize)).ToArray()
+				: currentState.Me.PathToHome.Select(p => p.ConvertToReal(Params.CellSize)).ToArray();
 #endif
 
 			return nextDirection;
