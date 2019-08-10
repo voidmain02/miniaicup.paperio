@@ -26,7 +26,7 @@ namespace MiniAiCup.Paperio.Core
 			else
 			{
 				int stepsLeft = (Constants.MaxTickCount - initialState.TickNumber)/(Game.Params.CellSize/Game.Params.Speed);
-				depth = Math.Min(_depth, stepsLeft + 1);
+				depth = stepsLeft == 0 ? 1 : Math.Min(_depth, stepsLeft);
 			}
 
 			var simulationQueue = new Queue<(GameStateInternal State, int Depth)>();
