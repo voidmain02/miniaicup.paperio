@@ -44,7 +44,7 @@ namespace MiniAiCup.Paperio.Core
 			}
 
 			int stepsLeft = (Constants.MaxTickCount - state.TickNumber)/(Game.Params.CellSize/Game.Params.Speed);
-			if (state.Me.PathToHome.Length > stepsLeft)
+			if (state.Me.PathToHome.Length >= stepsLeft)
 			{
 				return -500;
 			}
