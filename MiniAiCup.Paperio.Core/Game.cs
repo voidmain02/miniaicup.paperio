@@ -110,10 +110,20 @@ namespace MiniAiCup.Paperio.Core
 				: new GameStateInternal(state, _lastState, _lastMove);
 
 			var bestState = _bestTrajectoryFinder.FindBestState(currentState);
-			var nextState = GetNextState(bestState, currentState);
-
 			_lastState = currentState;
-			_lastMove = nextState.PreviousMove;
+
+			Direction nextDirection;
+			if (bestState != null)
+			{
+				var nextState = GetNextState(bestState, currentState);
+				nextDirection = nextState.Me.Direction.Value;
+				_lastMove = nextState.PreviousMove;
+			}
+			else
+			{
+				nextDirection = currentState.Me.Position.GetDirectionTo(currentState.Me.PathToHome[0]);
+				_lastMove = currentState.Me.Direction.Value.GetMoveTo(nextDirection);
+			}
 
 #if DEBUG
 			stopwatch.Stop();
@@ -123,7 +133,7 @@ namespace MiniAiCup.Paperio.Core
 			GameDebugData.Current.BestTrajectory = GetStates(bestState, currentState).Select(s => s.Me.Position.ConvertToReal(Params.CellSize)).ToArray();
 #endif
 
-			return nextState.Me.Direction.Value;
+			return nextDirection;
 		}
 
 		public static T[,] GetNewMap<T>()

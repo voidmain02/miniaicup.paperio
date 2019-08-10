@@ -85,5 +85,19 @@ namespace MiniAiCup.Paperio.Core
 
 			return distance;
 		}
+
+		public static Direction GetDirectionTo(this Point src, Point dst)
+		{
+			if (dst.X == src.X)
+			{
+				return dst.Y > src.Y
+					? Direction.Up
+					: Direction.Down;
+			}
+
+			return dst.X > src.X
+				? Direction.Right
+				: Direction.Left;
+		}
 	}
 }
