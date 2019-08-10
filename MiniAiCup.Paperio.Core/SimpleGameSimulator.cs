@@ -64,7 +64,7 @@ namespace MiniAiCup.Paperio.Core
 				{
 					return new GameStateInternal(nextTickNumber, state.Enemies, nextBonuses, state, move);
 				}
-				if (me.Tail.Any(p => state.DangerousMap[p.X, p.Y] <= currentDepth + me.PathToHome.Length + 1)) // Потенциально могут наехать на мой хвост
+				if (me.Tail.Any(p => state.DangerousMap[p.X, p.Y] <= currentDepth + me.PathToHome.Length)) // Потенциально могут наехать на мой хвост
 				{
 					return new GameStateInternal(nextTickNumber, state.Enemies, nextBonuses, state, move);
 				}
