@@ -5,15 +5,9 @@ using NUnit.Framework;
 
 namespace MiniAiCup.Paperio.Tests
 {
-	[TestFixtureSource("FixtureArgs")]
 	public class TerritoryCapturerTests
 	{
-		public static object[] FixtureArgs => new object[] {
-			new object[] { new ReferenceTerritoryCapturer() },
-			new object[] { new BfsTerritoryCapturer() }
-		};
-
-		private readonly ITerritoryCapturer _capturer;
+		private readonly BfsTerritoryCapturer _capturer = new BfsTerritoryCapturer();
 
 		static TerritoryCapturerTests()
 		{
@@ -22,11 +16,6 @@ namespace MiniAiCup.Paperio.Tests
 				CellSize = 30,
 				Speed = 5
 			});
-		}
-
-		public TerritoryCapturerTests(ITerritoryCapturer capturer)
-		{
-			_capturer = capturer;
 		}
 
 		[Test]

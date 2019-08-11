@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace MiniAiCup.Paperio.Core
 {
-	public class BfsTerritoryCapturer : ITerritoryCapturer
+	public class BfsTerritoryCapturer
 	{
 		private readonly List<Point> _mapBoundaryPoints;
 

@@ -8,8 +8,7 @@ namespace MiniAiCup.Paperio.Benchmark
 	[RankColumn]
 	public class TerritoryCapturerBenchmark
 	{
-		private ITerritoryCapturer _reference;
-		private ITerritoryCapturer _bfs;
+		private BfsTerritoryCapturer _bfs;
 
 		private PointsSet _territory;
 		private Path _tail;
@@ -53,12 +52,8 @@ namespace MiniAiCup.Paperio.Benchmark
 				new Point(8, 24)
 			});
 
-			_reference = new ReferenceTerritoryCapturer();
 			_bfs = new BfsTerritoryCapturer();
 		}
-
-		[Benchmark(Baseline = true)]
-		public PointsSet Reference() => _reference.Capture(_territory, _tail);
 
 		[Benchmark]
 		public PointsSet Bfs() => _bfs.Capture(_territory, _tail);

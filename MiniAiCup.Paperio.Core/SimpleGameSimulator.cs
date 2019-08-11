@@ -7,7 +7,7 @@ namespace MiniAiCup.Paperio.Core
 {
 	public class SimpleGameSimulator
 	{
-		private readonly ITerritoryCapturer _territoryCapturer;
+		private readonly BfsTerritoryCapturer _territoryCapturer;
 
 		public SimpleGameSimulator()
 		{
