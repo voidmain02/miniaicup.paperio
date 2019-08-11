@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using MiniAiCup.Paperio.Core.Debug;
 
@@ -10,17 +9,11 @@ namespace MiniAiCup.Paperio.Core
 
 		public int TickNumber { get; }
 
-		public PlayerInternal[] Players { get; }
-
 		public GameStateInternal PreviousState { get; }
 
-		private readonly Lazy<PlayerInternal> _me;
+		public PlayerInternal Me { get; }
 
-		public PlayerInternal Me => _me.Value;
-
-		private readonly Lazy<PlayerInternal[]> _enemies;
-
-		public PlayerInternal[] Enemies => _enemies.Value;
+		public PlayerInternal[] Enemies { get; }
 
 		private int[,] _dangerousMap;
 
@@ -28,16 +21,25 @@ namespace MiniAiCup.Paperio.Core
 
 		public DebugStateView DebugView => GetDebugView();
 
-		private GameStateInternal()
-		{
-			_me = new Lazy<PlayerInternal>(() => Players.FirstOrDefault(p => p.Id == Constants.MyId));
-			_enemies = new Lazy<PlayerInternal[]>(() => Players.Where(p => p.Id != Constants.MyId).ToArray());
-		}
-
-		public GameStateInternal(GameState state) : this()
+		public GameStateInternal(GameState state)
 		{
 			TickNumber = state.TickNumber;
-			Players = state.Players.Select(p => new PlayerInternal(p)).ToArray();
+
+			Enemies = new PlayerInternal[state.Players.Length - 1];
+			int enemyIndex = 0;
+
+			foreach (var player in state.Players)
+			{
+				if (player.Id == Constants.MyId)
+				{
+					Me = new PlayerInternal(player);
+				}
+				else
+				{
+					Enemies[enemyIndex++] = new PlayerInternal(player);
+				}
+			}
+
 			Bonuses = state.Bonuses.Select(b => new BonusInfo {
 				Type = b.Type,
 				Position = b.Position.ConvertToLogic(Game.Params.CellSize)
@@ -51,12 +53,13 @@ namespace MiniAiCup.Paperio.Core
 			PreviousState = previousState;
 		}
 
-		public GameStateInternal(int tickNumber, PlayerInternal[] players, BonusInfo[] bonuses, GameStateInternal previousState, int[,] dangerousMap) : this()
+		public GameStateInternal(int tickNumber, PlayerInternal me, PlayerInternal[] enemies, BonusInfo[] bonuses, GameStateInternal previousState, int[,] dangerousMap)
 		{
 			_dangerousMap = dangerousMap;
 
 			TickNumber = tickNumber;
-			Players = players;
+			Me = me;
+			Enemies = enemies;
 			Bonuses = bonuses;
 
 			PreviousState = previousState;
@@ -87,7 +90,7 @@ namespace MiniAiCup.Paperio.Core
 			return new DebugStateView {
 				Size = Game.Params.MapLogicSize,
 				CellSize = Game.Params.CellSize,
-				Players = Players.Select(p => p.DebugView).ToArray()
+				Players = Enemies.Append(Me).Select(p => p.DebugView).ToArray()
 			};
 		}
 	}

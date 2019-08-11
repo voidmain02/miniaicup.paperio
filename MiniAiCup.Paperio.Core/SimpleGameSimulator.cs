@@ -82,28 +82,24 @@ namespace MiniAiCup.Paperio.Core
 				}
 			}
 
-			var losers = new List<PlayerInternal>();
-			foreach (var enemy in enemies)
+			bool hasLosers = false;
+			for (int i = 0; i < enemies.Length; i++)
 			{
+				var enemy = enemies[i];
 				if (enemy.Tail.AsPointsSet().Contains(me.Position) && enemy.Territory.Min(p => enemy.DistanceMap[p.X, p.Y]) > currentDepth)
 				{
-					losers.Add(enemy);
+					hasLosers = true;
+					enemies[i] = null;
 					me.Score += Constants.LineKillScore;
 					break;
 				}
 			}
 
-			var players = new PlayerInternal[enemies.Length - losers.Count + 1];
-			players[0] = me;
-			int index = 1;
-			foreach (var enemy in enemies.Except(losers))
-			{
-				players[index++] = enemy;
-			}
+			enemies = hasLosers ? enemies.Where(e => e != null).ToArray() : enemies;
 
-			return new GameStateInternal(nextTickNumber, players, nextBonuses, state, losers.Any() ? null : state.DangerousMap);
+			return new GameStateInternal(nextTickNumber, me, enemies, nextBonuses, state, hasLosers ? null : state.DangerousMap);
 
-			GameStateInternal GetDeadState() => new GameStateInternal(nextTickNumber, state.Enemies, state.Bonuses, state, state.DangerousMap);
+			GameStateInternal GetDeadState() => new GameStateInternal(nextTickNumber, null, state.Enemies, state.Bonuses, state, state.DangerousMap);
 		}
 	}
 }

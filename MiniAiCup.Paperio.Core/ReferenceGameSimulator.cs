@@ -27,7 +27,7 @@ namespace MiniAiCup.Paperio.Core
 			var bonuses = state.Bonuses;
 
 			_players = new List<PlayerInternal>();
-			foreach (var srcPlayer in state.Players)
+			foreach (var srcPlayer in state.Enemies.Append(state.Me))
 			{
 				var player = (PlayerInternal)srcPlayer.Clone();
 				_players.Add(player);
@@ -105,7 +105,8 @@ namespace MiniAiCup.Paperio.Core
 				player.Score += _scoresGainedPerPlayer[player];
 			}
 
-			return new GameStateInternal(tickNumber, _players.ToArray(), bonuses, state, losers.Any() ? null : state.DangerousMap);
+			return new GameStateInternal(tickNumber, _players.FirstOrDefault(p => p.Id == Constants.MyId), _players.Where(p => p.Id != Constants.MyId).ToArray(),
+				bonuses, state, losers.Any() ? null : state.DangerousMap);
 		}
 
 		private void ResolveCollisions()
