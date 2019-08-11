@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using MiniAiCup.Paperio.Core.Debug;
 
 namespace MiniAiCup.Paperio.Core
 {
@@ -20,6 +21,10 @@ namespace MiniAiCup.Paperio.Core
 
 		public PointsSet Capture(PointsSet territory, Path tail)
 		{
+#if DEBUG
+			GameDebugData.Current.CaptureCount++;
+#endif
+
 			if (tail.Length <= 1)
 			{
 				return PointsSet.Empty;

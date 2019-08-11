@@ -81,6 +81,7 @@ namespace MiniAiCup.Paperio.Client
 			builder.Add(new MessageRewindCommand { Text = $"used time: {debugData.UsedTime}" });
 			builder.Add(new MessageRewindCommand { Text = $"simulations count: {debugData.SimulationsCount}" });
 			builder.Add(new MessageRewindCommand { Text = $"scorings count: {debugData.ScoringsCount}" });
+			builder.Add(new MessageRewindCommand { Text = $"capture count: {debugData.CaptureCount}" });
 
 			if (debugData.BestTrajectory != null)
 			{

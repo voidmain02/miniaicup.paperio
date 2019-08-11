@@ -14,6 +14,8 @@ namespace MiniAiCup.Paperio.Core.Debug
 
 		public int ScoringsCount { get; set; }
 
+		public int CaptureCount { get; set; }
+
 		public TimeSpan UsedTime { get; set; }
 
 		public void Reset()
@@ -22,6 +24,7 @@ namespace MiniAiCup.Paperio.Core.Debug
 			DangerousMap = null;
 			SimulationsCount = 0;
 			ScoringsCount = 0;
+			CaptureCount = 0;
 			UsedTime = TimeSpan.Zero;
 		}
 
