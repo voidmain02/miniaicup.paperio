@@ -16,8 +16,6 @@ namespace MiniAiCup.Paperio.Core
 
 		public static int[][,] NoTailDistanceMaps { get; private set; }
 
-		private Move _lastMove;
-
 		private GameStateInternal _lastState;
 
 		private readonly BestTrajectoryFinder _bestTrajectoryFinder = new BestTrajectoryFinder(7);
@@ -107,7 +105,7 @@ namespace MiniAiCup.Paperio.Core
 
 			var currentState = _lastState == null
 				? new GameStateInternal(state)
-				: new GameStateInternal(state, _lastState, _lastMove);
+				: new GameStateInternal(state, _lastState);
 
 			var bestState = _bestTrajectoryFinder.FindBestState(currentState);
 			_lastState = currentState;
@@ -117,12 +115,10 @@ namespace MiniAiCup.Paperio.Core
 			{
 				var nextState = GetNextState(bestState, currentState);
 				nextDirection = nextState.Me.Direction.Value;
-				_lastMove = nextState.PreviousMove;
 			}
 			else
 			{
 				nextDirection = currentState.Me.Position.GetDirectionTo(currentState.Me.PathToHome[0]);
-				_lastMove = currentState.Me.Direction.Value.GetMoveTo(nextDirection);
 			}
 
 #if DEBUG

@@ -14,8 +14,6 @@ namespace MiniAiCup.Paperio.Core
 
 		public GameStateInternal PreviousState { get; }
 
-		public Move PreviousMove { get; }
-
 		private readonly Lazy<PlayerInternal> _me;
 
 		public PlayerInternal Me => _me.Value;
@@ -45,17 +43,15 @@ namespace MiniAiCup.Paperio.Core
 				Position = b.Position.ConvertToLogic(Game.Params.CellSize)
 			}).ToArray();
 
-			PreviousMove = Move.Forward;
 			PreviousState = null;
 		}
 
-		public GameStateInternal(GameState state, GameStateInternal previousState, Move previousMove) : this(state)
+		public GameStateInternal(GameState state, GameStateInternal previousState) : this(state)
 		{
-			PreviousMove = previousMove;
 			PreviousState = previousState;
 		}
 
-		public GameStateInternal(int tickNumber, PlayerInternal[] players, BonusInfo[] bonuses, GameStateInternal previousState, Move previousMove, int[,] dangerousMap) : this()
+		public GameStateInternal(int tickNumber, PlayerInternal[] players, BonusInfo[] bonuses, GameStateInternal previousState, int[,] dangerousMap) : this()
 		{
 			_dangerousMap = dangerousMap;
 
@@ -64,7 +60,6 @@ namespace MiniAiCup.Paperio.Core
 			Bonuses = bonuses;
 
 			PreviousState = previousState;
-			PreviousMove = previousMove;
 		}
 
 		private int[,] BuildDangerousMap()
