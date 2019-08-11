@@ -30,7 +30,7 @@ namespace MiniAiCup.Paperio.Core
 			if (!Game.Params.MapLogicSize.ContainsPoint(me.Position) || // Выехал за пределы карты
 				me.Tail.Contains(me.Position)) // Наехал сам себе на хвост
 			{
-				return new GameStateInternal(nextTickNumber, state.Enemies, nextBonuses, state, move);
+				return GetDeadState();
 			}
 
 			if (me.Territory.Contains(me.Position))
@@ -40,7 +40,7 @@ namespace MiniAiCup.Paperio.Core
 					if (enemies.Any(enemy => (enemy.DistanceMap[state.Me.Position.X, state.Me.Position.Y] <= currentDepth + 1 ||
 						enemy.DistanceMap[me.Position.X, me.Position.Y] <= currentDepth + 1) && enemy.Tail.Length <= me.Tail.Length)) // Лобовое столкновение с противником с меньшим хвостом
 					{
-						return new GameStateInternal(nextTickNumber, state.Enemies, nextBonuses, state, move);
+						return GetDeadState();
 					}
 
 					var capturedTerritory = _territoryCapturer.Capture(me.Territory, me.Tail.Append(me.Position)); // TODO: Надо бы переделать Capturer, чтобы не приходилось добавлять в конец текущее положение
@@ -68,11 +68,11 @@ namespace MiniAiCup.Paperio.Core
 				me.Tail = me.Tail.Append(me.Position);
 				if (me.PathToHome == null) // Зашел в тупик
 				{
-					return new GameStateInternal(nextTickNumber, state.Enemies, nextBonuses, state, move);
+					return GetDeadState();
 				}
 				if (me.Tail.Any(p => state.DangerousMap[p.X, p.Y] <= currentDepth + me.PathToHome.Length)) // Потенциально могут наехать на мой хвост
 				{
-					return new GameStateInternal(nextTickNumber, state.Enemies, nextBonuses, state, move);
+					return GetDeadState();
 				}
 			}
 
@@ -96,6 +96,8 @@ namespace MiniAiCup.Paperio.Core
 			}
 
 			return new GameStateInternal(nextTickNumber, players, nextBonuses, state, move);
+
+			GameStateInternal GetDeadState() => new GameStateInternal(nextTickNumber, state.Enemies, state.Bonuses, state, move);
 		}
 
 		private static void MovePlayer(PlayerInternal player, Move move)
