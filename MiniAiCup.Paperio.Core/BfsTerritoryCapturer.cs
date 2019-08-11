@@ -12,11 +12,14 @@ namespace MiniAiCup.Paperio.Core
 
 		private readonly bool[,] _emptyVisited;
 
+		private readonly Queue<Point> _queue;
+
 		public BfsTerritoryCapturer()
 		{
 			_mapBoundaryPoints = GetBoundary(Game.Params.MapLogicSize).ToList();
 			_visited = Game.GetNewMap<bool>();
 			_emptyVisited = Game.GetNewMap<bool>();
+			_queue = new Queue<Point>(Game.Params.MapLogicSize.Width * Game.Params.MapLogicSize.Height);
 		}
 
 		public PointsSet Capture(PointsSet territory, Path tail)
@@ -24,16 +27,6 @@ namespace MiniAiCup.Paperio.Core
 #if DEBUG
 			GameDebugData.Current.CaptureCount++;
 #endif
-
-			if (tail.Length <= 1)
-			{
-				return PointsSet.Empty;
-			}
-
-			if (!territory.Contains(tail.Last()))
-			{
-				return PointsSet.Empty;
-			}
 
 			ResetVisited();
 
@@ -43,12 +36,12 @@ namespace MiniAiCup.Paperio.Core
 			foreach (var outsidePoint in outsidePoints)
 			{
 				_visited[outsidePoint.X, outsidePoint.Y] = true;
+				_queue.Enqueue(outsidePoint);
 			}
 
-			var queue = new Queue<Point>(outsidePoints);
-			while (queue.Count > 0)
+			while (_queue.Count > 0)
 			{
-				var point = queue.Dequeue();
+				var point = _queue.Dequeue();
 				foreach (var neighbor in point.GetNeighbors())
 				{
 					if (!Game.Params.MapLogicSize.ContainsPoint(neighbor))
@@ -67,7 +60,7 @@ namespace MiniAiCup.Paperio.Core
 						continue;
 					}
 					outsidePoints.Add(neighbor);
-					queue.Enqueue(neighbor);
+					_queue.Enqueue(neighbor);
 				}
 			}
 

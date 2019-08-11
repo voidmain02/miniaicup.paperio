@@ -12,8 +12,9 @@ namespace MiniAiCup.Paperio.Core
 		public BestTrajectoryFinder(int depth)
 		{
 			_depth = depth;
-			_simulator = new SimpleGameSimulator();
-			_scorer = new GameStateScorer();
+			var capturer = new BfsTerritoryCapturer();
+			_simulator = new SimpleGameSimulator(capturer);
+			_scorer = new GameStateScorer(capturer);
 		}
 
 		public GameStateInternal FindBestState(GameStateInternal initialState)

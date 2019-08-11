@@ -5,6 +5,13 @@ namespace MiniAiCup.Paperio.Core
 {
 	public class GameStateScorer
 	{
+		private readonly BfsTerritoryCapturer _territoryCapturer;
+
+		public GameStateScorer(BfsTerritoryCapturer territoryCapturer)
+		{
+			_territoryCapturer = territoryCapturer;
+		}
+
 		public int Score(GameStateInternal state)
 		{
 #if DEBUG
@@ -57,12 +64,18 @@ namespace MiniAiCup.Paperio.Core
 
 		public int CalcPotentialTerritoryCaptureScore(GameStateInternal state)
 		{
-			var territoryCapturer = new BfsTerritoryCapturer();
+			var tailWithPathToHome = new Point[state.Me.Tail.Length + state.Me.PathToHome.Length - 1];
+			for (int i = 0; i < state.Me.Tail.Length; i++)
+			{
+				tailWithPathToHome[i] = state.Me.Tail[i];
+			}
 
-			var tailWithPathToHome = new List<Point>(state.Me.Tail.Length + state.Me.PathToHome.Length);
-			tailWithPathToHome.AddRange(state.Me.Tail);
-			tailWithPathToHome.AddRange(state.Me.PathToHome);
-			var capturedTerritory = territoryCapturer.Capture(state.Me.Territory, new Path(tailWithPathToHome));
+			for (int i = 0; i < state.Me.PathToHome.Length - 1; i++)
+			{
+				tailWithPathToHome[state.Me.Tail.Length + i] = state.Me.PathToHome[i];
+			}
+
+			var capturedTerritory = _territoryCapturer.Capture(state.Me.Territory, new Path(tailWithPathToHome));
 			
 			int score = capturedTerritory.Count*Constants.NeutralTerritoryScore;
 			foreach (var enemy in state.Enemies)

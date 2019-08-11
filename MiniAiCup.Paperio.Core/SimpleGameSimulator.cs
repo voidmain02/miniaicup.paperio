@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using MiniAiCup.Paperio.Core.Debug;
 
@@ -9,9 +7,9 @@ namespace MiniAiCup.Paperio.Core
 	{
 		private readonly BfsTerritoryCapturer _territoryCapturer;
 
-		public SimpleGameSimulator()
+		public SimpleGameSimulator(BfsTerritoryCapturer territoryCapturer)
 		{
-			_territoryCapturer = new BfsTerritoryCapturer();
+			_territoryCapturer = territoryCapturer;
 		}
 
 		public GameStateInternal Simulate(GameStateInternal state, int currentDepth, Move move)
@@ -49,7 +47,7 @@ namespace MiniAiCup.Paperio.Core
 						return GetDeadState();
 					}
 
-					var capturedTerritory = _territoryCapturer.Capture(me.Territory, me.Tail.Append(me.Position)); // TODO: Надо бы переделать Capturer, чтобы не приходилось добавлять в конец текущее положение
+					var capturedTerritory = _territoryCapturer.Capture(me.Territory, me.Tail);
 					me.Tail = Path.Empty;
 					me.Territory = me.Territory.UnionWith(capturedTerritory);
 					me.Score += capturedTerritory.Count*Constants.NeutralTerritoryScore;
