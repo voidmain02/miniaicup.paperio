@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppendHashSetBenchmark.cs" />
     <Compile Include="BuildInsideDistanceMapBenchmark.cs" />
     <Compile Include="BuildOutsideDistanceMapBenchmark.cs" />
     <Compile Include="FillArrayBenchmark.cs" />
