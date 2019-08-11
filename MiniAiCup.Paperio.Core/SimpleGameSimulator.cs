@@ -35,8 +35,14 @@ namespace MiniAiCup.Paperio.Core
 
 			if (me.Territory.Contains(me.Position))
 			{
-				if (me.Tail.Length > 0)
+				if (me.Tail.Length > 0) // Заезд на свою территорию
 				{
+					if (enemies.Any(enemy => (enemy.DistanceMap[state.Me.Position.X, state.Me.Position.Y] <= currentDepth + 1 ||
+						enemy.DistanceMap[me.Position.X, me.Position.Y] <= currentDepth + 1) && enemy.Tail.Length <= me.Tail.Length)) // Лобовое столкновение с противником с меньшим хвостом
+					{
+						return new GameStateInternal(nextTickNumber, state.Enemies, nextBonuses, state, move);
+					}
+
 					var capturedTerritory = _territoryCapturer.Capture(me.Territory, me.Tail.Append(me.Position)); // TODO: Надо бы переделать Capturer, чтобы не приходилось добавлять в конец текущее положение
 					me.Tail = Path.Empty;
 					me.Territory = me.Territory.UnionWith(capturedTerritory);
