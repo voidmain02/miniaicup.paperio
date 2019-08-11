@@ -24,14 +24,20 @@ namespace MiniAiCup.Paperio.Core
 			var nextBonuses = state.Bonuses;
 
 			var me = (PlayerInternal)state.Me.Clone();
-			var enemies = (PlayerInternal[])state.Enemies.Clone();
-			MovePlayer(me, move);
+
+			me.Direction = me.Direction?.GetMoved(move);
+			if (me.Direction != null)
+			{
+				me.Position = me.Position.MoveLogic(me.Direction.Value);
+			}
 
 			if (!Game.Params.MapLogicSize.ContainsPoint(me.Position) || // Выехал за пределы карты
 				me.Tail.Contains(me.Position)) // Наехал сам себе на хвост
 			{
 				return GetDeadState();
 			}
+
+			var enemies = (PlayerInternal[])state.Enemies.Clone();
 
 			if (me.Territory.Contains(me.Position))
 			{
@@ -98,17 +104,6 @@ namespace MiniAiCup.Paperio.Core
 			return new GameStateInternal(nextTickNumber, players, nextBonuses, state, move);
 
 			GameStateInternal GetDeadState() => new GameStateInternal(nextTickNumber, state.Enemies, state.Bonuses, state, move);
-		}
-
-		private static void MovePlayer(PlayerInternal player, Move move)
-		{
-			var nextDirection = player.Direction?.GetMoved(move);
-			var nextPos = nextDirection == null
-				? player.Position
-				: player.Position.MoveLogic(nextDirection.Value);
-
-			player.Direction = nextDirection;
-			player.Position = nextPos;
 		}
 	}
 }
