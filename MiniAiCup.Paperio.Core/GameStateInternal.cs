@@ -24,9 +24,9 @@ namespace MiniAiCup.Paperio.Core
 
 		public PlayerInternal[] Enemies => _enemies.Value;
 
-		private readonly Lazy<int[,]> _dangerousMap;
+		private int[,] _dangerousMap;
 
-		public int[,] DangerousMap => _dangerousMap.Value;
+		public int[,] DangerousMap => _dangerousMap ?? (_dangerousMap = BuildDangerousMap());
 
 		public DebugStateView DebugView => GetDebugView();
 
@@ -34,7 +34,6 @@ namespace MiniAiCup.Paperio.Core
 		{
 			_me = new Lazy<PlayerInternal>(() => Players.FirstOrDefault(p => p.Id == Constants.MyId));
 			_enemies = new Lazy<PlayerInternal[]>(() => Players.Where(p => p.Id != Constants.MyId).ToArray());
-			_dangerousMap = new Lazy<int[,]>(BuildDangerousMap);
 		}
 
 		public GameStateInternal(GameState state) : this()
@@ -56,8 +55,10 @@ namespace MiniAiCup.Paperio.Core
 			PreviousState = previousState;
 		}
 
-		public GameStateInternal(int tickNumber, PlayerInternal[] players, BonusInfo[] bonuses, GameStateInternal previousState, Move previousMove) : this()
+		public GameStateInternal(int tickNumber, PlayerInternal[] players, BonusInfo[] bonuses, GameStateInternal previousState, Move previousMove, int[,] dangerousMap) : this()
 		{
+			_dangerousMap = dangerousMap;
+
 			TickNumber = tickNumber;
 			Players = players;
 			Bonuses = bonuses;

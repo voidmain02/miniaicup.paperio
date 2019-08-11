@@ -105,7 +105,7 @@ namespace MiniAiCup.Paperio.Core
 				player.Score += _scoresGainedPerPlayer[player];
 			}
 
-			return new GameStateInternal(tickNumber, _players.ToArray(), bonuses, state, move);
+			return new GameStateInternal(tickNumber, _players.ToArray(), bonuses, state, move, losers.Any() ? null : state.DangerousMap);
 		}
 
 		private void ResolveCollisions()

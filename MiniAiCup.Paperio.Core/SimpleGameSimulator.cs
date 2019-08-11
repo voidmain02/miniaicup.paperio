@@ -101,9 +101,9 @@ namespace MiniAiCup.Paperio.Core
 				players[index++] = enemy;
 			}
 
-			return new GameStateInternal(nextTickNumber, players, nextBonuses, state, move);
+			return new GameStateInternal(nextTickNumber, players, nextBonuses, state, move, losers.Any() ? null : state.DangerousMap);
 
-			GameStateInternal GetDeadState() => new GameStateInternal(nextTickNumber, state.Enemies, state.Bonuses, state, move);
+			GameStateInternal GetDeadState() => new GameStateInternal(nextTickNumber, state.Enemies, state.Bonuses, state, move, state.DangerousMap);
 		}
 	}
 }
