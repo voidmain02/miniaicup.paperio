@@ -83,6 +83,7 @@ namespace MiniAiCup.Paperio.Core
 				{
 					losers.Add(enemy);
 					me.Score += Constants.LineKillScore;
+					break;
 				}
 			}
 
