@@ -16,11 +16,11 @@ namespace MiniAiCup.Paperio.Core
 
 		public const int SawKillScore = 150;
 
-		public const int MaxExecutionTime = 120;
+		public const int MaxExecutionTime = 200;
 
-		public const int MaxRequestTime = 5;
+		public const int MaxRequestTime = 9;
 
-		public const int MaxTickCount = 1499;
+		public const int MaxTickCount = 2499;
 
 		public const string MyId = "i";
 	}
