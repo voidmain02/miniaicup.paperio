@@ -42,7 +42,7 @@ namespace MiniAiCup.Paperio.Core
 				foreach (var move in EnumValues.GetAll<Move>())
 				{
 					var nextState = _simulator.Simulate(currentState, currentDepth, move);
-					if (nextState.Me == null)
+					if (nextState == null)
 					{
 						continue;
 					}
