@@ -22,7 +22,7 @@ namespace MiniAiCup.Paperio.Core
 			_queue = new Queue<Point>(Game.Params.MapLogicSize.Width * Game.Params.MapLogicSize.Height);
 		}
 
-		public PointsSet Capture(PointsSet territory, Path tail)
+		public PointsSet Capture(PointsSet territory, IEnumerable<Point> tail)
 		{
 #if DEBUG
 			GameDebugData.Current.CaptureCount++;

@@ -75,7 +75,7 @@ namespace MiniAiCup.Paperio.Core
 				tailWithPathToHome[state.Me.Tail.Length + i] = state.Me.PathToHome[i];
 			}
 
-			var capturedTerritory = _territoryCapturer.Capture(state.Me.Territory, new Path(tailWithPathToHome));
+			var capturedTerritory = _territoryCapturer.Capture(state.Me.Territory, tailWithPathToHome);
 			
 			int score = capturedTerritory.Count*Constants.NeutralTerritoryScore;
 			foreach (var enemy in state.Enemies)
