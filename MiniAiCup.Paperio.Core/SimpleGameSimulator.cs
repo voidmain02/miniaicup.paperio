@@ -84,7 +84,7 @@ namespace MiniAiCup.Paperio.Core
 			for (int i = 0; i < enemies.Length; i++)
 			{
 				var enemy = enemies[i];
-				if (enemy.Tail.AsPointsSet().Contains(me.Position) && enemy.Territory.Min(p => enemy.DistanceMap[p.X, p.Y]) > currentDepth + 1)
+				if (enemy.Tail.AsPointsSet().Contains(me.Position) && enemy.Territory.Count > 0 && enemy.Territory.Min(p => enemy.DistanceMap[p.X, p.Y]) > currentDepth + 1)
 				{
 					hasLosers = true;
 					enemies[i] = null;
