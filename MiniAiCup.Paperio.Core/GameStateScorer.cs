@@ -32,16 +32,14 @@ namespace MiniAiCup.Paperio.Core
 
 			if (state.Me.Tail.Length == 0)
 			{
-				var freeTerritory = Game.AllMapPoints.ExceptWith(state.Me.Territory);
-				if (freeTerritory.Count == 0)
+				if (state.Me.Territory.Count == Game.Params.MapLogicSize.Width*Game.Params.MapLogicSize.Height)
 				{
 					return state.Me.Score*scoresMultiplicator;
 				}
 
-				var obstacles = new PointsSet(new[] { state.Me.Position.MoveLogic(state.Me.Direction.Value.GetOpposite()) });
-				var pathToOutside = PathFinder.GetShortestPath(state.Me.Position, freeTerritory, obstacles);
+				int pathToOutsideLength = PathFinder.GetShortestPathToOutsideLength(state.Me.Position, state.Me.Direction.Value, state.Me.Territory);
 
-				int pathToOutsidePenalty = 1 - pathToOutside.Length;
+				int pathToOutsidePenalty = 1 - pathToOutsideLength;
 				return state.Me.Score*scoresMultiplicator + pathToOutsidePenalty;
 			}
 
