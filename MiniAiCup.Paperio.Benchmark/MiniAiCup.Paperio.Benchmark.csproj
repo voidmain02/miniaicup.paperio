@@ -52,7 +52,6 @@
     <Compile Include="FillDistanceArrayBenchmark.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TerritoryCapturerBenchmark.cs" />
     <Compile Include="TrajectoryFindBenchmark.cs" />
   </ItemGroup>
   <ItemGroup>
