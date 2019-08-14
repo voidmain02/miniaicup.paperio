@@ -66,7 +66,7 @@ namespace MiniAiCup.Paperio.Core
 				Territory = Territory,
 				Position = Position,
 				Tail = Tail,
-				Bonuses = Bonuses.Select(b => (ActiveBonusInfo)b.Clone()).ToArray(),
+				Bonuses = Bonuses,
 				Direction = Direction
 			};
 		}
