@@ -64,6 +64,11 @@ namespace MiniAiCup.Paperio.Core
 
 		public int CalcPotentialTerritoryCaptureScore(GameStateInternal state)
 		{
+			if (state.Me.Tail.Length == 0)
+			{
+				return 0;
+			}
+
 			var tailWithPathToHome = new Point[state.Me.Tail.Length + state.Me.PathToHome.Length - 1];
 			for (int i = 0; i < state.Me.Tail.Length; i++)
 			{
