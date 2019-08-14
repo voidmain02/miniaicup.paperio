@@ -81,13 +81,19 @@ namespace MiniAiCup.Paperio.Core
 			var capturedTerritory = _territoryCapturer.Capture(state.Me.Territory, tailWithPathToHome);
 			
 			int score = capturedTerritory.Count*Constants.NeutralTerritoryScore;
-			foreach (var enemy in state.Enemies)
+			int enemyTerritoryPoints = 0;
+			foreach (var point in capturedTerritory)
 			{
-				int srcCount = enemy.Territory.Count;
-				var enemyCroppedTerritory = enemy.Territory.ExceptWith(capturedTerritory);
-				int croppedCount = enemyCroppedTerritory.Count;
-				score += (srcCount - croppedCount)*(Constants.EnemyTerritoryScore - Constants.NeutralTerritoryScore);
+				foreach (var enemy in state.Enemies)
+				{
+					if (enemy.Territory.Contains(point))
+					{
+						enemyTerritoryPoints++;
+						break;
+					}
+				}
 			}
+			score += enemyTerritoryPoints*(Constants.EnemyTerritoryScore - Constants.NeutralTerritoryScore);
 
 			return score;
 		}
