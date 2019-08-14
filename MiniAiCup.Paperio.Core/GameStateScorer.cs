@@ -32,7 +32,7 @@ namespace MiniAiCup.Paperio.Core
 
 			if (state.Me.Tail.Length == 0)
 			{
-				if (state.Me.Territory.Count == Game.Params.MapLogicSize.Width*Game.Params.MapLogicSize.Height)
+				if (state.Me.Territory.Count == GameParams.MapSize.Width*GameParams.MapSize.Height)
 				{
 					return state.Me.Score*scoresMultiplicator;
 				}
@@ -48,7 +48,7 @@ namespace MiniAiCup.Paperio.Core
 				return -900;
 			}
 
-			int stepsLeft = (Constants.MaxTickCount - state.TickNumber)/(Game.Params.CellSize/Game.Params.Speed);
+			int stepsLeft = (Constants.MaxTickCount - state.TickNumber)/(GameParams.CellSize/GameParams.Speed);
 			if (state.Me.PathToHome.Length >= stepsLeft)
 			{
 				return -500;

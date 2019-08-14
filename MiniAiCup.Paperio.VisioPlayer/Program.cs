@@ -18,11 +18,10 @@ namespace MiniAiCup.Paperio.VisioPlayer
 			string json = Decompress(visioPath);
 			var jData = (JArray)JObject.Parse(json)["visio_info"];
 
-			var gameParams = ParseGameParams((JObject)jData.First);
 			var gameStates = jData.Where(x => (string)x["type"] == "tick").Select(x => ParseGameState((JObject)x, myPlayerIndex));
 			var decisionGameStates = gameStates.Where(IsDecisionState);
 
-			Game.Initialize(gameParams);
+			Game.Initialize();
 			var game = new Game();
 			foreach (var state in decisionGameStates.SkipWhile(x => x.TickNumber < startTickNumber))
 			{
@@ -41,15 +40,6 @@ namespace MiniAiCup.Paperio.VisioPlayer
 			const int cellSize = 30;
 
 			return (me.Position.X + cellSize/2)%cellSize == 0 && (me.Position.Y + cellSize/2)%cellSize == 0;
-		}
-
-		private static GameParams ParseGameParams(JObject jParams)
-		{
-			return new GameParams {
-				MapLogicSize = new Size((int)jParams["x_cells_count"], (int)jParams["y_cells_count"]),
-				Speed = (int)jParams["speed"],
-				CellSize = (int)jParams["width"]
-			};
 		}
 
 		public static GameState ParseGameState(JObject jParams, int myPlayerIndex)

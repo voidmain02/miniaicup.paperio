@@ -16,11 +16,7 @@ namespace MiniAiCup.Paperio.Benchmark
 
 		public TrajectoryFindBenchmark()
 		{
-			Game.Initialize(new GameParams {
-				MapLogicSize = new Size(31, 31),
-				CellSize = 30,
-				Speed = 5
-			});
+			Game.Initialize();
 
 			_bestTrajectoryFinder = new BestTrajectoryFinder(Depth);
 

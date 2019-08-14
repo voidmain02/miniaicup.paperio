@@ -11,11 +11,7 @@ namespace MiniAiCup.Paperio.Tests
 
 		static TerritoryCapturerTests()
 		{
-			Game.Initialize(new GameParams {
-				MapLogicSize = new Size(15, 15),
-				CellSize = 30,
-				Speed = 5
-			});
+			Game.Initialize();
 		}
 
 		[Test]
@@ -541,8 +537,8 @@ namespace MiniAiCup.Paperio.Tests
 
 		private static bool AreEquals(IEnumerable<Point> fact, IEnumerable<Point> expected)
 		{
-			var orderedFact = fact.OrderBy(p => p.Y*Game.Params.MapLogicSize.Height + p.X).ToList();
-			var orderedExpected = expected.OrderBy(p => p.Y*Game.Params.MapLogicSize.Height + p.X).ToList();
+			var orderedFact = fact.OrderBy(p => p.Y*GameParams.MapSize.Height + p.X).ToList();
+			var orderedExpected = expected.OrderBy(p => p.Y*GameParams.MapSize.Height + p.X).ToList();
 
 			return orderedFact.SequenceEqual(orderedExpected);
 		}

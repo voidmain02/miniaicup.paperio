@@ -51,7 +51,6 @@
     <Compile Include="MessageType.cs" />
     <Compile Include="Rewind\CellRewindCommand.cs" />
     <Compile Include="Rewind\CircleRewindCommand.cs" />
-    <Compile Include="GameParamsParser.cs" />
     <Compile Include="GameStateParser.cs" />
     <Compile Include="Rewind\GraphicRewindCommand.cs" />
     <Compile Include="Rewind\LineRewindCommand.cs" />

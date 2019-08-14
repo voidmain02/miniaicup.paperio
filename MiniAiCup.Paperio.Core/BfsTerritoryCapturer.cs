@@ -11,14 +11,14 @@ namespace MiniAiCup.Paperio.Core
 			GameDebugData.Current.CaptureCount++;
 #endif
 
-			var visited = stackalloc byte[Game.Params.MapLogicSize.Width*Game.Params.MapLogicSize.Height];
+			var visited = stackalloc byte[GameParams.MapSize.Width*GameParams.MapSize.Height];
 			const byte emptyCell = 0;
 			const byte territoryCell = 1;
 			const byte tailCell = 2;
 			const byte outsideCell = 3;
 
-			int minX = Game.Params.MapLogicSize.Width - 1;
-			int minY = Game.Params.MapLogicSize.Height - 1;
+			int minX = GameParams.MapSize.Width - 1;
+			int minY = GameParams.MapSize.Height - 1;
 			int maxX = 0;
 			int maxY = 0;
 
@@ -40,7 +40,7 @@ namespace MiniAiCup.Paperio.Core
 				{
 					maxY = point.Y;
 				}
-				visited[point.X + point.Y*Game.Params.MapLogicSize.Width] = tailCell;
+				visited[point.X + point.Y*GameParams.MapSize.Width] = tailCell;
 			}
 			foreach (var point in territory)
 			{
@@ -60,7 +60,7 @@ namespace MiniAiCup.Paperio.Core
 				{
 					maxY = point.Y;
 				}
-				visited[point.X + point.Y*Game.Params.MapLogicSize.Width] = territoryCell;
+				visited[point.X + point.Y*GameParams.MapSize.Width] = territoryCell;
 			}
 
 			int totalBoxSize = (maxX - minX + 1)*(maxY - minY + 1);
@@ -71,40 +71,40 @@ namespace MiniAiCup.Paperio.Core
 			int outsideCount = 0;
 			for (int x = minX; x <= maxX; x++)
 			{
-				if (visited[x + minY*Game.Params.MapLogicSize.Width] == emptyCell)
+				if (visited[x + minY*GameParams.MapSize.Width] == emptyCell)
 				{
-					visited[x + minY*Game.Params.MapLogicSize.Width] = outsideCell;
+					visited[x + minY*GameParams.MapSize.Width] = outsideCell;
 					outsideCount++;
-					queue[queueHead++] = x + minY*Game.Params.MapLogicSize.Width;
+					queue[queueHead++] = x + minY*GameParams.MapSize.Width;
 				}
-				if (visited[x + maxY*Game.Params.MapLogicSize.Width] == emptyCell)
+				if (visited[x + maxY*GameParams.MapSize.Width] == emptyCell)
 				{
-					visited[x + maxY*Game.Params.MapLogicSize.Width] = outsideCell;
+					visited[x + maxY*GameParams.MapSize.Width] = outsideCell;
 					outsideCount++;
-					queue[queueHead++] = x + maxY*Game.Params.MapLogicSize.Width;
+					queue[queueHead++] = x + maxY*GameParams.MapSize.Width;
 				}
 			}
 
 			for (int y = minY + 1; y <= maxY - 1; y++)
 			{
-				if (visited[minX + y*Game.Params.MapLogicSize.Width] == emptyCell)
+				if (visited[minX + y*GameParams.MapSize.Width] == emptyCell)
 				{
-					visited[minX + y*Game.Params.MapLogicSize.Width] = outsideCell;
+					visited[minX + y*GameParams.MapSize.Width] = outsideCell;
 					outsideCount++;
-					queue[queueHead++] = minX + y*Game.Params.MapLogicSize.Width;
+					queue[queueHead++] = minX + y*GameParams.MapSize.Width;
 				}
-				if (visited[maxX + y*Game.Params.MapLogicSize.Width] == emptyCell)
+				if (visited[maxX + y*GameParams.MapSize.Width] == emptyCell)
 				{
-					visited[maxX + y*Game.Params.MapLogicSize.Width] = outsideCell;
+					visited[maxX + y*GameParams.MapSize.Width] = outsideCell;
 					outsideCount++;
-					queue[queueHead++] = maxX + y*Game.Params.MapLogicSize.Width;
+					queue[queueHead++] = maxX + y*GameParams.MapSize.Width;
 				}
 			}
 
 			while (queueTail != queueHead)
 			{
 				int pointInt = queue[queueTail++];
-				var point = new Point(pointInt%Game.Params.MapLogicSize.Width, pointInt/Game.Params.MapLogicSize.Width);
+				var point = new Point(pointInt%GameParams.MapSize.Width, pointInt/GameParams.MapSize.Width);
 				foreach (var neighbor in point.GetNeighbors())
 				{
 					if (neighbor.X < minX || neighbor.X > maxX || neighbor.Y < minY || neighbor.Y > maxY)
@@ -112,14 +112,14 @@ namespace MiniAiCup.Paperio.Core
 						continue;
 					}
 
-					if (visited[neighbor.X + neighbor.Y*Game.Params.MapLogicSize.Width] != emptyCell)
+					if (visited[neighbor.X + neighbor.Y*GameParams.MapSize.Width] != emptyCell)
 					{
 						continue;
 					}
 
-					visited[neighbor.X + neighbor.Y*Game.Params.MapLogicSize.Width] = outsideCell;
+					visited[neighbor.X + neighbor.Y*GameParams.MapSize.Width] = outsideCell;
 					outsideCount++;
-					queue[queueHead++] = neighbor.X + neighbor.Y*Game.Params.MapLogicSize.Width;
+					queue[queueHead++] = neighbor.X + neighbor.Y*GameParams.MapSize.Width;
 				}
 			}
 
@@ -129,8 +129,8 @@ namespace MiniAiCup.Paperio.Core
 			{
 				for (int x = minX; x <= maxX; x++)
 				{
-					if (visited[x + y*Game.Params.MapLogicSize.Width] == emptyCell ||
-						visited[x + y*Game.Params.MapLogicSize.Width] == tailCell)
+					if (visited[x + y*GameParams.MapSize.Width] == emptyCell ||
+						visited[x + y*GameParams.MapSize.Width] == tailCell)
 					{
 						result[index++] = new Point(x, y);
 					}

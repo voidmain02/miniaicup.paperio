@@ -18,7 +18,7 @@ namespace MiniAiCup.Paperio.Core
 			GameDebugData.Current.SimulationsCount++;
 #endif
 
-			int nextTickNumber = state.TickNumber + Game.Params.CellSize/Game.Params.Speed;
+			int nextTickNumber = state.TickNumber + GameParams.CellSize/GameParams.Speed;
 			var nextBonuses = state.Bonuses;
 
 			var me = (PlayerInternal)state.Me.Clone();
@@ -29,7 +29,7 @@ namespace MiniAiCup.Paperio.Core
 				me.Position = me.Position.MoveLogic(me.Direction.Value);
 			}
 
-			if (!Game.Params.MapLogicSize.ContainsPoint(me.Position) || // Выехал за пределы карты
+			if (!GameParams.MapSize.ContainsPoint(me.Position) || // Выехал за пределы карты
 				me.Tail.Contains(me.Position)) // Наехал сам себе на хвост
 			{
 				return null;

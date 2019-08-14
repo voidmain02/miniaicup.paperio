@@ -8,8 +8,6 @@ namespace MiniAiCup.Paperio.Core
 {
 	public class Game
 	{
-		public static GameParams Params { get; private set; }
-
 		public static int[,] NoEnemiesDangerousMap { get; private set; }
 
 		public static int[][,] NoTailDistanceMaps { get; private set; }
@@ -18,20 +16,18 @@ namespace MiniAiCup.Paperio.Core
 
 		private readonly BestTrajectoryFinder _bestTrajectoryFinder = new BestTrajectoryFinder(9);
 
-		public static void Initialize(GameParams gameParams)
+		public static void Initialize()
 		{
-			Params = gameParams;
-
 			BuildNoEnemiesDangerousMap();
 			BuildNoTailDistanceMaps();
 		}
 
 		private static void BuildNoEnemiesDangerousMap()
 		{
-			NoEnemiesDangerousMap = Game.GetNewMap<int>();
-			for (int y = 0; y < Game.Params.MapLogicSize.Height; y++)
+			NoEnemiesDangerousMap = GetNewMap<int>();
+			for (int y = 0; y < GameParams.MapSize.Height; y++)
 			{
-				for (int x = 0; x < Game.Params.MapLogicSize.Width; x++)
+				for (int x = 0; x < GameParams.MapSize.Width; x++)
 				{
 					NoEnemiesDangerousMap[x, y] = Int32.MaxValue;
 				}
@@ -41,9 +37,9 @@ namespace MiniAiCup.Paperio.Core
 		private static void BuildNoTailDistanceMaps()
 		{
 			NoTailDistanceMaps = new int[4][,];
-			var center = new Point(Params.MapLogicSize.Width - 1, Params.MapLogicSize.Height - 1);
-			int width = Params.MapLogicSize.Width*2 - 1;
-			int height = Params.MapLogicSize.Height*2 - 1;
+			var center = new Point(GameParams.MapSize.Width - 1, GameParams.MapSize.Height - 1);
+			int width = GameParams.MapSize.Width*2 - 1;
+			int height = GameParams.MapSize.Height*2 - 1;
 			for (int i = 0; i < 4; i++)
 			{
 				NoTailDistanceMaps[i] = new int[width, height];
@@ -124,8 +120,8 @@ namespace MiniAiCup.Paperio.Core
 			GameDebugData.Current.UsedTime = stopwatch.Elapsed;
 			GameDebugData.Current.DangerousMap = currentState.DangerousMap;
 			GameDebugData.Current.BestTrajectory = bestState != null
-				? GetStates(bestState, currentState).Select(s => s.Me.Position.ConvertToReal(Params.CellSize)).ToArray()
-				: currentState.Me.PathToHome.Select(p => p.ConvertToReal(Params.CellSize)).ToArray();
+				? GetStates(bestState, currentState).Select(s => s.Me.Position.ConvertToReal(GameParams.CellSize)).ToArray()
+				: currentState.Me.PathToHome.Select(p => p.ConvertToReal(GameParams.CellSize)).ToArray();
 #endif
 
 			return nextDirection;
@@ -133,7 +129,7 @@ namespace MiniAiCup.Paperio.Core
 
 		public static T[,] GetNewMap<T>()
 		{
-			return new T[Params.MapLogicSize.Width, Params.MapLogicSize.Height];
+			return new T[GameParams.MapSize.Width, GameParams.MapSize.Height];
 		}
 
 		private static GameStateInternal GetNextState(GameStateInternal lastState, GameStateInternal initialState)
@@ -163,7 +159,7 @@ namespace MiniAiCup.Paperio.Core
 
 		private Direction GetStartDirection(GameState state)
 		{
-			var currentPosition = state.Players.First(p => p.Id == Constants.MyId).Position.ConvertToLogic(Params.CellSize);
+			var currentPosition = state.Players.First(p => p.Id == Constants.MyId).Position.ConvertToLogic(GameParams.CellSize);
 
 			int maxDistance = 0;
 			var maxDistanceDirection = Direction.Left;
@@ -185,8 +181,8 @@ namespace MiniAiCup.Paperio.Core
 			switch (direction)
 			{
 				case Direction.Left: return point.X;
-				case Direction.Up: return Params.MapLogicSize.Height - point.Y - 1;
-				case Direction.Right: return Params.MapLogicSize.Width - point.X - 1;
+				case Direction.Up: return GameParams.MapSize.Height - point.Y - 1;
+				case Direction.Right: return GameParams.MapSize.Width - point.X - 1;
 				case Direction.Down: return point.Y;
 				default:
 					throw new ArgumentOutOfRangeException(nameof(direction), direction, null);

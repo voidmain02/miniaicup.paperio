@@ -42,9 +42,9 @@ namespace MiniAiCup.Paperio.Core
 		public PlayerInternal(PlayerInfo player) : this(player.Id)
 		{
 			Score = player.Score;
-			Territory = new PointsSet(player.Territory.Select(p => p.ConvertToLogic(Game.Params.CellSize)));
-			Position = player.Position.ConvertToLogic(Game.Params.CellSize);
-			Tail = new Path(player.Lines.Select(p => p.ConvertToLogic(Game.Params.CellSize)));
+			Territory = new PointsSet(player.Territory.Select(p => p.ConvertToLogic(GameParams.CellSize)));
+			Position = player.Position.ConvertToLogic(GameParams.CellSize);
+			Tail = new Path(player.Lines.Select(p => p.ConvertToLogic(GameParams.CellSize)));
 			Bonuses = player.Bonuses;
 			Direction = player.Direction;
 		}
@@ -86,9 +86,9 @@ namespace MiniAiCup.Paperio.Core
 			var map = Game.GetNewMap<int>();
 			if (Direction == null)
 			{
-				for (int y = 0; y < Game.Params.MapLogicSize.Height; y++)
+				for (int y = 0; y < GameParams.MapSize.Height; y++)
 				{
-					for (int x = 0; x < Game.Params.MapLogicSize.Width; x++)
+					for (int x = 0; x < GameParams.MapSize.Width; x++)
 					{
 						map[x, y] = Position.GetDistanceTo(new Point(x, y));
 					}
@@ -97,9 +97,9 @@ namespace MiniAiCup.Paperio.Core
 			else
 			{
 				var srcArray = Game.NoTailDistanceMaps[(int)Direction.Value];
-				Utils.CopyArrayPart(srcArray, Game.Params.MapLogicSize.Width*2 -1, Game.Params.MapLogicSize.Height*2 - 1,
-					map, Game.Params.MapLogicSize.Width, Game.Params.MapLogicSize.Height,
-					Game.Params.MapLogicSize.Width - Position.X - 1, Game.Params.MapLogicSize.Height - Position.Y - 1);
+				Utils.CopyArrayPart(srcArray, GameParams.MapSize.Width*2 -1, GameParams.MapSize.Height*2 - 1,
+					map, GameParams.MapSize.Width, GameParams.MapSize.Height,
+					GameParams.MapSize.Width - Position.X - 1, GameParams.MapSize.Height - Position.Y - 1);
 			}
 
 			return map;
@@ -108,15 +108,15 @@ namespace MiniAiCup.Paperio.Core
 		private unsafe int[,] BuildOutsideDistanceMap()
 		{
 			var map = Game.GetNewMap<int>();
-			Utils.FastCopyArray(Game.NoEnemiesDangerousMap, map, Game.Params.MapLogicSize.Width*Game.Params.MapLogicSize.Height);
-			var visited = stackalloc bool[Game.Params.MapLogicSize.Width*Game.Params.MapLogicSize.Height];
-			var mapAfterHome = stackalloc int[Game.Params.MapLogicSize.Width*Game.Params.MapLogicSize.Height];
-			var visitedAfterHome = stackalloc bool[Game.Params.MapLogicSize.Width*Game.Params.MapLogicSize.Height];
+			Utils.FastCopyArray(Game.NoEnemiesDangerousMap, map, GameParams.MapSize.Width*GameParams.MapSize.Height);
+			var visited = stackalloc bool[GameParams.MapSize.Width*GameParams.MapSize.Height];
+			var mapAfterHome = stackalloc int[GameParams.MapSize.Width*GameParams.MapSize.Height];
+			var visitedAfterHome = stackalloc bool[GameParams.MapSize.Width*GameParams.MapSize.Height];
 
 			map[Position.X, Position.Y] = 0;
-			visited[Position.X + Position.Y*Game.Params.MapLogicSize.Width] = true;
+			visited[Position.X + Position.Y*GameParams.MapSize.Width] = true;
 
-			var queue = new Queue<(Point Point, bool AfterHome, Direction? VisitHomeDirection)>(Game.Params.MapLogicSize.Width*Game.Params.MapLogicSize.Height);
+			var queue = new Queue<(Point Point, bool AfterHome, Direction? VisitHomeDirection)>(GameParams.MapSize.Width*GameParams.MapSize.Height);
 			queue.Enqueue((Position, false, null));
 
 			bool visitHome = false;
@@ -130,41 +130,41 @@ namespace MiniAiCup.Paperio.Core
 					foreach (var direction in EnumValues.GetAll<Direction>())
 					{
 						var neighbor = currentPoint.MoveLogic(direction);
-						if (!Game.Params.MapLogicSize.ContainsPoint(neighbor) || Tail.AsPointsSet().Contains(neighbor))
+						if (!GameParams.MapSize.ContainsPoint(neighbor) || Tail.AsPointsSet().Contains(neighbor))
 						{
 							continue;
 						}
 
-						if (Territory.Contains(neighbor) && !Territory.Contains(currentPoint) && !visitedAfterHome[neighbor.X + neighbor.Y*Game.Params.MapLogicSize.Width])
+						if (Territory.Contains(neighbor) && !Territory.Contains(currentPoint) && !visitedAfterHome[neighbor.X + neighbor.Y*GameParams.MapSize.Width])
 						{
 							queue.Enqueue((neighbor, true, direction));
-							mapAfterHome[neighbor.X + neighbor.Y*Game.Params.MapLogicSize.Width] = currentLength + 1;
+							mapAfterHome[neighbor.X + neighbor.Y*GameParams.MapSize.Width] = currentLength + 1;
 							visitHome = true;
 						}
 
-						if (visited[neighbor.X + neighbor.Y*Game.Params.MapLogicSize.Width])
+						if (visited[neighbor.X + neighbor.Y*GameParams.MapSize.Width])
 						{
 							continue;
 						}
 
 						map[neighbor.X, neighbor.Y] = currentLength + 1;
-						visited[neighbor.X + neighbor.Y*Game.Params.MapLogicSize.Width] = true;
+						visited[neighbor.X + neighbor.Y*GameParams.MapSize.Width] = true;
 						queue.Enqueue((neighbor, false, null));
 					}
 				}
 				else
 				{
-					int currentLength = mapAfterHome[currentPoint.X + currentPoint.Y*Game.Params.MapLogicSize.Width];
+					int currentLength = mapAfterHome[currentPoint.X + currentPoint.Y*GameParams.MapSize.Width];
 					foreach (var direction in EnumValues.GetAll<Direction>())
 					{
 						var neighbor = currentPoint.MoveLogic(direction);
-						if (!Game.Params.MapLogicSize.ContainsPoint(neighbor) || visitedAfterHome[neighbor.X + neighbor.Y*Game.Params.MapLogicSize.Width] || visitHomeDirection == direction.GetOpposite())
+						if (!GameParams.MapSize.ContainsPoint(neighbor) || visitedAfterHome[neighbor.X + neighbor.Y*GameParams.MapSize.Width] || visitHomeDirection == direction.GetOpposite())
 						{
 							continue;
 						}
 
-						mapAfterHome[neighbor.X + neighbor.Y*Game.Params.MapLogicSize.Width] = currentLength + 1;
-						visitedAfterHome[neighbor.X + neighbor.Y*Game.Params.MapLogicSize.Width] = true;
+						mapAfterHome[neighbor.X + neighbor.Y*GameParams.MapSize.Width] = currentLength + 1;
+						visitedAfterHome[neighbor.X + neighbor.Y*GameParams.MapSize.Width] = true;
 						queue.Enqueue((neighbor, true, null));
 					}
 				}
@@ -175,11 +175,11 @@ namespace MiniAiCup.Paperio.Core
 				return map;
 			}
 
-			for (int y = 0; y < Game.Params.MapLogicSize.Height; y++)
+			for (int y = 0; y < GameParams.MapSize.Height; y++)
 			{
-				for (int x = 0; x < Game.Params.MapLogicSize.Width; x++)
+				for (int x = 0; x < GameParams.MapSize.Width; x++)
 				{
-					map[x, y] = Math.Min(map[x, y], mapAfterHome[x + y*Game.Params.MapLogicSize.Width]);
+					map[x, y] = Math.Min(map[x, y], mapAfterHome[x + y*GameParams.MapSize.Width]);
 				}
 			}
 

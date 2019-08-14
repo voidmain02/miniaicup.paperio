@@ -26,7 +26,7 @@ namespace MiniAiCup.Paperio.Core
 			}
 			else
 			{
-				int stepsLeft = (Constants.MaxTickCount - initialState.TickNumber)/(Game.Params.CellSize/Game.Params.Speed);
+				int stepsLeft = (Constants.MaxTickCount - initialState.TickNumber)/(GameParams.CellSize/GameParams.Speed);
 				depth = stepsLeft == 0 ? 1 : Math.Min(_depth, stepsLeft);
 			}
 

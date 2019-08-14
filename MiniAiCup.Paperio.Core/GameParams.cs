@@ -1,26 +1,11 @@
-using System;
-
 namespace MiniAiCup.Paperio.Core
 {
-	/// <summary>
-	/// Параметры игры
-	/// </summary>
-	[Serializable]
-	public class GameParams
+	public static class GameParams
 	{
-		/// <summary>
-		/// Размер карты в ячейках
-		/// </summary>
-		public Size MapLogicSize { get; set; }
+		public static readonly Size MapSize = new Size(31, 31);
 
-		/// <summary>
-		/// Скорость игрока
-		/// </summary>
-		public int Speed { get; set; }
+		public const int CellSize = 30;
 
-		/// <summary>
-		/// Ширина и высота элементарной ячейки
-		/// </summary>
-		public int CellSize { get; set; }
+		public const int Speed = 5;
 	}
 }

@@ -19,11 +19,7 @@ namespace MiniAiCup.Paperio.Benchmark
 
 		public BuildOutsideDistanceMapBenchmark()
 		{
-			Game.Initialize(new GameParams {
-				MapLogicSize = new Size(31, 31),
-				CellSize = 30,
-				Speed = 5
-			});
+			Game.Initialize();
 
 			string json = "{\"1\": {\"score\": 22, \"direction\": \"left\", \"territory\": [[645, 585], [645, 615], [645, 645], [645, 675], [645, 705], [645, 735], [645, 765], " +
 				"[675, 585], [675, 615], [675, 645], [675, 675], [675, 705], [675, 735], [675, 765], [705, 585], [705, 615], [705, 645], [705, 675], [705, 705], [705, 735], " +
@@ -45,14 +41,14 @@ namespace MiniAiCup.Paperio.Benchmark
 			var homePoints = new List<(Point Point, Direction SourceDirection, int PathLength)>();
 
 			var map = Game.GetNewMap<int>();
-			Utils.FastCopyArray(Game.NoEnemiesDangerousMap, map, Game.Params.MapLogicSize.Width*Game.Params.MapLogicSize.Height);
+			Utils.FastCopyArray(Game.NoEnemiesDangerousMap, map, GameParams.MapSize.Width*GameParams.MapSize.Height);
 
 			var visited = Game.GetNewMap<bool>();
 
 			map[_position.X, _position.Y] = 0;
 			visited[_position.X, _position.Y] = true;
 
-			var queue = new Queue<Point>(Game.Params.MapLogicSize.Width*Game.Params.MapLogicSize.Height);
+			var queue = new Queue<Point>(GameParams.MapSize.Width*GameParams.MapSize.Height);
 			queue.Enqueue(_position);
 
 			while (queue.Count > 0)
@@ -62,7 +58,7 @@ namespace MiniAiCup.Paperio.Benchmark
 				foreach (var direction in EnumValues.GetAll<Direction>())
 				{
 					var neighbor = currentPoint.MoveLogic(direction);
-					if (!Game.Params.MapLogicSize.ContainsPoint(neighbor) || _tail.AsPointsSet().Contains(neighbor))
+					if (!GameParams.MapSize.ContainsPoint(neighbor) || _tail.AsPointsSet().Contains(neighbor))
 					{
 						continue;
 					}
@@ -88,9 +84,9 @@ namespace MiniAiCup.Paperio.Benchmark
 				return map;
 			}
 
-			for (int y = 0; y < Game.Params.MapLogicSize.Height; y++)
+			for (int y = 0; y < GameParams.MapSize.Height; y++)
 			{
-				for (int x = 0; x < Game.Params.MapLogicSize.Width; x++)
+				for (int x = 0; x < GameParams.MapSize.Width; x++)
 				{
 					map[x, y] = Math.Min(map[x, y], homePoints.Min(p => p.Point.GetDistanceTo(new Point(x, y), p.SourceDirection)));
 				}
@@ -105,14 +101,14 @@ namespace MiniAiCup.Paperio.Benchmark
 			var homePoints = new List<(Point Point, Direction SourceDirection, int PathLength)>();
 
 			var map = Game.GetNewMap<int>();
-			Utils.FastCopyArray(Game.NoEnemiesDangerousMap, map, Game.Params.MapLogicSize.Width*Game.Params.MapLogicSize.Height);
+			Utils.FastCopyArray(Game.NoEnemiesDangerousMap, map, GameParams.MapSize.Width*GameParams.MapSize.Height);
 
 			var visited = Game.GetNewMap<bool>();
 
 			map[_position.X, _position.Y] = 0;
 			visited[_position.X, _position.Y] = true;
 
-			var queue = new Queue<Point>(Game.Params.MapLogicSize.Width*Game.Params.MapLogicSize.Height);
+			var queue = new Queue<Point>(GameParams.MapSize.Width*GameParams.MapSize.Height);
 			queue.Enqueue(_position);
 
 			while (queue.Count > 0)
@@ -122,7 +118,7 @@ namespace MiniAiCup.Paperio.Benchmark
 				foreach (var direction in EnumValues.GetAll<Direction>())
 				{
 					var neighbor = currentPoint.MoveLogic(direction);
-					if (!Game.Params.MapLogicSize.ContainsPoint(neighbor) || _tail.AsPointsSet().Contains(neighbor))
+					if (!GameParams.MapSize.ContainsPoint(neighbor) || _tail.AsPointsSet().Contains(neighbor))
 					{
 						continue;
 					}
@@ -163,7 +159,7 @@ namespace MiniAiCup.Paperio.Benchmark
 				int currentLength = mapAfterHome[currentPoint.X, currentPoint.Y];
 				foreach (var neighbor in currentPoint.GetNeighbors())
 				{
-					if (!Game.Params.MapLogicSize.ContainsPoint(neighbor) || visitedAfterHome[neighbor.X, neighbor.Y])
+					if (!GameParams.MapSize.ContainsPoint(neighbor) || visitedAfterHome[neighbor.X, neighbor.Y])
 					{
 						continue;
 					}
@@ -174,9 +170,9 @@ namespace MiniAiCup.Paperio.Benchmark
 				}
 			}
 
-			for (int y = 0; y < Game.Params.MapLogicSize.Height; y++)
+			for (int y = 0; y < GameParams.MapSize.Height; y++)
 			{
-				for (int x = 0; x < Game.Params.MapLogicSize.Width; x++)
+				for (int x = 0; x < GameParams.MapSize.Width; x++)
 				{
 					map[x, y] = Math.Min(map[x, y], mapAfterHome[x, y]);
 				}
@@ -189,7 +185,7 @@ namespace MiniAiCup.Paperio.Benchmark
 		public int[,] DoubleSides()
 		{
 			var map = Game.GetNewMap<int>();
-			Utils.FastCopyArray(Game.NoEnemiesDangerousMap, map, Game.Params.MapLogicSize.Width*Game.Params.MapLogicSize.Height);
+			Utils.FastCopyArray(Game.NoEnemiesDangerousMap, map, GameParams.MapSize.Width*GameParams.MapSize.Height);
 			var visited = Game.GetNewMap<bool>();
 
 			var mapAfterHome = Game.GetNewMap<int>();
@@ -198,7 +194,7 @@ namespace MiniAiCup.Paperio.Benchmark
 			map[_position.X, _position.Y] = 0;
 			visited[_position.X, _position.Y] = true;
 
-			var queue = new Queue<(Point Point, bool AfterHome, Direction? VisitHomeDirection)>(Game.Params.MapLogicSize.Width*Game.Params.MapLogicSize.Height);
+			var queue = new Queue<(Point Point, bool AfterHome, Direction? VisitHomeDirection)>(GameParams.MapSize.Width*GameParams.MapSize.Height);
 			queue.Enqueue((_position, false, null));
 
 			bool visitHome = false;
@@ -212,7 +208,7 @@ namespace MiniAiCup.Paperio.Benchmark
 					foreach (var direction in EnumValues.GetAll<Direction>())
 					{
 						var neighbor = currentPoint.MoveLogic(direction);
-						if (!Game.Params.MapLogicSize.ContainsPoint(neighbor) || _tail.AsPointsSet().Contains(neighbor))
+						if (!GameParams.MapSize.ContainsPoint(neighbor) || _tail.AsPointsSet().Contains(neighbor))
 						{
 							continue;
 						}
@@ -240,7 +236,7 @@ namespace MiniAiCup.Paperio.Benchmark
 					foreach (var direction in EnumValues.GetAll<Direction>())
 					{
 						var neighbor = currentPoint.MoveLogic(direction);
-						if (!Game.Params.MapLogicSize.ContainsPoint(neighbor) || visitedAfterHome[neighbor.X, neighbor.Y] || visitHomeDirection == direction.GetOpposite())
+						if (!GameParams.MapSize.ContainsPoint(neighbor) || visitedAfterHome[neighbor.X, neighbor.Y] || visitHomeDirection == direction.GetOpposite())
 						{
 							continue;
 						}
@@ -257,9 +253,9 @@ namespace MiniAiCup.Paperio.Benchmark
 				return map;
 			}
 
-			for (int y = 0; y < Game.Params.MapLogicSize.Height; y++)
+			for (int y = 0; y < GameParams.MapSize.Height; y++)
 			{
-				for (int x = 0; x < Game.Params.MapLogicSize.Width; x++)
+				for (int x = 0; x < GameParams.MapSize.Width; x++)
 				{
 					map[x, y] = Math.Min(map[x, y], mapAfterHome[x, y]);
 				}

@@ -42,7 +42,7 @@ namespace MiniAiCup.Paperio.Core
 
 			Bonuses = state.Bonuses.Select(b => new BonusInfo {
 				Type = b.Type,
-				Position = b.Position.ConvertToLogic(Game.Params.CellSize)
+				Position = b.Position.ConvertToLogic(GameParams.CellSize)
 			}).ToArray();
 
 			PreviousState = null;
@@ -74,9 +74,9 @@ namespace MiniAiCup.Paperio.Core
 
 			var map = Game.GetNewMap<int>();
 
-			for (int y = 0; y < Game.Params.MapLogicSize.Height; y++)
+			for (int y = 0; y < GameParams.MapSize.Height; y++)
 			{
-				for (int x = 0; x < Game.Params.MapLogicSize.Width; x++)
+				for (int x = 0; x < GameParams.MapSize.Width; x++)
 				{
 					map[x, y] = Enemies.Min(e => e.DistanceMap[x, y]);
 				}
@@ -88,8 +88,8 @@ namespace MiniAiCup.Paperio.Core
 		private DebugStateView GetDebugView()
 		{
 			return new DebugStateView {
-				Size = Game.Params.MapLogicSize,
-				CellSize = Game.Params.CellSize,
+				Size = GameParams.MapSize,
+				CellSize = GameParams.CellSize,
 				Players = Enemies.Append(Me).Select(p => p.DebugView).ToArray()
 			};
 		}

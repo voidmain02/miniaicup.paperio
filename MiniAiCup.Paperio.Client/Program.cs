@@ -13,8 +13,7 @@ namespace MiniAiCup.Paperio.Client
 		public static void Main()
 		{
 			var message = ReadMessage();
-			var gameParams = GameParamsParser.Parse(message);
-			Game.Initialize(gameParams);
+			Game.Initialize();
 
 			var game = new Game();
 
@@ -102,9 +101,9 @@ namespace MiniAiCup.Paperio.Client
 				const double maxHue = 100.0/360.0;
 
 				int maxValue = 0;
-				for (int y = 0; y < Game.Params.MapLogicSize.Height; y++)
+				for (int y = 0; y < GameParams.MapSize.Height; y++)
 				{
-					for (int x = 0; x < Game.Params.MapLogicSize.Width; x++)
+					for (int x = 0; x < GameParams.MapSize.Width; x++)
 					{
 						if (debugData.DangerousMap[x, y] != Int32.MaxValue && debugData.DangerousMap[x, y] > maxValue)
 						{
@@ -112,25 +111,25 @@ namespace MiniAiCup.Paperio.Client
 						}
 					}
 				}
-				for (int y = 0; y < Game.Params.MapLogicSize.Height; y++)
+				for (int y = 0; y < GameParams.MapSize.Height; y++)
 				{
-					for (int x = 0; x < Game.Params.MapLogicSize.Width; x++)
+					for (int x = 0; x < GameParams.MapSize.Width; x++)
 					{
-						if (debugData.DangerousMap[x, y] > Game.Params.MapLogicSize.Width*Game.Params.MapLogicSize.Height)
+						if (debugData.DangerousMap[x, y] > GameParams.MapSize.Width*GameParams.MapSize.Height)
 						{
 							continue;
 						}
 
 						double hue = (double)debugData.DangerousMap[x, y]/(double)maxValue*maxHue;
 
-						builder.Add(new CellRewindCommand(Game.Params.CellSize) {
+						builder.Add(new CellRewindCommand(GameParams.CellSize) {
 							LogicPoint = new Point(x, y),
 							Color = ColorConverter.FromHsla(hue, 1.0, 0.5, 0.6),
 							Layer = 3
 						});
 						builder.Add(new PopupRewindCommand {
-							Location = new Point(x, y).ConvertToReal(Game.Params.CellSize),
-							Radius = Game.Params.CellSize/2,
+							Location = new Point(x, y).ConvertToReal(GameParams.CellSize),
+							Radius = GameParams.CellSize/2,
 							Text = $"dang: {debugData.DangerousMap[x, y]}"
 						});
 					}
