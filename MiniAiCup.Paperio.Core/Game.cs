@@ -10,8 +10,6 @@ namespace MiniAiCup.Paperio.Core
 	{
 		public static GameParams Params { get; private set; }
 
-		public static PointsSet AllMapPoints { get; private set; }
-
 		public static int[,] NoEnemiesDangerousMap { get; private set; }
 
 		public static int[][,] NoTailDistanceMaps { get; private set; }
@@ -23,7 +21,6 @@ namespace MiniAiCup.Paperio.Core
 		public static void Initialize(GameParams gameParams)
 		{
 			Params = gameParams;
-			AllMapPoints = Params.MapLogicSize.GetAllLogicPoints();
 
 			BuildNoEnemiesDangerousMap();
 			BuildNoTailDistanceMaps();
