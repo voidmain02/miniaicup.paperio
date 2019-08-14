@@ -105,17 +105,16 @@ namespace MiniAiCup.Paperio.Core
 			return map;
 		}
 
-		private int[,] BuildOutsideDistanceMap()
+		private unsafe int[,] BuildOutsideDistanceMap()
 		{
 			var map = Game.GetNewMap<int>();
 			Utils.FastCopyArray(Game.NoEnemiesDangerousMap, map, Game.Params.MapLogicSize.Width*Game.Params.MapLogicSize.Height);
-			var visited = Game.GetNewMap<bool>();
-
-			var mapAfterHome = Game.GetNewMap<int>();
-			var visitedAfterHome = Game.GetNewMap<bool>();
+			var visited = stackalloc bool[Game.Params.MapLogicSize.Width*Game.Params.MapLogicSize.Height];
+			var mapAfterHome = stackalloc int[Game.Params.MapLogicSize.Width*Game.Params.MapLogicSize.Height];
+			var visitedAfterHome = stackalloc bool[Game.Params.MapLogicSize.Width*Game.Params.MapLogicSize.Height];
 
 			map[Position.X, Position.Y] = 0;
-			visited[Position.X, Position.Y] = true;
+			visited[Position.X + Position.Y*Game.Params.MapLogicSize.Width] = true;
 
 			var queue = new Queue<(Point Point, bool AfterHome, Direction? VisitHomeDirection)>(Game.Params.MapLogicSize.Width*Game.Params.MapLogicSize.Height);
 			queue.Enqueue((Position, false, null));
@@ -136,36 +135,36 @@ namespace MiniAiCup.Paperio.Core
 							continue;
 						}
 
-						if (Territory.Contains(neighbor) && !Territory.Contains(currentPoint) && !visitedAfterHome[neighbor.X, neighbor.Y])
+						if (Territory.Contains(neighbor) && !Territory.Contains(currentPoint) && !visitedAfterHome[neighbor.X + neighbor.Y*Game.Params.MapLogicSize.Width])
 						{
 							queue.Enqueue((neighbor, true, direction));
-							mapAfterHome[neighbor.X, neighbor.Y] = currentLength + 1;
+							mapAfterHome[neighbor.X + neighbor.Y*Game.Params.MapLogicSize.Width] = currentLength + 1;
 							visitHome = true;
 						}
 
-						if (visited[neighbor.X, neighbor.Y])
+						if (visited[neighbor.X + neighbor.Y*Game.Params.MapLogicSize.Width])
 						{
 							continue;
 						}
 
 						map[neighbor.X, neighbor.Y] = currentLength + 1;
-						visited[neighbor.X, neighbor.Y] = true;
+						visited[neighbor.X + neighbor.Y*Game.Params.MapLogicSize.Width] = true;
 						queue.Enqueue((neighbor, false, null));
 					}
 				}
 				else
 				{
-					int currentLength = mapAfterHome[currentPoint.X, currentPoint.Y];
+					int currentLength = mapAfterHome[currentPoint.X + currentPoint.Y*Game.Params.MapLogicSize.Width];
 					foreach (var direction in EnumValues.GetAll<Direction>())
 					{
 						var neighbor = currentPoint.MoveLogic(direction);
-						if (!Game.Params.MapLogicSize.ContainsPoint(neighbor) || visitedAfterHome[neighbor.X, neighbor.Y] || visitHomeDirection == direction.GetOpposite())
+						if (!Game.Params.MapLogicSize.ContainsPoint(neighbor) || visitedAfterHome[neighbor.X + neighbor.Y*Game.Params.MapLogicSize.Width] || visitHomeDirection == direction.GetOpposite())
 						{
 							continue;
 						}
 
-						mapAfterHome[neighbor.X, neighbor.Y] = currentLength + 1;
-						visitedAfterHome[neighbor.X, neighbor.Y] = true;
+						mapAfterHome[neighbor.X + neighbor.Y*Game.Params.MapLogicSize.Width] = currentLength + 1;
+						visitedAfterHome[neighbor.X + neighbor.Y*Game.Params.MapLogicSize.Width] = true;
 						queue.Enqueue((neighbor, true, null));
 					}
 				}
@@ -180,7 +179,7 @@ namespace MiniAiCup.Paperio.Core
 			{
 				for (int x = 0; x < Game.Params.MapLogicSize.Width; x++)
 				{
-					map[x, y] = Math.Min(map[x, y], mapAfterHome[x, y]);
+					map[x, y] = Math.Min(map[x, y], mapAfterHome[x + y*Game.Params.MapLogicSize.Width]);
 				}
 			}
 
