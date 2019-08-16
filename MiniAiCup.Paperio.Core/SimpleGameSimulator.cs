@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using MiniAiCup.Paperio.Core.Debug;
 
@@ -20,7 +21,6 @@ namespace MiniAiCup.Paperio.Core
 
 			int timeToNextPos = GameParams.CellSize/state.Me.GetSpeed(0);
 			int nextTickNumber = state.TickNumber + timeToNextPos;
-			var nextBonuses = state.Bonuses;
 
 			var me = (PlayerInternal)state.Me.Clone();
 			if (me.NitroStepsLeft > 0)
@@ -43,6 +43,31 @@ namespace MiniAiCup.Paperio.Core
 				me.Tail.Contains(me.Position)) // Наехал сам себе на хвост
 			{
 				return null;
+			}
+
+			var nextBonuses = state.Bonuses;
+			foreach (var bonus in state.Bonuses)
+			{
+				if (bonus.Position == me.Position)
+				{
+					switch (bonus.Type)
+					{
+						case BonusType.Nitro:
+							me.NitroStepsLeft += GameParams.MinBonusDuration;
+							break;
+						case BonusType.Slowdown:
+							me.SlowdownStepsLeft += GameParams.MaxBonusDuration;
+							break;
+						case BonusType.Saw:
+							break;
+						default:
+							throw new ArgumentOutOfRangeException();
+					}
+
+					nextBonuses = state.Bonuses.Where(b => b != bonus).ToArray();
+
+					break;
+				}
 			}
 
 			var enemies = (PlayerInternal[])state.Enemies.Clone();
@@ -77,6 +102,42 @@ namespace MiniAiCup.Paperio.Core
 							enemies[i] = clonedEnemy;
 							me.Score += (srcCount - croppedCount)*(Constants.EnemyTerritoryScore - Constants.NeutralTerritoryScore);
 						}
+					}
+
+					bool gotBonus = false;
+					for (int i = 0; i < nextBonuses.Length; i++)
+					{
+						var bonus = nextBonuses[i];
+						if (capturedTerritory.Contains(bonus.Position))
+						{
+							switch (bonus.Type)
+							{
+								case BonusType.Nitro:
+									me.NitroStepsLeft += GameParams.MinBonusDuration;
+									break;
+								case BonusType.Slowdown:
+									me.SlowdownStepsLeft += GameParams.MaxBonusDuration;
+									break;
+								case BonusType.Saw:
+									break;
+								default:
+									throw new ArgumentOutOfRangeException();
+							}
+
+							gotBonus = true;
+
+							if (nextBonuses == state.Bonuses)
+							{
+								nextBonuses = (BonusInfo[])state.Bonuses.Clone();
+							}
+
+							nextBonuses[i] = null;
+						}
+					}
+
+					if (gotBonus)
+					{
+						nextBonuses = nextBonuses.Where(b => b != null).ToArray();
 					}
 				}
 			}

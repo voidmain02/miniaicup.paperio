@@ -1,10 +1,14 @@
-using System.Collections.Generic;
+using System;
 using MiniAiCup.Paperio.Core.Debug;
 
 namespace MiniAiCup.Paperio.Core
 {
 	public class GameStateScorer
 	{
+		private const int SlowdownInScores = -30;
+
+		private const int NitroInScores = 10;
+
 		private readonly BfsTerritoryCapturer _territoryCapturer;
 
 		public GameStateScorer(BfsTerritoryCapturer territoryCapturer)
@@ -56,8 +60,13 @@ namespace MiniAiCup.Paperio.Core
 
 			int potentialScore = CalcPotentialTerritoryCaptureScore(state);
 			int potentialScoreBonus = (int)(potentialScore*0.9);
+			int bonusScore = state.Me.NitroStepsLeft > state.Me.SlowdownStepsLeft
+				? NitroInScores
+				: state.Me.SlowdownStepsLeft > state.Me.NitroStepsLeft
+					? SlowdownInScores
+					: 0;
 
-			return (state.Me.Score + potentialScoreBonus)*scoresMultiplicator;
+			return (state.Me.Score + potentialScoreBonus + bonusScore)*scoresMultiplicator;
 		}
 
 		public int CalcPotentialTerritoryCaptureScore(GameStateInternal state)
@@ -95,7 +104,35 @@ namespace MiniAiCup.Paperio.Core
 			}
 			score += enemyTerritoryPoints*(Constants.EnemyTerritoryScore - Constants.NeutralTerritoryScore);
 
-			return score;
+			int nitroCount = 0;
+			int slowdownCount = 0;
+			foreach (var bonus in state.Bonuses)
+			{
+				if (capturedTerritory.Contains(bonus.Position))
+				{
+					switch (bonus.Type)
+					{
+						case BonusType.Nitro:
+							nitroCount++;
+							break;
+						case BonusType.Slowdown:
+							slowdownCount++;
+							break;
+						case BonusType.Saw:
+							break;
+						default:
+							throw new ArgumentOutOfRangeException();
+					}
+				}
+			}
+
+			int bonusScore = nitroCount > slowdownCount
+				? NitroInScores
+				: slowdownCount > nitroCount
+					? SlowdownInScores
+					: 0;
+
+			return score + bonusScore;
 		}
 	}
 }
