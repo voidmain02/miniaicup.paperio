@@ -78,8 +78,7 @@ namespace MiniAiCup.Paperio.Core
 				{
 					if (state.DangerousMap[me.Position.X, me.Position.Y] - GameParams.CellSize/GameParams.SlowDownSpeed*2 < simulationTicks + timeToNextPos) // Упрощенная оценка возможных столкновений
 					{
-						if (enemies.Any(enemy => enemy.Tail.Length <= me.Tail.Length &&
-							CheckIsCollisionPossible(me, enemy, state.Me.Position, simulationTicks, timeToNextPos))) // Лобовое столкновение с противником с меньшим хвостом
+						if (enemies.Any(enemy => CheckIsCollisionPossible(me, enemy, state.Me.Position, simulationTicks, timeToNextPos))) // Лобовое столкновение с противником
 						{
 							return null;
 						}
