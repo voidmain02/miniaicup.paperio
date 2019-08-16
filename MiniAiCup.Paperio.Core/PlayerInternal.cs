@@ -271,6 +271,44 @@ namespace MiniAiCup.Paperio.Core
 			return (startChangedSpeed + pathLength - endChangedSpeed)*GameParams.CellSize/GameParams.Speed + (endChangedSpeed - startChangedSpeed)*GameParams.CellSize/changedSpeed;
 		}
 
+		public int GetPathLengthForTime(int time)
+		{
+			if (NitroStepsLeft == SlowdownStepsLeft)
+			{
+				return time/(GameParams.CellSize/GameParams.Speed);
+			}
+
+			int startChangedSpeed;
+			int endChangedSpeed;
+			int changedSpeed;
+			if (NitroStepsLeft > SlowdownStepsLeft)
+			{
+				startChangedSpeed = SlowdownStepsLeft;
+				endChangedSpeed = NitroStepsLeft;
+				changedSpeed = GameParams.NitroSpeed;
+			}
+			else
+			{
+				startChangedSpeed = NitroStepsLeft;
+				endChangedSpeed = SlowdownStepsLeft;
+				changedSpeed = GameParams.SlowDownSpeed;
+			}
+
+			int startChangedSpeedTime = startChangedSpeed*(GameParams.CellSize/GameParams.Speed);
+			if (time <= startChangedSpeedTime)
+			{
+				return time/(GameParams.CellSize/GameParams.Speed);
+			}
+
+			int endChangedSpeedTime = startChangedSpeedTime + (endChangedSpeed - startChangedSpeedTime)*(GameParams.CellSize/changedSpeed);
+			if (time <= endChangedSpeedTime)
+			{
+				return startChangedSpeed + (time - startChangedSpeedTime)/(GameParams.CellSize/changedSpeed);
+			}
+
+			return endChangedSpeedTime + (time - endChangedSpeedTime)/(GameParams.CellSize/GameParams.Speed);
+		}
+
 		private unsafe int[,] BuildOutsideTimeMap()
 		{
 			var timeMap = Game.GetNewMap<int>();
