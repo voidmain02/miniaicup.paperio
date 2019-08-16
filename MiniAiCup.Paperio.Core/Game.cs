@@ -10,7 +10,7 @@ namespace MiniAiCup.Paperio.Core
 	{
 		public static int[,] NoEnemiesDangerousMap { get; private set; }
 
-		public static int[][,] NoTailDistanceMaps { get; private set; }
+		public static int[][,] NoTailStandardSpeedTimeMaps { get; private set; }
 
 		private GameStateInternal _lastState;
 
@@ -36,18 +36,18 @@ namespace MiniAiCup.Paperio.Core
 
 		private static void BuildNoTailDistanceMaps()
 		{
-			NoTailDistanceMaps = new int[4][,];
+			NoTailStandardSpeedTimeMaps = new int[4][,];
 			var center = new Point(GameParams.MapSize.Width - 1, GameParams.MapSize.Height - 1);
 			int width = GameParams.MapSize.Width*2 - 1;
 			int height = GameParams.MapSize.Height*2 - 1;
 			for (int i = 0; i < 4; i++)
 			{
-				NoTailDistanceMaps[i] = new int[width, height];
+				NoTailStandardSpeedTimeMaps[i] = new int[width, height];
 				for (int y = 0; y < height; y++)
 				{
 					for (int x = 0; x < width; x++)
 					{
-						NoTailDistanceMaps[i][x, y] = center.GetDistanceTo(new Point(x, y));
+						NoTailStandardSpeedTimeMaps[i][x, y] = center.GetDistanceTo(new Point(x, y))*GameParams.CellSize/GameParams.Speed;
 					}
 				}
 
@@ -56,25 +56,25 @@ namespace MiniAiCup.Paperio.Core
 					case Direction.Left:
 						for (int x = center.X + 1; x < width; x++)
 						{
-							NoTailDistanceMaps[i][x, center.Y] += 2;
+							NoTailStandardSpeedTimeMaps[i][x, center.Y] += 2*GameParams.CellSize/GameParams.Speed;
 						}
 						break;
 					case Direction.Up:
 						for (int y = center.Y - 1; y >= 0; y--)
 						{
-							NoTailDistanceMaps[i][center.X, y] += 2;
+							NoTailStandardSpeedTimeMaps[i][center.X, y] += 2*GameParams.CellSize/GameParams.Speed;
 						}
 						break;
 					case Direction.Right:
 						for (int x = center.X - 1; x >= 0; x--)
 						{
-							NoTailDistanceMaps[i][x, center.Y] += 2;
+							NoTailStandardSpeedTimeMaps[i][x, center.Y] += 2*GameParams.CellSize/GameParams.Speed;
 						}
 						break;
 					case Direction.Down:
 						for (int y = center.Y + 1; y < height; y++)
 						{
-							NoTailDistanceMaps[i][center.X, y] += 2;
+							NoTailStandardSpeedTimeMaps[i][center.X, y] += 2*GameParams.CellSize/GameParams.Speed;
 						}
 						break;
 					default:

@@ -130,7 +130,7 @@ namespace MiniAiCup.Paperio.Client
 						builder.Add(new PopupRewindCommand {
 							Location = new Point(x, y).ConvertToReal(GameParams.CellSize),
 							Radius = GameParams.CellSize/2,
-							Text = $"dang: {debugData.DangerousMap[x, y]}"
+							Text = $"ticks: {debugData.DangerousMap[x, y]}"
 						});
 					}
 				}

@@ -62,7 +62,7 @@ namespace MiniAiCup.Paperio.Client
 		{
 			return new ActiveBonusInfo {
 				Type = ParseBonusType((string)jActiveBonus["type"]),
-				RemainingTicks = (int)jActiveBonus["ticks"]
+				RemainingSteps = (int)jActiveBonus["ticks"]
 			};
 		}
 

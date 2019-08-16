@@ -12,16 +12,26 @@ namespace MiniAiCup.Paperio.Core
 			_territoryCapturer = territoryCapturer;
 		}
 
-		public GameStateInternal Simulate(GameStateInternal state, int currentDepth, Move move)
+		public GameStateInternal Simulate(GameStateInternal state, int simulationTicks, Move move)
 		{
 #if DEBUG
 			GameDebugData.Current.SimulationsCount++;
 #endif
 
-			int nextTickNumber = state.TickNumber + GameParams.CellSize/GameParams.Speed;
+			int timeToNextPos = GameParams.CellSize/state.Me.GetSpeed(0);
+			int nextTickNumber = state.TickNumber + timeToNextPos;
 			var nextBonuses = state.Bonuses;
 
 			var me = (PlayerInternal)state.Me.Clone();
+			if (me.NitroStepsLeft > 0)
+			{
+				me.NitroStepsLeft--;
+			}
+
+			if (me.SlowdownStepsLeft > 0)
+			{
+				me.SlowdownStepsLeft--;
+			}
 
 			me.Direction = me.Direction?.GetMoved(move);
 			if (me.Direction != null)
@@ -41,8 +51,8 @@ namespace MiniAiCup.Paperio.Core
 			{
 				if (me.Tail.Length > 0) // Заезд на свою территорию
 				{
-					if (enemies.Any(enemy => (enemy.DistanceMap[state.Me.Position.X, state.Me.Position.Y] <= currentDepth + 1 ||
-						enemy.DistanceMap[me.Position.X, me.Position.Y] <= currentDepth + 1) && enemy.Tail.Length <= me.Tail.Length)) // Лобовое столкновение с противником с меньшим хвостом
+					if (enemies.Any(enemy => CheckIsCollisionPossible(me, enemy, state.Me.Position, simulationTicks, timeToNextPos) &&
+						enemy.Tail.Length <= me.Tail.Length)) // Лобовое столкновение с противником с меньшим хвостом
 					{
 						return null;
 					}
@@ -74,7 +84,7 @@ namespace MiniAiCup.Paperio.Core
 				{
 					return null;
 				}
-				if (me.Tail.Any(p => state.DangerousMap[p.X, p.Y] <= currentDepth + me.PathToHome.Length)) // Потенциально могут наехать на мой хвост
+				if (me.Tail.Any(p => state.DangerousMap[p.X, p.Y] < simulationTicks + timeToNextPos + me.GetTimeForPath(me.PathToHome.Length))) // Потенциально могут наехать на мой хвост
 				{
 					return null;
 				}
@@ -84,7 +94,8 @@ namespace MiniAiCup.Paperio.Core
 			for (int i = 0; i < enemies.Length; i++)
 			{
 				var enemy = enemies[i];
-				if (enemy.Tail.AsPointsSet().Contains(me.Position) && enemy.Territory.Count > 0 && enemy.Territory.Min(p => enemy.DistanceMap[p.X, p.Y]) > currentDepth + 1)
+				if (enemy.Tail.AsPointsSet().Contains(me.Position) && enemy.Territory.Count > 0 &&
+					enemy.Territory.Min(p => enemy.TimeMap[p.X, p.Y]) > simulationTicks + 1) // Противник умирает, только если мы переехали его хвост и он гарантированно не успел вернуться домой
 				{
 					hasLosers = true;
 					enemies[i] = null;
@@ -96,6 +107,39 @@ namespace MiniAiCup.Paperio.Core
 			enemies = hasLosers ? enemies.Where(e => e != null).ToArray() : enemies;
 
 			return new GameStateInternal(nextTickNumber, me, enemies, nextBonuses, state, hasLosers ? null : state.DangerousMap);
+		}
+
+		private static bool CheckIsCollisionPossible(PlayerInternal me, PlayerInternal enemy, Point myPrevPosition, int simulationTicks, int timeForMove)
+		{
+			// TODO В будущем можно оптимизировать: вычислять соседей только один раз, а не для каждого врага
+			for (int i = -1; i <= 1; i++)
+			{
+				var direction = (Direction)(((int)me.Direction.Value + i + 4)%4);
+				var pointToCheck = me.Position.MoveLogic(direction);
+				if (IsCollision(pointToCheck))
+				{
+					return true;
+				}
+
+				pointToCheck = myPrevPosition.MoveLogic(direction);
+				if (IsCollision(pointToCheck))
+				{
+					return true;
+				}
+			}
+
+			var prevPoint = myPrevPosition.MoveLogic(me.Direction.Value.GetOpposite());
+			if (IsCollision(prevPoint))
+			{
+				return enemy.TimeMap[myPrevPosition.X, myPrevPosition.Y] - enemy.TimeMap[prevPoint.X, prevPoint.Y] < timeForMove;
+			}
+
+			return false;
+
+			bool IsCollision(Point point)
+			{
+				return GameParams.MapSize.ContainsPoint(point) && enemy.TimeMap[point.X, point.Y] < simulationTicks + timeForMove;
+			}
 		}
 	}
 }

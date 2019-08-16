@@ -14,15 +14,15 @@ namespace MiniAiCup.Paperio.Core
 		public BonusType Type { get; set; }
 
 		/// <summary>
-		/// Оставшееся время действия бонуса
+		/// Оставшееся количество шагов под действием бонуса
 		/// </summary>
-		public int RemainingTicks { get; set; }
+		public int RemainingSteps { get; set; }
 
 		public object Clone()
 		{
 			return new ActiveBonusInfo {
 				Type = Type,
-				RemainingTicks = RemainingTicks
+				RemainingSteps = RemainingSteps
 			};
 		}
 	}

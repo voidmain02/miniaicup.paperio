@@ -78,7 +78,7 @@ namespace MiniAiCup.Paperio.Core
 			{
 				for (int x = 0; x < GameParams.MapSize.Width; x++)
 				{
-					map[x, y] = Enemies.Min(e => e.DistanceMap[x, y]);
+					map[x, y] = Enemies.Min(e => e.TimeMap[x, y]);
 				}
 			}
 

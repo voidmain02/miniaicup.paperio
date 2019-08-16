@@ -35,13 +35,15 @@ namespace MiniAiCup.Paperio.Core
 
 			simulationQueue.Enqueue((initialState, 0));
 
+			int startTickNumber = initialState.TickNumber;
+
 			while (simulationQueue.Count > 0)
 			{
 				(var currentState, int currentDepth) = simulationQueue.Dequeue();
 
 				foreach (var move in EnumValues.GetAll<Move>())
 				{
-					var nextState = _simulator.Simulate(currentState, currentDepth, move);
+					var nextState = _simulator.Simulate(currentState, currentState.TickNumber - startTickNumber, move);
 					if (nextState == null)
 					{
 						continue;

@@ -15,9 +15,13 @@ namespace MiniAiCup.Paperio.Core
 
 		public Point Position { get; set; }
 
-		public Path Tail { get; set; }
+		public int PathToNextPositionLength { get; set; }
 
-		public ActiveBonusInfo[] Bonuses { get; set; }
+		public int NitroStepsLeft { get; set; }
+
+		public int SlowdownStepsLeft { get; set; }
+
+		public Path Tail { get; set; }
 
 		public Direction? Direction { get; set; }
 
@@ -27,14 +31,14 @@ namespace MiniAiCup.Paperio.Core
 
 		public DebugPlayerView DebugView => GetDebugView();
 
-		private readonly Lazy<int[,]> _distanceMap;
+		private readonly Lazy<int[,]> _timeMap;
 
-		public int[,] DistanceMap => _distanceMap.Value;
+		public int[,] TimeMap => _timeMap.Value;
 
 		private PlayerInternal(string id)
 		{
 			_pathToHome = new Lazy<Path>(BuildPathToHome);
-			_distanceMap = new Lazy<int[,]>(BuildDistanceMap);
+			_timeMap = new Lazy<int[,]>(BuildTimeMap);
 
 			Id = id;
 		}
@@ -43,10 +47,52 @@ namespace MiniAiCup.Paperio.Core
 		{
 			Score = player.Score;
 			Territory = new PointsSet(player.Territory.Select(p => p.ConvertToLogic(GameParams.CellSize)));
-			Position = player.Position.ConvertToLogic(GameParams.CellSize);
 			Tail = new Path(player.Lines.Select(p => p.ConvertToLogic(GameParams.CellSize)));
-			Bonuses = player.Bonuses;
 			Direction = player.Direction;
+
+			foreach (var bonus in player.Bonuses)
+			{
+				switch (bonus.Type)
+				{
+					case BonusType.Nitro:
+						NitroStepsLeft = bonus.RemainingSteps;
+						break;
+					case BonusType.Slowdown:
+						SlowdownStepsLeft = bonus.RemainingSteps;
+						break;
+					case BonusType.Saw:
+						break;
+					default:
+						throw new ArgumentOutOfRangeException();
+				}
+			}
+
+			switch (player.Direction)
+			{
+				case Core.Direction.Left:
+					int leftPath = (player.Position.X - GameParams.CellSize/2)%GameParams.CellSize;
+					PathToNextPositionLength = leftPath == 0 ? 0 : GameParams.CellSize - leftPath;
+					Position = new Point(player.Position.X + PathToNextPositionLength, player.Position.Y).ConvertToLogic(GameParams.CellSize);
+					break;
+				case Core.Direction.Up:
+					PathToNextPositionLength = (player.Position.Y - GameParams.CellSize/2)%GameParams.CellSize;
+					Position = new Point(player.Position.X, player.Position.Y - PathToNextPositionLength).ConvertToLogic(GameParams.CellSize);
+					break;
+				case Core.Direction.Right:
+					PathToNextPositionLength = (player.Position.X - GameParams.CellSize/2)%GameParams.CellSize;
+					Position = new Point(player.Position.X - PathToNextPositionLength, player.Position.Y).ConvertToLogic(GameParams.CellSize);
+					break;
+				case Core.Direction.Down:
+					int downPath = (player.Position.Y - GameParams.CellSize/2)%GameParams.CellSize;
+					PathToNextPositionLength = downPath == 0 ? 0 : GameParams.CellSize - downPath;
+					Position = new Point(player.Position.X, player.Position.Y + PathToNextPositionLength).ConvertToLogic(GameParams.CellSize);
+					break;
+				case null:
+					Position = player.Position.ConvertToLogic(GameParams.CellSize);
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 		}
 
 		private DebugPlayerView GetDebugView()
@@ -66,8 +112,10 @@ namespace MiniAiCup.Paperio.Core
 				Territory = Territory,
 				Position = Position,
 				Tail = Tail,
-				Bonuses = Bonuses,
-				Direction = Direction
+				Direction = Direction,
+				PathToNextPositionLength = PathToNextPositionLength,
+				NitroStepsLeft = NitroStepsLeft,
+				SlowdownStepsLeft = SlowdownStepsLeft
 			};
 		}
 
@@ -76,95 +124,243 @@ namespace MiniAiCup.Paperio.Core
 			return PathFinder.GetShortestPath(Position, Territory, Tail.AsPointsSet());
 		}
 
-		private int[,] BuildDistanceMap()
+		private int[,] BuildTimeMap()
 		{
-			return Tail.Length > 1 ? BuildOutsideDistanceMap() : BuildInsideDistanceMap();
+			if (PathToNextPositionLength == 0)
+			{
+				return Tail.Length > 1 ? BuildOutsideTimeMap() : BuildInsideTimeMap();
+			}
+
+			if (Tail.Length == 0 || Territory.Contains(Position.MoveLogic(Direction.Value))) // Возможно, когда ход закончится следующая клетка будет уже не территорией игрока, но мы выбираем худший для нас вариант
+			{
+				return BuildInsideTimeMap();
+			}
+
+			return BuildOutsideTimeMap();
 		}
 
-		private int[,] BuildInsideDistanceMap()
+		private unsafe int[,] BuildInsideTimeMap()
 		{
-			var map = Game.GetNewMap<int>();
+			var timeMap = Game.GetNewMap<int>();
+
 			if (Direction == null)
 			{
 				for (int y = 0; y < GameParams.MapSize.Height; y++)
 				{
 					for (int x = 0; x < GameParams.MapSize.Width; x++)
 					{
-						map[x, y] = Position.GetDistanceTo(new Point(x, y));
+						timeMap[x, y] = Position.GetDistanceTo(new Point(x, y))*GameParams.CellSize/GameParams.Speed;
 					}
 				}
+
+				return timeMap;
+			}
+
+			if (PathToNextPositionLength == 0 && NitroStepsLeft == SlowdownStepsLeft)
+			{
+				var srcArray = Game.NoTailStandardSpeedTimeMaps[(int)Direction.Value];
+				Utils.CopyArrayPart(srcArray, GameParams.MapSize.Width*2 -1, GameParams.MapSize.Height*2 - 1,
+					timeMap, GameParams.MapSize.Width, GameParams.MapSize.Height,
+					GameParams.MapSize.Width - Position.X - 1, GameParams.MapSize.Height - Position.Y - 1);
+				return timeMap;
+			}
+
+			Utils.FastCopyArray(Game.NoEnemiesDangerousMap, timeMap, GameParams.MapSize.Width*GameParams.MapSize.Height);
+			var visited = stackalloc bool[GameParams.MapSize.Width*GameParams.MapSize.Height];
+			var distanceMap = stackalloc int[GameParams.MapSize.Width*GameParams.MapSize.Height];
+			var queue = stackalloc int[GameParams.MapSize.Width*GameParams.MapSize.Height];
+			int queueHead = 0;
+			int queueTail = 0;
+
+			Point startPoint;
+			int currentTime;
+			int currentDistance;
+
+			if (PathToNextPositionLength > 0)
+			{
+				startPoint = Position.MoveLogic(Direction.Value);
+				currentTime = (GameParams.CellSize - PathToNextPositionLength)/GetSpeed(0);
+				currentDistance = 1;
 			}
 			else
 			{
-				var srcArray = Game.NoTailDistanceMaps[(int)Direction.Value];
-				Utils.CopyArrayPart(srcArray, GameParams.MapSize.Width*2 -1, GameParams.MapSize.Height*2 - 1,
-					map, GameParams.MapSize.Width, GameParams.MapSize.Height,
-					GameParams.MapSize.Width - Position.X - 1, GameParams.MapSize.Height - Position.Y - 1);
+				startPoint = Position;
+				currentTime = 0;
+				currentDistance = 0;
 			}
 
-			return map;
+			int startPointCoord = startPoint.X + startPoint.Y*GameParams.MapSize.Width;
+			visited[startPointCoord] = true;
+			timeMap[startPoint.X, startPoint.Y] = currentTime;
+			distanceMap[startPointCoord] = currentDistance;
+			queue[queueHead++] = startPoint.X + startPoint.Y*GameParams.MapSize.Width;
+
+			while (queueTail != queueHead)
+			{
+				int coord = queue[queueTail++];
+				var currentPoint = new Point(coord%GameParams.MapSize.Width, coord/GameParams.MapSize.Width);
+				currentDistance = distanceMap[coord];
+				currentTime = timeMap[currentPoint.X, currentPoint.Y];
+				foreach (var neighbor in currentPoint.GetNeighbors())
+				{
+					int neighborCoord = neighbor.X + neighbor.Y*GameParams.MapSize.Width;
+					if (!GameParams.MapSize.ContainsPoint(neighbor) || visited[neighborCoord] ||
+						coord == startPointCoord && neighbor == startPoint.MoveLogic(Direction.Value.GetOpposite()))
+					{
+						continue;
+					}
+
+					visited[neighborCoord] = true;
+					distanceMap[neighborCoord] = currentDistance + 1;
+					timeMap[neighbor.X, neighbor.Y] = currentTime + GameParams.CellSize/GetSpeed(currentDistance);
+					queue[queueHead++] = neighborCoord;
+				}
+			}
+
+			return timeMap;
 		}
 
-		private unsafe int[,] BuildOutsideDistanceMap()
+		public int GetSpeed(int depth)
 		{
-			var map = Game.GetNewMap<int>();
-			Utils.FastCopyArray(Game.NoEnemiesDangerousMap, map, GameParams.MapSize.Width*GameParams.MapSize.Height);
+			if (NitroStepsLeft > depth && SlowdownStepsLeft <= depth)
+			{
+				return GameParams.NitroSpeed;
+			}
+
+			if (SlowdownStepsLeft > depth && NitroStepsLeft <= depth)
+			{
+				return GameParams.SlowDownSpeed;
+			}
+
+			return GameParams.Speed;
+		}
+
+		public int GetTimeForPath(int pathLength)
+		{
+			if (NitroStepsLeft == SlowdownStepsLeft)
+			{
+				return pathLength*GameParams.CellSize/GameParams.Speed;
+			}
+
+			int startChangedSpeed;
+			int endChangedSpeed;
+			int changedSpeed;
+			if (NitroStepsLeft > SlowdownStepsLeft)
+			{
+				startChangedSpeed = SlowdownStepsLeft;
+				endChangedSpeed = NitroStepsLeft;
+				changedSpeed = GameParams.NitroSpeed;
+			}
+			else
+			{
+				startChangedSpeed = NitroStepsLeft;
+				endChangedSpeed = SlowdownStepsLeft;
+				changedSpeed = GameParams.SlowDownSpeed;
+			}
+
+			if (pathLength < startChangedSpeed)
+			{
+				return pathLength*GameParams.CellSize/GameParams.Speed;
+			}
+
+			if (pathLength < endChangedSpeed)
+			{
+				return startChangedSpeed*GameParams.CellSize/GameParams.Speed + (pathLength - startChangedSpeed)*GameParams.CellSize/changedSpeed;
+			}
+
+			return (startChangedSpeed + pathLength - endChangedSpeed)*GameParams.CellSize/GameParams.Speed + (endChangedSpeed - startChangedSpeed)*GameParams.CellSize/changedSpeed;
+		}
+
+		private unsafe int[,] BuildOutsideTimeMap()
+		{
+			var timeMap = Game.GetNewMap<int>();
+			Utils.FastCopyArray(Game.NoEnemiesDangerousMap, timeMap, GameParams.MapSize.Width*GameParams.MapSize.Height);
+			var distanceMap = stackalloc int[GameParams.MapSize.Width*GameParams.MapSize.Height];
 			var visited = stackalloc bool[GameParams.MapSize.Width*GameParams.MapSize.Height];
-			var mapAfterHome = stackalloc int[GameParams.MapSize.Width*GameParams.MapSize.Height];
+			var timeMapAfterHome = stackalloc int[GameParams.MapSize.Width*GameParams.MapSize.Height];
+			var distanceMapAfterHome = stackalloc int[GameParams.MapSize.Width*GameParams.MapSize.Height];
 			var visitedAfterHome = stackalloc bool[GameParams.MapSize.Width*GameParams.MapSize.Height];
 
-			map[Position.X, Position.Y] = 0;
-			visited[Position.X + Position.Y*GameParams.MapSize.Width] = true;
+			Point startPoint;
+			int currentTime;
+			int currentDistance;
+
+			if (PathToNextPositionLength > 0)
+			{
+				startPoint = Position.MoveLogic(Direction.Value);
+				currentTime = (GameParams.CellSize - PathToNextPositionLength)/GetSpeed(0);
+				currentDistance = 1;
+			}
+			else
+			{
+				startPoint = Position;
+				currentTime = 0;
+				currentDistance = 0;
+			}
+
+			int startPointCoord = startPoint.X + startPoint.Y*GameParams.MapSize.Width;
+			timeMap[startPoint.X, startPoint.Y] = currentTime;
+			distanceMap[startPointCoord] = currentDistance;
+			visited[startPointCoord] = true;
 
 			var queue = new Queue<(Point Point, bool AfterHome, Direction? VisitHomeDirection)>(GameParams.MapSize.Width*GameParams.MapSize.Height);
-			queue.Enqueue((Position, false, null));
+			queue.Enqueue((startPoint, false, null));
 
 			bool visitHome = false;
 			while (queue.Count > 0)
 			{
 				(var currentPoint, bool afterHome, var visitHomeDirection) = queue.Dequeue();
 
+				int currentCoord = currentPoint.X + currentPoint.Y*GameParams.MapSize.Width;
+
 				if (!afterHome)
 				{
-					int currentLength = map[currentPoint.X, currentPoint.Y];
+					currentTime = timeMap[currentPoint.X, currentPoint.Y];
+					currentDistance = distanceMap[currentCoord];
 					foreach (var direction in EnumValues.GetAll<Direction>())
 					{
 						var neighbor = currentPoint.MoveLogic(direction);
+						int neighborCoord = neighbor.X + neighbor.Y*GameParams.MapSize.Width;
 						if (!GameParams.MapSize.ContainsPoint(neighbor) || Tail.AsPointsSet().Contains(neighbor))
 						{
 							continue;
 						}
 
-						if (Territory.Contains(neighbor) && !Territory.Contains(currentPoint) && !visitedAfterHome[neighbor.X + neighbor.Y*GameParams.MapSize.Width])
+						if (Territory.Contains(neighbor) && !Territory.Contains(currentPoint) && !visitedAfterHome[neighborCoord])
 						{
 							queue.Enqueue((neighbor, true, direction));
-							mapAfterHome[neighbor.X + neighbor.Y*GameParams.MapSize.Width] = currentLength + 1;
+							distanceMapAfterHome[neighborCoord] = currentDistance + 1;
+							timeMapAfterHome[neighborCoord] = currentTime + GameParams.CellSize/GetSpeed(currentDistance);
 							visitHome = true;
 						}
 
-						if (visited[neighbor.X + neighbor.Y*GameParams.MapSize.Width])
+						if (visited[neighborCoord])
 						{
 							continue;
 						}
 
-						map[neighbor.X, neighbor.Y] = currentLength + 1;
-						visited[neighbor.X + neighbor.Y*GameParams.MapSize.Width] = true;
+						distanceMap[neighborCoord] = currentDistance + 1;
+						timeMap[neighbor.X, neighbor.Y] = currentTime + GameParams.CellSize/GetSpeed(currentDistance);
+						visited[neighborCoord] = true;
 						queue.Enqueue((neighbor, false, null));
 					}
 				}
 				else
 				{
-					int currentLength = mapAfterHome[currentPoint.X + currentPoint.Y*GameParams.MapSize.Width];
+					currentTime = timeMapAfterHome[currentCoord];
+					currentDistance = distanceMapAfterHome[currentCoord];
 					foreach (var direction in EnumValues.GetAll<Direction>())
 					{
 						var neighbor = currentPoint.MoveLogic(direction);
-						if (!GameParams.MapSize.ContainsPoint(neighbor) || visitedAfterHome[neighbor.X + neighbor.Y*GameParams.MapSize.Width] || visitHomeDirection == direction.GetOpposite())
+						int neighborCoord = neighbor.X + neighbor.Y*GameParams.MapSize.Width;
+						if (!GameParams.MapSize.ContainsPoint(neighbor) || visitedAfterHome[neighborCoord] || visitHomeDirection == direction.GetOpposite())
 						{
 							continue;
 						}
 
-						mapAfterHome[neighbor.X + neighbor.Y*GameParams.MapSize.Width] = currentLength + 1;
-						visitedAfterHome[neighbor.X + neighbor.Y*GameParams.MapSize.Width] = true;
+						distanceMapAfterHome[neighborCoord] = currentDistance + 1;
+						timeMapAfterHome[neighborCoord] = currentTime + GameParams.CellSize/GetSpeed(currentDistance);
+						visitedAfterHome[neighborCoord] = true;
 						queue.Enqueue((neighbor, true, null));
 					}
 				}
@@ -172,18 +368,18 @@ namespace MiniAiCup.Paperio.Core
 
 			if (!visitHome)
 			{
-				return map;
+				return timeMap;
 			}
 
 			for (int y = 0; y < GameParams.MapSize.Height; y++)
 			{
 				for (int x = 0; x < GameParams.MapSize.Width; x++)
 				{
-					map[x, y] = Math.Min(map[x, y], mapAfterHome[x + y*GameParams.MapSize.Width]);
+					timeMap[x, y] = Math.Min(timeMap[x, y], timeMapAfterHome[x + y*GameParams.MapSize.Width]);
 				}
 			}
 
-			return map;
+			return timeMap;
 		}
 	}
 }
