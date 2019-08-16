@@ -51,10 +51,13 @@ namespace MiniAiCup.Paperio.Core
 			{
 				if (me.Tail.Length > 0) // Заезд на свою территорию
 				{
-					if (enemies.Any(enemy => CheckIsCollisionPossible(me, enemy, state.Me.Position, simulationTicks, timeToNextPos) &&
-						enemy.Tail.Length <= me.Tail.Length)) // Лобовое столкновение с противником с меньшим хвостом
+					if (state.DangerousMap[me.Position.X, me.Position.Y] - GameParams.CellSize/GameParams.SlowDownSpeed*2 < simulationTicks + timeToNextPos) // Упрощенная оценка возможных столкновений
 					{
-						return null;
+						if (enemies.Any(enemy => enemy.Tail.Length <= me.Tail.Length &&
+							CheckIsCollisionPossible(me, enemy, state.Me.Position, simulationTicks, timeToNextPos))) // Лобовое столкновение с противником с меньшим хвостом
+						{
+							return null;
+						}
 					}
 
 					var capturedTerritory = _territoryCapturer.Capture(me.Territory, me.Tail);
