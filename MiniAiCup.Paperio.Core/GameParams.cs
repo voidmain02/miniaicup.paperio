@@ -11,9 +11,5 @@ namespace MiniAiCup.Paperio.Core
 		public const int NitroSpeed = 6;
 
 		public const int SlowDownSpeed = 3;
-
-		public const int MinBonusDuration = 10;
-
-		public const int MaxBonusDuration = 50;
 	}
 }

@@ -17,5 +17,10 @@ namespace MiniAiCup.Paperio.Core
 		/// Позиция
 		/// </summary>
 		public Point Position { get; set; }
+
+		/// <summary>
+		/// Продолжительность бонуса в шагах
+		/// </summary>
+		public int Steps { get; set; }
 	}
 }

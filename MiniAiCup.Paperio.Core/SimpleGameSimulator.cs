@@ -53,10 +53,10 @@ namespace MiniAiCup.Paperio.Core
 					switch (bonus.Type)
 					{
 						case BonusType.Nitro:
-							me.NitroStepsLeft += GameParams.MinBonusDuration;
+							me.NitroStepsLeft += bonus.Steps;
 							break;
 						case BonusType.Slowdown:
-							me.SlowdownStepsLeft += GameParams.MaxBonusDuration;
+							me.SlowdownStepsLeft += bonus.Steps;
 							break;
 						case BonusType.Saw:
 							break;
@@ -112,10 +112,10 @@ namespace MiniAiCup.Paperio.Core
 							switch (bonus.Type)
 							{
 								case BonusType.Nitro:
-									me.NitroStepsLeft += GameParams.MinBonusDuration;
+									me.NitroStepsLeft += bonus.Steps;
 									break;
 								case BonusType.Slowdown:
-									me.SlowdownStepsLeft += GameParams.MaxBonusDuration;
+									me.SlowdownStepsLeft += bonus.Steps;
 									break;
 								case BonusType.Saw:
 									break;

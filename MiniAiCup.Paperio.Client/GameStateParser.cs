@@ -26,7 +26,8 @@ namespace MiniAiCup.Paperio.Client
 		{
 			return new BonusInfo {
 				Type = ParseBonusType((string)jBonus["type"]),
-				Position = ParsePoint((JArray)jBonus["position"])
+				Position = ParsePoint((JArray)jBonus["position"]),
+				Steps = (int)jBonus["active_ticks"]
 			};
 		}
 
