@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -15,10 +16,29 @@ namespace MiniAiCup.Paperio.VisioPlayer
 			const int myPlayerIndex = 1;
 			const int startTickNumber = 1;
 			const string visioPath = "..\\..\\..\\..\\MiniAiCup.Paperio.Client\\bin\\Debug\\visio.gz";
-			string json = Decompress(visioPath);
+			string json = visioPath.EndsWith(".gz")
+				? Decompress(visioPath)
+				: File.ReadAllText(visioPath);
+
 			var jData = (JArray)JObject.Parse(json)["visio_info"];
 
-			var gameStates = jData.Where(x => (string)x["type"] == "tick").Select(x => ParseGameState((JObject)x, myPlayerIndex));
+			var prevDirections = new Dictionary<string, Direction?>(6);
+
+			var gameStates = jData.Where(x => (string)x["type"] == "tick").Select(x => {
+				var state = ParseGameState((JObject)x, myPlayerIndex);
+				foreach (var player in state.Players)
+				{
+					if (!prevDirections.ContainsKey(player.Id))
+					{
+						prevDirections.Add(player.Id, null);
+					}
+					var dir = player.Direction;
+					player.Direction = prevDirections[player.Id];
+					prevDirections[player.Id] = dir;
+				}
+
+				return state;
+			});
 			var decisionGameStates = gameStates.Where(IsDecisionState);
 
 			Game.Initialize();
@@ -37,9 +57,7 @@ namespace MiniAiCup.Paperio.VisioPlayer
 				return false;
 			}
 
-			const int cellSize = 30;
-
-			return (me.Position.X + cellSize/2)%cellSize == 0 && (me.Position.Y + cellSize/2)%cellSize == 0;
+			return (me.Position.X + GameParams.CellSize/2)%GameParams.CellSize == 0 && (me.Position.Y + GameParams.CellSize/2)%GameParams.CellSize == 0;
 		}
 
 		public static GameState ParseGameState(JObject jParams, int myPlayerIndex)
@@ -61,7 +79,7 @@ namespace MiniAiCup.Paperio.VisioPlayer
 
 		private static PlayerInfo ParsePlayer(JProperty jIdentityPlayer, int myPlayerIndex)
 		{
-			string id = jIdentityPlayer.Name == myPlayerIndex.ToString() ? "i" : jIdentityPlayer.Name;
+			string id = jIdentityPlayer.Name == myPlayerIndex.ToString() ? Constants.MyId : jIdentityPlayer.Name;
 			var jPlayer = jIdentityPlayer.Value;
 			return new PlayerInfo {
 				Id = id,
