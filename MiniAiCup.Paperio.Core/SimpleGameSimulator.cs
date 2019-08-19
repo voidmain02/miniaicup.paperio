@@ -72,6 +72,44 @@ namespace MiniAiCup.Paperio.Core
 
 			var enemies = (PlayerInternal[])state.Enemies.Clone();
 
+			foreach (var enemy in enemies)
+			{
+				if (enemy.Tail.Length == 0 || enemy.Territory.Count == 0)
+				{
+					continue;
+				}
+
+				if (enemy.TimeToGetHome > simulationTicks)
+				{
+					continue;
+				}
+
+				if (enemy.CapturedOnPathToHome != null)
+				{
+					me.Territory = me.Territory.ExceptWith(enemy.CapturedOnPathToHome);
+					continue;
+				}
+
+				var tailWithPathToHome = new Point[enemy.Tail.Length + enemy.PathToHome.Length - 1];
+				for (int i = 0; i < enemy.Tail.Length; i++)
+				{
+					tailWithPathToHome[i] = enemy.Tail[i];
+				}
+				for (int i = 0; i < enemy.PathToHome.Length - 1; i++)
+				{
+					tailWithPathToHome[enemy.Tail.Length + i] = enemy.PathToHome[i];
+				}
+
+				enemy.CapturedOnPathToHome = _territoryCapturer.Capture(enemy.Territory, tailWithPathToHome);
+				if (enemy.CapturedOnPathToHome.Contains(state.Me.Position))
+				{
+					return null;
+				}
+
+				me.Territory = me.Territory.ExceptWith(enemy.CapturedOnPathToHome);
+			}
+
+
 			if (me.Territory.Contains(me.Position))
 			{
 				if (me.Tail.Length > 0) // Заезд на свою территорию
@@ -147,7 +185,7 @@ namespace MiniAiCup.Paperio.Core
 				{
 					return null;
 				}
-				if (me.Tail.Any(p => state.DangerousMap[p.X, p.Y] < simulationTicks + timeToNextPos + me.GetTimeForPath(me.PathToHome.Length))) // Потенциально могут наехать на мой хвост
+				if (me.Tail.Any(p => state.DangerousMap[p.X, p.Y] < simulationTicks + timeToNextPos + me.TimeToGetHome)) // Потенциально могут наехать на мой хвост
 				{
 					return null;
 				}
@@ -158,7 +196,7 @@ namespace MiniAiCup.Paperio.Core
 			{
 				var enemy = enemies[i];
 				if (enemy.Tail.AsPointsSet().Contains(me.Position) && enemy.Territory.Count > 0 &&
-					enemy.Territory.Min(p => enemy.TimeMap[p.X, p.Y]) > simulationTicks + 1) // Противник умирает, только если мы переехали его хвост и он гарантированно не успел вернуться домой
+					enemy.TimeToGetHome > simulationTicks + 1) // Противник умирает, только если мы переехали его хвост и он гарантированно не успел вернуться домой
 				{
 					hasLosers = true;
 					enemies[i] = null;
