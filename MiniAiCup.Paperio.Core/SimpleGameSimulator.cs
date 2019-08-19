@@ -79,7 +79,7 @@ namespace MiniAiCup.Paperio.Core
 					continue;
 				}
 
-				if (enemy.TimeToGetHome > simulationTicks)
+				if (enemy.TimeToGetHome > simulationTicks + timeToNextPos)
 				{
 					continue;
 				}
