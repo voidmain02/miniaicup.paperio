@@ -98,7 +98,9 @@ namespace MiniAiCup.Paperio.Core
 		public void UpdateTimeMap()
 		{
 			TimeMap = BuildTimeMap();
-			TimeToGetHome = Territory.Min(p => TimeMap[p.X, p.Y]);
+			TimeToGetHome = Territory.Count > 0
+				? Territory.Min(p => TimeMap[p.X, p.Y])
+				: Int32.MaxValue;
 		}
 
 		private DebugPlayerView GetDebugView()
