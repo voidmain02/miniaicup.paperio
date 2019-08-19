@@ -3,6 +3,7 @@ using System.Drawing;
 using MiniAiCup.Paperio.Client.Rewind;
 using MiniAiCup.Paperio.Core;
 using MiniAiCup.Paperio.Core.Debug;
+using Newtonsoft.Json;
 using ColorConverter = MiniAiCup.Paperio.Client.Rewind.ColorConverter;
 using Point = MiniAiCup.Paperio.Core.Point;
 
@@ -70,7 +71,7 @@ namespace MiniAiCup.Paperio.Client
 
 		private static void PushErrorInfo(Exception e)
 		{
-			Console.WriteLine($"{{\"debug\":\"{e}\"}}");
+			Console.WriteLine($"{{\"debug\":{JsonConvert.ToString(e.ToString())}}}");
 		}
 
 		private static string BuildRewindData(GameDebugData debugData)
