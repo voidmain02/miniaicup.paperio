@@ -36,7 +36,9 @@ namespace MiniAiCup.Paperio.Core
 				}
 				else
 				{
-					Enemies[enemyIndex++] = new PlayerInternal(player);
+					var enemy = new PlayerInternal(player);
+					enemy.UpdateTimeMap();
+					Enemies[enemyIndex++] = enemy;
 				}
 			}
 

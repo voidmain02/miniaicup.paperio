@@ -185,7 +185,7 @@ namespace MiniAiCup.Paperio.Core
 				{
 					return null;
 				}
-				if (me.Tail.Any(p => state.DangerousMap[p.X, p.Y] < simulationTicks + timeToNextPos + me.TimeToGetHome)) // Потенциально могут наехать на мой хвост
+				if (me.Tail.Any(p => state.DangerousMap[p.X, p.Y] < simulationTicks + timeToNextPos + me.GetTimeForPath(me.PathToHome.Length))) // Потенциально могут наехать на мой хвост
 				{
 					return null;
 				}
