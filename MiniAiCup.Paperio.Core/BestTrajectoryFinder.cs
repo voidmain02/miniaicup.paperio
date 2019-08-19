@@ -31,11 +31,13 @@ namespace MiniAiCup.Paperio.Core
 			}
 
 			var simulationQueue = new Queue<(GameStateInternal State, int Depth)>();
-			var finalSimulations = new List<GameStateInternal>();
 
 			simulationQueue.Enqueue((initialState, 0));
 
 			int startTickNumber = initialState.TickNumber;
+
+			GameStateInternal bestState = null;
+			int bestScore = Int32.MinValue;
 
 			while (simulationQueue.Count > 0)
 			{
@@ -50,24 +52,17 @@ namespace MiniAiCup.Paperio.Core
 					}
 					if (currentDepth == depth - 1)
 					{
-						finalSimulations.Add(nextState);
+						int score = _scorer.Score(nextState);
+						if (score > bestScore)
+						{
+							bestScore = score;
+							bestState = nextState;
+						}
 					}
 					else
 					{
 						simulationQueue.Enqueue((nextState, currentDepth + 1));
 					}
-				}
-			}
-
-			GameStateInternal bestState = null;
-			int bestScore = Int32.MinValue;
-			foreach (var state in finalSimulations)
-			{
-				int score = _scorer.Score(state);
-				if (score > bestScore)
-				{
-					bestScore = score;
-					bestState = state;
 				}
 			}
 
