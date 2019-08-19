@@ -199,8 +199,7 @@ namespace MiniAiCup.Paperio.Core
 			for (int i = 0; i < enemies.Length; i++)
 			{
 				var enemy = enemies[i];
-				if (enemy.Tail.AsPointsSet().Contains(me.Position) && enemy.Territory.Count > 0 &&
-					enemy.TimeToGetHome > simulationTicks + 1) // Противник умирает, только если мы переехали его хвост и он гарантированно не успел вернуться домой
+				if (enemy.Tail.AsPointsSet().Contains(me.Position) && enemy.TimeToGetHome > simulationTicks + timeToNextPos + 1) // Противник умирает, только если мы переехали его хвост и он гарантированно не успел вернуться домой
 				{
 					hasLosers = true;
 					enemies[i] = null;
