@@ -108,7 +108,9 @@ namespace MiniAiCup.Paperio.Core
 				Id = Id,
 				Territory = Territory.ToArray(),
 				Tail = Tail.ToArray(),
-				Position = Position
+				Position = Position,
+				Direction = Direction,
+				PathToNextPositionLength = PathToNextPositionLength
 			};
 		}
 

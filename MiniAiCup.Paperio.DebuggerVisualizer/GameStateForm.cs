@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using MiniAiCup.Paperio.Core;
 using MiniAiCup.Paperio.Core.Debug;
 
 namespace MiniAiCup.Paperio.DebuggerVisualizer
@@ -77,7 +79,7 @@ namespace MiniAiCup.Paperio.DebuggerVisualizer
 			foreach (var player in _gameState.Players)
 			{
 				var playerBrush = new SolidBrush(playerColors[playersIndexes[player.Id]]);
-				e.Graphics.FillRectangle(playerBrush, GetCellSizeRectangle(TranslateCoordinates(player.Position, _gameState.Size), _gameState.CellSize));
+				e.Graphics.FillRectangle(playerBrush, GetCellSizeRectangle(TranslateCoordinates(player.Position, _gameState.Size), player.Direction, player.PathToNextPositionLength, _gameState.CellSize));
 			}
 		}
 
@@ -89,6 +91,33 @@ namespace MiniAiCup.Paperio.DebuggerVisualizer
 		private static Rectangle GetCellSizeRectangle(Core.Point point, int cellSize)
 		{
 			return new Rectangle(point.X*cellSize, point.Y*cellSize, cellSize - 1, cellSize - 1);
+		}
+
+		private static Rectangle GetCellSizeRectangle(Core.Point point, Direction? direction, int pathToNextPosLength, int cellSize)
+		{
+			int dx = 0;
+			int dy = 0;
+			switch (direction)
+			{
+				case Direction.Left:
+					dx = -pathToNextPosLength;
+					break;
+				case Direction.Up:
+					dy = -pathToNextPosLength;
+					break;
+				case Direction.Right:
+					dx = pathToNextPosLength;
+					break;
+				case Direction.Down:
+					dy = pathToNextPosLength;
+					break;
+				case null:
+					break;
+				default:
+					throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
+			}
+
+			return new Rectangle(point.X*cellSize + dx, point.Y*cellSize + dy, cellSize - 1, cellSize - 1);
 		}
 	}
 }

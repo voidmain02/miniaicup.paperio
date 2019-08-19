@@ -12,5 +12,9 @@ namespace MiniAiCup.Paperio.Core.Debug
 		public Point[] Tail { get; set; }
 
 		public Point Position { get; set; }
+
+		public Direction? Direction { get; set; }
+
+		public int PathToNextPositionLength { get; set; }
 	}
 }
