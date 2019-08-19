@@ -86,7 +86,11 @@ namespace MiniAiCup.Paperio.Core
 
 				if (enemy.CapturedOnPathToHome != null)
 				{
-					me.Territory = me.Territory.ExceptWith(enemy.CapturedOnPathToHome);
+					if (enemy.TimeToGetHome > simulationTicks)
+					{
+						me.Territory = me.Territory.ExceptWith(enemy.CapturedOnPathToHome);
+					}
+
 					continue;
 				}
 
