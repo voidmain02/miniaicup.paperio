@@ -28,20 +28,11 @@ namespace MiniAiCup.Paperio.Client
 
 				var gameState = GameStateParser.Parse(message);
 
-#if DEBUG
 				var nextDirection = game.GetNextDirection(gameState);
+#if DEBUG
 				PushCommandWithRewind(nextDirection, GameDebugData.Current);
 #else
-				try
-				{
-					var nextDirection = game.GetNextDirection(gameState);
-					PushCommand(nextDirection);
-				}
-				catch (Exception e)
-				{
-					PushErrorInfo(e);
-					throw;
-				}
+				PushCommand(nextDirection);
 #endif
 			}
 		}
@@ -67,11 +58,6 @@ namespace MiniAiCup.Paperio.Client
 		private static void PushCommand(Direction direction)
 		{
 			Console.WriteLine($"{{\"command\":\"{DirectionToString(direction)}\"}}");
-		}
-
-		private static void PushErrorInfo(Exception e)
-		{
-			Console.WriteLine($"{{\"debug\":{JsonConvert.ToString(e.ToString())}}}");
 		}
 
 		private static string BuildRewindData(GameDebugData debugData)
