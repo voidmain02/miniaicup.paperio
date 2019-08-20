@@ -14,6 +14,12 @@ namespace MiniAiCup.Paperio.Core
 			var moves = stackalloc int[GameParams.MapSize.Width*GameParams.MapSize.Height];
 
 			var startPoint = player.PathToNextPositionLength == 0 ? player.Position : player.Position.MoveLogic(player.Direction.Value);
+			if (player.Territory.Contains(startPoint))
+			{
+				return player.PathToNextPositionLength == 0
+					? Path.Empty
+					: new Path(new[] { startPoint });
+			}
 			var prevPoint = player.PathToNextPositionLength > 0 ? player.Position : player.Position.MoveLogic(player.Direction.Value.GetOpposite());
 
 			visited[startPoint.X + startPoint.Y*GameParams.MapSize.Width] = true;
