@@ -44,7 +44,8 @@ namespace MiniAiCup.Paperio.Core
 
 			Bonuses = state.Bonuses.Select(b => new BonusInfo {
 				Type = b.Type,
-				Position = b.Position.ConvertToLogic(GameParams.CellSize)
+				Position = b.Position.ConvertToLogic(GameParams.CellSize),
+				Steps = b.Steps
 			}).ToArray();
 
 			PreviousState = null;
