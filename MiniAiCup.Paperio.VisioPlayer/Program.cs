@@ -71,11 +71,48 @@ namespace MiniAiCup.Paperio.VisioPlayer
 
 		private static BonusInfo ParseBonus(JObject jBonus)
 		{
-			return new BonusInfo {
+			var bonusInfo = new BonusInfo {
 				Type = ParseBonusType((string)jBonus["type"]),
-				Position = ParsePoint((JArray)jBonus["position"]),
-				Steps = (int)jBonus["active_ticks"]
+				Position = ParsePoint((JArray)jBonus["position"])
 			};
+
+			var jActiveTicks = jBonus["active_ticks"];
+			if (jActiveTicks != null)
+			{
+				int activeTicks = (int)jActiveTicks;
+				if (activeTicks > 0)
+				{
+					bonusInfo.Steps = activeTicks;
+				}
+				else
+				{
+					SetDefaultBonusSteps(bonusInfo);
+				}
+			}
+			else
+			{
+				SetDefaultBonusSteps(bonusInfo);
+			}
+
+			return bonusInfo;
+		}
+
+		private static void SetDefaultBonusSteps(BonusInfo bonusInfo)
+		{
+			switch (bonusInfo.Type)
+			{
+				case BonusType.Nitro:
+					bonusInfo.Steps = GameParams.MinBonusDuration;
+					break;
+				case BonusType.Slowdown:
+					bonusInfo.Steps = GameParams.MaxBonusDuration;
+					break;
+				case BonusType.Saw:
+					bonusInfo.Steps = 0;
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 		}
 
 		private static PlayerInfo ParsePlayer(JProperty jIdentityPlayer, int myPlayerIndex)
