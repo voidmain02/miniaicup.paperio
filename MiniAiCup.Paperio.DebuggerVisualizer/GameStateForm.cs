@@ -29,7 +29,8 @@ namespace MiniAiCup.Paperio.DebuggerVisualizer
 				Color.FromArgb(96, 125, 139),
 				Color.FromArgb(245, 124, 0),
 				Color.FromArgb(92, 107, 192),
-				Color.FromArgb(141, 110, 99)
+				Color.FromArgb(141, 110, 99),
+				Color.FromArgb(90, 218, 26)
 			};
 
 			var playerColors = new[] {
@@ -38,7 +39,8 @@ namespace MiniAiCup.Paperio.DebuggerVisualizer
 				Color.FromArgb(71, 100, 114),
 				Color.FromArgb(220, 99, 0),
 				Color.FromArgb(67, 82, 167),
-				Color.FromArgb(116, 85, 74)
+				Color.FromArgb(116, 85, 74),
+				Color.FromArgb(65, 192, 2)
 			};
 
 			var tailColors = new[] {
@@ -47,17 +49,18 @@ namespace MiniAiCup.Paperio.DebuggerVisualizer
 				Color.FromArgb(142, 168, 178),
 				Color.FromArgb(236, 167, 91),
 				Color.FromArgb(140, 157, 211),
-				Color.FromArgb(170, 158, 153)
+				Color.FromArgb(170, 158, 153),
+				Color.FromArgb(125, 218, 107)
 			};
 
 			var playersIndexes = new Dictionary<string, int> {
-				{ "i", 0 },
 				{ "1", 0 },
 				{ "2", 1 },
 				{ "3", 2 },
 				{ "4", 3 },
 				{ "5", 4 },
-				{ "6", 5 }
+				{ "6", 5 },
+				{ "i", 6 }
 			};
 
 			foreach (var player in _gameState.Players)
