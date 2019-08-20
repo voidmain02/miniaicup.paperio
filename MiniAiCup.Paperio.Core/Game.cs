@@ -109,9 +109,13 @@ namespace MiniAiCup.Paperio.Core
 				var nextState = GetNextState(bestState, currentState);
 				nextDirection = nextState.Me.Direction.Value;
 			}
-			else
+			else if (currentState.Me.PathToHome != null && currentState.Me.PathToHome.Length > 0)
 			{
 				nextDirection = currentState.Me.Position.GetDirectionTo(currentState.Me.PathToHome[0]);
+			}
+			else
+			{
+				nextDirection = currentState.Me.Direction ?? Direction.Left;
 			}
 
 #if DEBUG
