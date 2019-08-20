@@ -39,7 +39,7 @@ namespace MiniAiCup.Paperio.Core
 
 		private PlayerInternal(string id)
 		{
-			_pathToHome = new Lazy<Path>(BuildPathToHome);
+			_pathToHome = new Lazy<Path>(() => PathFinder.GetShortestPathToHome(this));
 			Id = id;
 		}
 
@@ -130,13 +130,6 @@ namespace MiniAiCup.Paperio.Core
 				TimeMap = TimeMap,
 				TimeToGetHome = TimeToGetHome
 			};
-		}
-
-		private Path BuildPathToHome()
-		{
-			var startPosition = PathToNextPositionLength == 0 ? Position : Position.MoveLogic(Direction.Value);
-			var path = PathFinder.GetShortestPath(startPosition, Territory, Tail.AsPointsSet());
-			return PathToNextPositionLength != 0 ? path.Prepend(startPosition) : path;
 		}
 
 		private int[,] BuildTimeMap()
